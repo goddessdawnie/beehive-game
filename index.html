@@ -13,10 +13,12 @@ body{font:16px system-ui,sans-serif;background:#fff8eb;color:#392c23;max-width:7
 <script>
 const db=supabase.createClient('https://kyfyzrtsksybnrrlnhmj.supabase.co','sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk');
 const el=id=>document.getElementById(id),notice=s=>el('notice').textContent=s;let pet=null;
-async function load(){const {data:{user}}=await db.auth.getUser();el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);if(!user)return;
+let loading=false, reloadRequested=false;
+async function load(){if(loading){reloadRequested=true;return;}loading=true;try{await loadInner();}finally{loading=false;if(reloadRequested){reloadRequested=false;void load();}}}
+async function loadInner(){const {data:{user}}=await db.auth.getUser();el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);if(!user)return;
 const [tasks,rewards,pets]=await Promise.all([db.from('tasks').select('*').order('created_at',{ascending:false}),db.from('reward_ledger').select('coins_delta'),db.from('pet_state').select('*').maybeSingle()]);
 for(const r of [tasks,rewards,pets])if(r.error){notice(r.error.message);return}
-pet=pets.data;if(!pet){const r=await db.from('pet_state').insert({name:'Mochi'}).select().single();if(r.error){notice(r.error.message);return}pet=r.data}
+pet=pets.data;if(!pet){const r=await db.from('pet_state').insert({name:'Mochi'}).select().single();if(r.error){if(r.error.code==='23505'){const existing=await db.from('pet_state').select('*').maybeSingle();if(existing.error||!existing.data){notice(existing.error?.message||'Unable to load existing companion');return}pet=existing.data;}else{notice(r.error.message);return}}else pet=r.data}
 el('petname').textContent=pet.name;el('coins').textContent=(rewards.data||[]).reduce((n,r)=>n+r.coins_delta,0);
 el('tasks').replaceChildren();for(const t of tasks.data){const row=document.createElement('div');row.className='task';const info=document.createElement('div');const name=document.createElement('strong');name.textContent=t.title;const detail=document.createElement('small');detail.textContent=t.status+' · '+(t.due_at?new Date(t.due_at).toLocaleString():'Someday')+' · '+t.reward_coins+' coins';info.append(name,detail);const controls=document.createElement('div');
 const button=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=fn;controls.append(b)};
