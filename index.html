@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Beehive 🐝</title>
+<style>
+body{font:16px system-ui,sans-serif;background:#fff8eb;color:#392c23;max-width:700px;margin:24px auto;padding:0 16px}header{display:flex;align-items:center;justify-content:space-between}h1{font-size:2.4rem}section{background:#fff;border:1px solid #e7d9bd;border-radius:20px;padding:20px;margin:16px 0;box-shadow:0 5px 20px #7b612514}input,button{font:inherit;padding:10px;border-radius:10px;border:1px solid #cbbd9d;margin:4px}button{background:#f8d978;cursor:pointer}button:hover{background:#f2c94f}.hidden{display:none}.muted{color:#74695b}.pet{text-align:center;font-size:5rem}.task{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #eee4d3;padding:12px 0;flex-wrap:wrap}.task small{display:block;color:#74695b}#notice{color:#8b3c29}
+</style></head>
+<body><header><h1>🐝 Beehive</h1><button id="signout" class="hidden">Sign out</button></header>
+<p class="muted">Little Caretaker · early prototype</p>
+<section id="auth"><h2>Enter the hive</h2><input type="email" id="email" placeholder="Email"><input type="password" id="password" placeholder="Password"><p><button id="signin">Sign in</button><button id="signup">Create account</button></p><p class="muted">New accounts may need email confirmation.</p></section>
+<main id="game" class="hidden"><section><div class="pet">🐈</div><h2 id="petname" style="text-align:center">Mochi</h2><p style="text-align:center"><button id="rename">Rename companion</button></p><p style="text-align:center"><b id="coins">0</b> 🪙 coins earned</p></section>
+<section><h2>Your tasks</h2><form id="add"><input id="title" placeholder="Something to do" required><input id="due" type="datetime-local"><button>Add</button></form><p class="muted">Undated tasks can wait. Cancelling has no penalty.</p><button id="refresh">Refresh</button><div id="tasks"></div></section></main><p id="notice" role="status"></p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+<script>
+const db=supabase.createClient('https://kyfyzrtsksybnrrlnhmj.supabase.co','sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk');
+const el=id=>document.getElementById(id),notice=s=>el('notice').textContent=s;let pet=null;
+async function load(){const {data:{user}}=await db.auth.getUser();el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);if(!user)return;
+const [tasks,rewards,pets]=await Promise.all([db.from('tasks').select('*').order('created_at',{ascending:false}),db.from('reward_ledger').select('coins_delta'),db.from('pet_state').select('*').maybeSingle()]);
+for(const r of [tasks,rewards,pets])if(r.error){notice(r.error.message);return}
+pet=pets.data;if(!pet){const r=await db.from('pet_state').insert({name:'Mochi'}).select().single();if(r.error){notice(r.error.message);return}pet=r.data}
+el('petname').textContent=pet.name;el('coins').textContent=(rewards.data||[]).reduce((n,r)=>n+r.coins_delta,0);
+el('tasks').replaceChildren();for(const t of tasks.data){const row=document.createElement('div');row.className='task';const info=document.createElement('div');const name=document.createElement('strong');name.textContent=t.title;const detail=document.createElement('small');detail.textContent=t.status+' · '+(t.due_at?new Date(t.due_at).toLocaleString():'Someday')+' · '+t.reward_coins+' coins';info.append(name,detail);const controls=document.createElement('div');
+const button=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=fn;controls.append(b)};
+if(t.status==='open'){button('Done',()=>setStatus(t.id,'completed'));button('Cancel',()=>setStatus(t.id,'cancelled'));button('Edit',async()=>{const title=prompt('Task title',t.title);if(!title?.trim())return;const r=await db.from('tasks').update({title:title.trim()}).eq('id',t.id);notice(r.error?.message||'');await load()})}else button('Undo',()=>setStatus(t.id,'open'));
+row.append(info,controls);el('tasks').append(row)}}
+async function setStatus(id,value){const r=await db.rpc('set_task_status',{p_task_id:id,p_status:value});notice(r.error?.message||'');await load()}
+el('signin').onclick=async()=>{const r=await db.auth.signInWithPassword({email:el('email').value,password:el('password').value});notice(r.error?.message||'Signed in');await load()};
+el('signup').onclick=async()=>{const r=await db.auth.signUp({email:el('email').value,password:el('password').value,options:{emailRedirectTo:location.origin+location.pathname}});notice(r.error?.message||'Check your email to confirm your account.');await load()};
+el('signout').onclick=async()=>{await db.auth.signOut();await load()};
+el('add').onsubmit=async e=>{e.preventDefault();const due=el('due').value;const r=await db.from('tasks').insert({title:el('title').value.trim(),due_at:due?new Date(due).toISOString():null});notice(r.error?.message||'');if(!r.error)el('add').reset();await load()};
+el('rename').onclick=async()=>{const name=prompt('Companion name',pet.name);if(!name?.trim())return;const r=await db.from('pet_state').update({name:name.trim()}).eq('id',pet.id);notice(r.error?.message||'');await load()};
+el('refresh').onclick=load;db.auth.onAuthStateChange(()=>setTimeout(load,0));load();
+</script></body></html>
