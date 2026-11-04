@@ -60,7 +60,39 @@ function renderTreasury(shop,inventory,requests,balance){
  owned.replaceChildren();if(!inventory.data?.length)owned.textContent='His Lordship owns nothing from this shop. A constitutional outrage.';
  for(const inv of inventory.data||[]){const item=items.find(x=>x.id===inv.item_id);if(!item)continue;const p=document.createElement('p');p.textContent=item.name+' × '+inv.quantity;owned.append(p)}
  pending.replaceChildren();if(!requests.data?.length)pending.textContent='No requests yet.';
- for(const request of requests.data||[]){const p=document.createElement('p');p.textContent=request.requested_item+' · '+request.status.replaceAll('_',' ')+(request.bee_notes?' · '+request.bee_notes:'');pending.append(p)}
+ for(const request of requests.data||[]){
+  const wrap=document.createElement('div');wrap.className='task';
+  const summary=document.createElement('div'),title=document.createElement('strong'),status=document.createElement('small');
+  title.textContent=request.requested_item;
+  status.textContent=request.status.replaceAll('_',' ')+(request.bee_notes?' · '+request.bee_notes:'');
+  summary.append(title,status);
+  if(request.details){const detail=document.createElement('p');detail.className='task-notes';detail.textContent=request.details;summary.append(detail)}
+  wrap.append(summary);
+  if(request.status==='pending'){
+   const edit=document.createElement('button');edit.type='button';edit.textContent='Edit request';
+   edit.onclick=()=>{
+    edit.disabled=true;
+    const form=document.createElement('form');form.className='task-editor';
+    const name=document.createElement('input');name.value=request.requested_item;name.maxLength=250;name.minLength=2;name.required=true;name.setAttribute('aria-label','Requested item');
+    const details=document.createElement('textarea');details.value=request.details||'';details.maxLength=1500;details.placeholder='Additional details from Kae';details.setAttribute('aria-label','Request details');
+    const save=document.createElement('button');save.type='submit';save.textContent='Save changes';
+    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.onclick=()=>{form.remove();edit.disabled=false};
+    const feedback=document.createElement('span');feedback.setAttribute('role','status');
+    form.append(name,details,save,cancel,feedback);
+    form.onsubmit=async e=>{
+     e.preventDefault();const itemName=name.value.trim();if(itemName.length<2){feedback.textContent='Enter an item name.';return}
+     save.disabled=true;
+     const result=await db.from('reward_requests').update({requested_item:itemName,details:details.value.trim()}).eq('id',request.id).eq('status','pending').select('id');
+     if(result.error){feedback.textContent=result.error.message;save.disabled=false;return}
+     if(!result.data?.length){feedback.textContent='This request is no longer pending. Refresh and review its status.';save.disabled=false;return}
+     await load();
+    };
+    wrap.append(form);name.focus();
+   };
+   wrap.append(edit);
+  }
+  pending.append(wrap);
+ }
 }
 el('reward-request').onsubmit=async e=>{
  e.preventDefault();const form=e.currentTarget,btn=form.querySelector('button');btn.disabled=true;
