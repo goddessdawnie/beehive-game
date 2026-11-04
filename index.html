@@ -63,8 +63,9 @@ function renderTreasury(shop,inventory,requests,balance){
  }
  owned.replaceChildren();if(!inventory.data?.length)owned.textContent='His Lordship owns nothing from this shop. A constitutional outrage.';
  for(const inv of inventory.data||[]){const item=items.find(x=>x.id===inv.item_id);if(!item)continue;const p=document.createElement('p');p.textContent=item.name+' × '+inv.quantity;owned.append(p)}
- pending.replaceChildren();if(!requests.data?.length)pending.textContent='No requests yet.';
- for(const request of requests.data||[]){
+ pending.replaceChildren();const openRequests=(requests.data||[]).filter(request=>request.status==='pending');
+ if(!openRequests.length)pending.textContent='No pending requests. Kae may consider this a temporary oversight.';
+ for(const request of openRequests){
   const wrap=document.createElement('div');wrap.className='task';
   const summary=document.createElement('div'),title=document.createElement('strong'),status=document.createElement('small');
   title.textContent=request.requested_item;
