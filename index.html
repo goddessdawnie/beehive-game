@@ -30,7 +30,7 @@ async function loadAmbientOnce(){
 }
 
 const gameTabs=[...document.querySelectorAll('[data-game-tab]')];
-function selectGameTab(name,focus=false){for(const tab of gameTabs){const selected=tab.dataset.gameTab===name;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;el('panel-'+tab.dataset.gameTab).classList.toggle('hidden',!selected);if(selected&&focus)tab.focus()}}
+function selectGameTab(name,focus=false){for(const tab of gameTabs){const selected=tab.dataset.gameTab===name;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;el('panel-'+tab.dataset.gameTab).classList.toggle('hidden',!selected);if(selected&&focus)tab.focus();if(selected&&name==='estate')requestAnimationFrame(()=>{const log=el('chatlog');log.scrollTop=log.scrollHeight})}}
 gameTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>selectGameTab(tab.dataset.gameTab));tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?gameTabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+gameTabs.length)%gameTabs.length;selectGameTab(gameTabs[next].dataset.gameTab,true)})});
 selectGameTab('tasks');
 async function load(){if(loading){reloadRequested=true;return;}loading=true;try{await loadInner();}finally{loading=false;if(reloadRequested){reloadRequested=false;void load();}}}
