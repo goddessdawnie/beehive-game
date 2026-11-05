@@ -43,13 +43,13 @@ function renderThree(){
   const actions=document.createElement('div');actions.style.display='flex';actions.style.flexWrap='wrap';actions.style.gap='8px';
   for(const [label,action] of [['Complete','complete'],['Add to today','add'],['Replace','replace']]){
    const button=document.createElement('button');button.type='button';button.textContent=label;button.disabled=threeBusy;
-   button.onclick=async()=>{if(threeBusy)return;threeBusy=true;threeFeedback('Working…');renderThree();
+   button.onclick=async()=>{if(threeBusy)return;const savedNotes=notes.value;threeBusy=true;threeFeedback('Working…');
     try{
      if(action==='replace'){
       const cleared=await db.rpc('three_things_act',{p_id:item.id,p_action:'clear'});if(cleared.error)throw cleared.error;
       threeItems=threeItems.filter(x=>x.id!==item.id);renderThree();await generateThree(1);return;
      }
-     const result=await db.rpc('three_things_act',{p_id:item.id,p_action:action,p_notes:action==='complete'?notes.value:''});
+     const result=await db.rpc('three_things_act',{p_id:item.id,p_action:action,p_notes:action==='complete'?savedNotes:''});
      if(result.error)throw result.error;
      threeItems=threeItems.filter(x=>x.id!==item.id);
      threeFeedback(action==='complete'?'Completed and recorded for the Bees.':'Added to today’s tasks.');
