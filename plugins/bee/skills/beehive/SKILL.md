@@ -1,35 +1,56 @@
 ---
 name: beehive
-description: "Use for Dawn's private Beehive tasks, task possibilities, timers, notifications, reminders, and game, pet or reward information. Requires connected Supabase."
+description: "Use for Dawn's Beehive tasks, reusable possibilities, timers, reminders, notifications, installed game controls, pet and reward information. Uses the connected Supabase app."
 ---
 
-# Bee: stable Beehive interface
+# Bee
 
-Beehive is the authoritative task-and-companion system. Use the already-connected **Supabase** app, project `kyfyzrtsksybnrrlnhmj` ("beehive"). This skill is a convenient route for common operations; it does not revoke or limit the Bees' existing database access.
+Use Supabase project `kyfyzrtsksybnrrlnhmj` and Dawn's owner UUID
+`2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b`. Beehive remains the task source of truth.
+Full direct Supabase access remains available; this interface simplifies common operations.
+Do not search Notion for routing or create a parallel store.
 
-## Operating protocol
+## Check availability once per conversation
 
-1. Route directly to Supabase. Do not search Notion merely to discover the integration or create another task database.
-2. Search for relevant existing records before inserting. If an ID is ambiguous, narrow it by title, status and context; never choose an arbitrary match.
-3. Preserve existing business logic. Task completion MUST use the same reward, recurring-task and catalog-history behavior as the application's `complete_task_with_notes` / `set_task_status` functions. Do not merely UPDATE `tasks.status`.
-4. For Bee-origin tasks set `task_origin='bee'`. Keep possibility defaults independent from individual task instances.
-5. Verify consequential writes by re-reading. Tell the user whether a notification was **queued**, accepted by the push service, or actually received; do not conflate them.
-6. Prefer reversible cancel/disable over permanent deletion. Permanent deletion needs explicit intent and FK/reward impact inspection.
-7. Keep calls efficient: avoid full-table dumps, reuse known project identifiers and batch related reads. Interpret dates in America/New_York unless directed otherwise.
-8. Do not expose secret keys, push subscription endpoints, VAPID keys, device auth values or other credentials.
+Use the existing Supabase `execute_sql` tool:
 
-## Routes
+```sql
+select to_regprocedure('bee.command(uuid,uuid,text,jsonb)') is not null as command_available,
+       to_regprocedure('bee.read(uuid,text,text,uuid,integer,integer)') is not null as read_available;
+```
 
-- Active tasks: `public.tasks`. Status values: `open`, `completed`, `cancelled`, `deferred`. Read, search, insert, edit and transition with existing atomic effects.
-- Reusable possibilities: `public.activity_catalog`. Read, search, create, edit, archive by setting `active=false`, restore, and activate by creating a fresh task referring to `activity_id`. Activation must NOT remove the possibility.
-- Timers: `public.beehive_timers` plus authenticated RPCs `beehive_start_timer` and `beehive_cancel_timer`. The worker processes the queue at approximately 15-second intervals. Timer modification needs a proper pending-state-safe operation, not arbitrary edits during sending.
-- Bells/reminders: `public.beehive_bell_outbox`, using immediate or future `due_at`. Inspect for duplicates before retrying; alerts are best effort, not guaranteed device alarms.
-- Other data: pet status, reward ledger/shop, activity history, Three Things, inventory and sanitized health statistics. Reading other DB information is fine when relevant; do not export secrets.
-- Games: `daily_game_claims` currently tracks daily coin claims, but is NOT a game registry. Game enable/disable requires a registry integrated into the browser UI; don't misrepresent claims as a game toggle.
-- Health: verify task access; pending, sent or failed timers and bells; push subscription presence; and scheduler activity where available.
+The source includes a development migration, not proof of deployment. If absent, say the
+new API is not deployed. Existing owner-filtered reads remain available; never deploy
+schema changes as a side effect of an ordinary request or directly flip task status.
 
-## Connector caveat
+## Normal operation
 
-The Supabase management connector uses an administrative SQL channel, not a logged-in browser session. RPCs that require `auth.uid()` may not work from it. Do not assume an authenticated user context, invent JWTs, or bypass authentication. Use verified, owner-scoped, side-effect-preserving operations; if unavailable, say precisely what remains blocked instead of silently corrupting rewards.
+Read [operations](references/operations.md) when first performing a write or unfamiliar read.
+Use `bee.read` for bounded searches and `bee.command` for writes. Prefer one search,
+one command, and one verification read. Reuse IDs and results already in context.
 
-See [data contract](references/database-contract.md) for the schema.
+1. Search before creation; distinguish a repeat request from an intentional second occurrence.
+   Resolve ambiguous records by title/status/context; never choose an arbitrary match.
+2. Assign a fresh UUID request ID to each intended write. Retry an uncertain call with
+   **the exact same ID, operation and payload**. Never invent a new ID merely because
+   a call timed out. A replay returns the original outcome; re-read current state.
+3. Supply the record's exact `updated_at` as `expected_updated_at` for edits/transitions.
+   On a conflict, re-read and reassess before creating a new request ID.
+4. Verify consequential writes by ID. Creation defaults to `task_origin='bee'`.
+   Complete via `task.complete`; rewards, history and recurrence are atomic.
+5. A possibility stays reusable. Resizing its task instance never edits its defaults.
+   Cancel/archive by default; permanent deletion requires explicit user intent.
+6. Interpret dates in America/New_York. Send timestamps with explicit UTC offset.
+   Ask about ambiguous local DST times; do not silently pick an occurrence.
+7. Notification `pending` means queued; `sent` means a push service accepted it,
+   **not** handset receipt. Once delivery has been attempted, safe cancellation or
+   rescheduling is unavailable. Do not claim a delivered alert was retracted.
+8. Games can be enabled/disabled only after their executable code is installed.
+   Registry toggles do not install new games or erase scores/claims.
+9. Never reveal secrets, push endpoints, device auth values, or VAPID keys.
+   Use sanitized health counts; database access alone does not prove worker health.
+
+The SQL connector uses its existing administrative authorization. The private API
+accepts an explicit owner; do not fabricate JWTs or set session claims. Browser
+RPCs keep authenticated owner checks. Do not change permissions or revoke the
+Bees' existing Supabase access.

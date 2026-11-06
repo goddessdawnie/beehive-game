@@ -1,0 +1,831 @@
+{
+  "schema": [
+    {
+      "table_name": "activity_catalog",
+      "column_name": "id",
+      "data_type": "uuid",
+      "column_default": "gen_random_uuid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": "auth.uid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "title",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "category",
+      "data_type": "text",
+      "column_default": "'cleaning'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "active",
+      "data_type": "boolean",
+      "column_default": "true",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "locations",
+      "data_type": "ARRAY",
+      "column_default": "'{}'::text[]",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "work_compatible",
+      "data_type": "boolean",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "notes",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "rating_tiny",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "rating_medium",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "rating_large",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "rating_ugh",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "decompose_count",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "times_done",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "last_done",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "notion_source_url",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "source_system",
+      "data_type": "text",
+      "column_default": "'beehive'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "imported_times_done",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "imported_last_done",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "property",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_catalog",
+      "column_name": "suggested_difficulty",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "id",
+      "data_type": "uuid",
+      "column_default": "gen_random_uuid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": "auth.uid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "activity_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "task_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "outcome",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "notes",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "happened_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "activity_log",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "id",
+      "data_type": "uuid",
+      "column_default": "gen_random_uuid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "source",
+      "data_type": "text",
+      "column_default": "'chatgpt'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "title",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "body",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "status",
+      "data_type": "text",
+      "column_default": "'pending'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "due_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "attempts",
+      "data_type": "integer",
+      "column_default": "0",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "lease_until",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "retry_after",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "last_error",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "sent_at",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_bell_outbox",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "id",
+      "data_type": "uuid",
+      "column_default": "gen_random_uuid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "label",
+      "data_type": "text",
+      "column_default": "'Timer'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "duration_seconds",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "due_at",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "status",
+      "data_type": "text",
+      "column_default": "'pending'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "attempts",
+      "data_type": "integer",
+      "column_default": "0",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "lease_until",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "retry_after",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "last_error",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "sent_at",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "beehive_timers",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "daily_game_claims",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": "auth.uid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "daily_game_claims",
+      "column_name": "game_key",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "daily_game_claims",
+      "column_name": "play_date",
+      "data_type": "date",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "daily_game_claims",
+      "column_name": "coins",
+      "data_type": "integer",
+      "column_default": "2",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "daily_game_claims",
+      "column_name": "claimed_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "reward_ledger",
+      "column_name": "id",
+      "data_type": "uuid",
+      "column_default": "gen_random_uuid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "reward_ledger",
+      "column_name": "task_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "reward_ledger",
+      "column_name": "coins_delta",
+      "data_type": "integer",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "reward_ledger",
+      "column_name": "reason",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "reward_ledger",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "reward_ledger",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": "auth.uid()",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "id",
+      "data_type": "uuid",
+      "column_default": "gen_random_uuid()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "title",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "status",
+      "data_type": "text",
+      "column_default": "'open'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "due_at",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "recurrence_rule",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "reward_coins",
+      "data_type": "integer",
+      "column_default": "5",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "completed_at",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "column_default": "now()",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "owner_id",
+      "data_type": "uuid",
+      "column_default": "auth.uid()",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "recurrence_series_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "instructions",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "completion_notes",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "task_origin",
+      "data_type": "text",
+      "column_default": "'user'::text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "restarted_at",
+      "data_type": "timestamp with time zone",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "activity_id",
+      "data_type": "uuid",
+      "column_default": null,
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "tasks",
+      "column_name": "difficulty",
+      "data_type": "text",
+      "column_default": null,
+      "is_nullable": "YES"
+    }
+  ],
+  "constraints": [
+    {
+      "relname": "activity_catalog",
+      "conname": "activity_catalog_owner_id_fkey",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id)"
+    },
+    {
+      "relname": "activity_catalog",
+      "conname": "activity_catalog_owner_id_notion_source_url_key",
+      "definition": "UNIQUE (owner_id, notion_source_url)"
+    },
+    {
+      "relname": "activity_catalog",
+      "conname": "activity_catalog_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "relname": "activity_catalog",
+      "conname": "activity_catalog_property_check",
+      "definition": "CHECK (((property IS NULL) OR (property = ANY (ARRAY['Florence'::text, 'Williamsburg'::text]))))"
+    },
+    {
+      "relname": "activity_catalog",
+      "conname": "activity_catalog_title_check",
+      "definition": "CHECK ((length(TRIM(BOTH FROM title)) > 0))"
+    },
+    {
+      "relname": "activity_catalog",
+      "conname": "catalog_suggested_difficulty_valid",
+      "definition": "CHECK (((suggested_difficulty IS NULL) OR (suggested_difficulty = ANY (ARRAY['tiny'::text, 'medium'::text, 'large'::text, 'ugh'::text]))))"
+    },
+    {
+      "relname": "activity_log",
+      "conname": "activity_log_activity_id_fkey",
+      "definition": "FOREIGN KEY (activity_id) REFERENCES activity_catalog(id) ON DELETE SET NULL"
+    },
+    {
+      "relname": "activity_log",
+      "conname": "activity_log_outcome_check",
+      "definition": "CHECK ((outcome = ANY (ARRAY['completed'::text, 'partial'::text, 'observation'::text])))"
+    },
+    {
+      "relname": "activity_log",
+      "conname": "activity_log_owner_id_fkey",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id)"
+    },
+    {
+      "relname": "activity_log",
+      "conname": "activity_log_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "relname": "activity_log",
+      "conname": "activity_log_task_id_fkey",
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE SET NULL"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_attempts_check",
+      "definition": "CHECK (((attempts >= 0) AND (attempts <= 20)))"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_body_check",
+      "definition": "CHECK (((length(TRIM(BOTH FROM body)) >= 1) AND (length(TRIM(BOTH FROM body)) <= 400)))"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_owner_id_fkey",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_source_check",
+      "definition": "CHECK ((source = ANY (ARRAY['chatgpt'::text, 'bee'::text, 'system'::text, 'kae'::text])))"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'sending'::text, 'sent'::text, 'failed'::text, 'cancelled'::text])))"
+    },
+    {
+      "relname": "beehive_bell_outbox",
+      "conname": "beehive_bell_outbox_title_check",
+      "definition": "CHECK (((length(TRIM(BOTH FROM title)) >= 1) AND (length(TRIM(BOTH FROM title)) <= 120)))"
+    },
+    {
+      "relname": "beehive_timers",
+      "conname": "beehive_timers_attempts_check",
+      "definition": "CHECK (((attempts >= 0) AND (attempts <= 20)))"
+    },
+    {
+      "relname": "beehive_timers",
+      "conname": "beehive_timers_duration_seconds_check",
+      "definition": "CHECK (((duration_seconds >= 10) AND (duration_seconds <= 86400)))"
+    },
+    {
+      "relname": "beehive_timers",
+      "conname": "beehive_timers_label_check",
+      "definition": "CHECK (((length(label) >= 1) AND (length(label) <= 120)))"
+    },
+    {
+      "relname": "beehive_timers",
+      "conname": "beehive_timers_owner_id_fkey",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "relname": "beehive_timers",
+      "conname": "beehive_timers_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "relname": "beehive_timers",
+      "conname": "beehive_timers_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'sending'::text, 'sent'::text, 'failed'::text, 'cancelled'::text])))"
+    },
+    {
+      "relname": "reward_ledger",
+      "conname": "reward_ledger_owner_id_fkey",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "relname": "reward_ledger",
+      "conname": "reward_ledger_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "relname": "reward_ledger",
+      "conname": "reward_ledger_task_id_fkey",
+      "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE SET NULL"
+    },
+    {
+      "relname": "tasks",
+      "conname": "recurrence_requires_date",
+      "definition": "CHECK (((recurrence_rule IS NULL) OR ((recurrence_rule = ANY (ARRAY['daily'::text, 'weekly'::text])) AND (due_at IS NOT NULL) AND (recurrence_series_id IS NOT NULL))))"
+    },
+    {
+      "relname": "tasks",
+      "conname": "task_origin_valid",
+      "definition": "CHECK ((task_origin = ANY (ARRAY['user'::text, 'bee'::text, 'synthesis'::text, 'import'::text])))"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_activity_id_fkey",
+      "definition": "FOREIGN KEY (activity_id) REFERENCES activity_catalog(id) ON DELETE SET NULL"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_difficulty_valid",
+      "definition": "CHECK (((difficulty IS NULL) OR (difficulty = ANY (ARRAY['tiny'::text, 'medium'::text, 'large'::text, 'ugh'::text]))))"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_owner_id_fkey",
+      "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_reward_coins_check",
+      "definition": "CHECK ((reward_coins >= 0))"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'completed'::text, 'cancelled'::text, 'deferred'::text])))"
+    },
+    {
+      "relname": "tasks",
+      "conname": "tasks_title_check",
+      "definition": "CHECK ((length(TRIM(BOTH FROM title)) > 0))"
+    }
+  ],
+  "functions": [
+    {
+      "proname": "beehive_claim_due_timers",
+      "definition": "CREATE OR REPLACE FUNCTION public.beehive_claim_due_timers(p_limit integer DEFAULT 20)\n RETURNS SETOF beehive_timers\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n with picked as (\n  select id from public.beehive_timers\n  where attempts < 5 and (\n    (status='pending' and due_at<=now() and coalesce(retry_after,now())<=now())\n    or (status='sending' and lease_until<now())\n  )\n  order by due_at asc\n  limit least(greatest(coalesce(p_limit,20),1),40)\n  for update skip locked\n )\n update public.beehive_timers t\n set status='sending',attempts=t.attempts+1,lease_until=now()+interval '2 minutes',retry_after=null,updated_at=now()\n from picked\n where t.id=picked.id\n returning t.*;\n$function$\n"
+    },
+    {
+      "proname": "set_task_status",
+      "definition": "CREATE OR REPLACE FUNCTION public.set_task_status(p_task_id uuid, p_status text)\n RETURNS tasks\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE t public.tasks%ROWTYPE; next_due timestamptz; step interval;\nBEGIN\n IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Authentication required'; END IF;\n IF p_status NOT IN ('open','completed','cancelled','deferred') THEN RAISE EXCEPTION 'Invalid status'; END IF;\n SELECT * INTO t FROM public.tasks WHERE id=p_task_id AND owner_id=auth.uid() FOR UPDATE;\n IF NOT FOUND THEN RAISE EXCEPTION 'Task not found'; END IF;\n IF p_status='deferred' AND t.recurrence_rule IS NULL THEN RAISE EXCEPTION 'Only recurring tasks can be deferred'; END IF;\n IF t.status IS DISTINCT FROM p_status THEN\n  UPDATE public.tasks SET status=p_status,completed_at=CASE WHEN p_status='completed' THEN now() ELSE NULL END,updated_at=now() WHERE id=p_task_id RETURNING * INTO t;\n  IF p_status='completed' AND t.reward_coins>0 THEN\n   INSERT INTO public.reward_ledger(task_id,owner_id,coins_delta,reason) VALUES(p_task_id,auth.uid(),t.reward_coins,'task_completed')\n   ON CONFLICT(task_id) WHERE reason='task_completed' DO NOTHING;\n  ELSE\n   DELETE FROM public.reward_ledger WHERE task_id=p_task_id AND reason='task_completed' AND owner_id=auth.uid();\n  END IF;\n  IF p_status IN ('completed','deferred') AND t.recurrence_rule IN ('daily','weekly') THEN\n   step:=CASE t.recurrence_rule WHEN 'weekly' THEN interval '7 days' ELSE interval '1 day' END;\n   next_due:=((t.due_at AT TIME ZONE 'America/New_York')+step) AT TIME ZONE 'America/New_York';\n   WHILE next_due<=now() LOOP\n    next_due:=((next_due AT TIME ZONE 'America/New_York')+step) AT TIME ZONE 'America/New_York';\n   END LOOP;\n   INSERT INTO public.tasks(title,status,due_at,recurrence_rule,recurrence_series_id,reward_coins,owner_id,instructions,task_origin,difficulty,activity_id)\n   VALUES(t.title,'open',next_due,t.recurrence_rule,t.recurrence_series_id,t.reward_coins,auth.uid(),t.instructions,t.task_origin,t.difficulty,t.activity_id)\n   ON CONFLICT(recurrence_series_id,due_at) WHERE recurrence_series_id IS NOT NULL DO NOTHING;\n  END IF;\n END IF;\n RETURN t;\nEND;$function$\n"
+    },
+    {
+      "proname": "complete_task_with_notes",
+      "definition": "CREATE OR REPLACE FUNCTION public.complete_task_with_notes(p_task_id uuid, p_notes text DEFAULT NULL::text)\n RETURNS tasks\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE t public.tasks%ROWTYPE;\nBEGIN\n IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Authentication required'; END IF;\n SELECT * INTO t FROM public.tasks WHERE id=p_task_id AND owner_id=auth.uid() FOR UPDATE;\n IF NOT FOUND THEN RAISE EXCEPTION 'Task not found'; END IF;\n IF t.status='completed' THEN\n  UPDATE public.tasks SET completion_notes=NULLIF(BTRIM(p_notes),'') WHERE id=p_task_id RETURNING * INTO t;\n  RETURN t;\n END IF;\n IF t.status<>'open' THEN RAISE EXCEPTION 'Only open tasks can be completed'; END IF;\n UPDATE public.tasks SET completion_notes=NULLIF(BTRIM(p_notes),''),updated_at=now() WHERE id=p_task_id;\n RETURN public.set_task_status(p_task_id,'completed');\nEND;$function$\n"
+    },
+    {
+      "proname": "beehive_claim_due_bells",
+      "definition": "CREATE OR REPLACE FUNCTION public.beehive_claim_due_bells(p_limit integer DEFAULT 20)\n RETURNS SETOF beehive_bell_outbox\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n with picked as (\n  select id from public.beehive_bell_outbox\n  where attempts < 5 and (\n    (status='pending' and due_at<=now() and coalesce(retry_after,now())<=now())\n    or (status='sending' and lease_until<now())\n  )\n  order by due_at asc\n  limit least(greatest(coalesce(p_limit,20),1),40)\n  for update skip locked\n )\n update public.beehive_bell_outbox b\n set status='sending',attempts=b.attempts+1,\n     lease_until=now()+interval '2 minutes',\n     retry_after=null,updated_at=now()\n from picked where b.id=picked.id\n returning b.*;\n$function$\n"
+    },
+    {
+      "proname": "beehive_start_timer",
+      "definition": "CREATE OR REPLACE FUNCTION public.beehive_start_timer(p_seconds integer, p_label text DEFAULT 'Timer'::text)\n RETURNS beehive_timers\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare u uuid := auth.uid(); created public.beehive_timers;\nbegin\n if u is null then raise exception 'Not signed in'; end if;\n if p_seconds is null or p_seconds < 10 or p_seconds > 86400 then raise exception 'Duration must be between 10 seconds and 24 hours'; end if;\n if trim(coalesce(p_label,''))='' or length(trim(p_label))>120 then raise exception 'Timer name must be 1-120 characters'; end if;\n insert into public.beehive_timers(owner_id,label,duration_seconds,due_at)\n values (u,trim(p_label),p_seconds,now()+make_interval(secs=>p_seconds))\n returning * into created;\n return created;\nexception when unique_violation then raise exception 'Finish or cancel your current timer first';\nend;\n$function$\n"
+    },
+    {
+      "proname": "beehive_cancel_timer",
+      "definition": "CREATE OR REPLACE FUNCTION public.beehive_cancel_timer(p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare u uuid := auth.uid(); cancelled uuid;\nbegin\n if u is null then raise exception 'Not signed in'; end if;\n update public.beehive_timers set status='cancelled',updated_at=now(),lease_until=null\n where id=p_id and owner_id=u and status in ('pending','sending')\n returning id into cancelled;\n return cancelled is not null;\nend;\n$function$\n"
+    }
+  ],
+  "triggers": [
+    {
+      "relname": "activity_log",
+      "definition": "CREATE TRIGGER activity_log_refresh_stats AFTER INSERT OR DELETE OR UPDATE ON public.activity_log FOR EACH ROW EXECUTE FUNCTION refresh_catalog_completion_stats()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.refresh_catalog_completion_stats()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare aid uuid;begin\n aid:=coalesce(new.activity_id,old.activity_id);\n if aid is not null then\n update public.activity_catalog a set\n times_done=coalesce(a.imported_times_done,0)+(select count(*) from public.activity_log l where l.activity_id=aid and l.outcome='completed'),\n last_done=greatest(a.imported_last_done,(select max(l.happened_at) from public.activity_log l where l.activity_id=aid and l.outcome='completed')),\n updated_at=now()\n where a.id=aid;\n end if;\n return null;\nend $function$\n"
+    },
+    {
+      "relname": "reward_ledger",
+      "definition": "CREATE TRIGGER kae_comfort_on_reward AFTER INSERT ON public.reward_ledger FOR EACH ROW EXECUTE FUNCTION kae_comfort_ledger_trigger()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.kae_comfort_ledger_trigger()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare v_delta integer;\nbegin\n if new.reason='task_completed' and new.coins_delta>0 then v_delta:=new.coins_delta;\n elsif new.reason like 'shop_purchase:%' and new.coins_delta<0 then v_delta:=-new.coins_delta;\n else return new; end if;\n update public.pet_state set comfort_value=least(100,greatest(0,coalesce(comfort_value,100)-greatest(0,extract(epoch from (now()-coalesce(comfort_updated_at,now()))))/7200)+v_delta),comfort_updated_at=now() where owner_id=new.owner_id;\n return new;\nend $function$\n"
+    },
+    {
+      "relname": "tasks",
+      "definition": "CREATE TRIGGER tasks_sync_catalog_completion AFTER INSERT OR UPDATE OF status, completion_notes ON public.tasks FOR EACH ROW EXECUTE FUNCTION sync_catalog_task_completion()",
+      "function_definition": "CREATE OR REPLACE FUNCTION public.sync_catalog_task_completion()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin\n if new.activity_id is null then return new; end if;\n if new.status='completed' and (tg_op='INSERT' or old.status is distinct from 'completed') then\n  insert into public.activity_log(owner_id,activity_id,task_id,outcome,notes,happened_at)\n  values(new.owner_id,new.activity_id,new.id,'completed',new.completion_notes,coalesce(new.completed_at,now()))\n  on conflict(task_id) where outcome='completed' and task_id is not null do update set happened_at=excluded.happened_at,notes=excluded.notes;\n elsif tg_op='UPDATE' and old.status='completed' and new.status<>'completed' then\n  delete from public.activity_log where task_id=new.id and outcome='completed';\n elsif tg_op='UPDATE' and new.status='completed' and old.status='completed' then\n  update public.activity_log set notes=new.completion_notes where task_id=new.id and outcome='completed';\n end if;\n return new;\nend $function$\n"
+    }
+  ]
+}

@@ -38,4 +38,12 @@ As of 2026-11-06, custom MCP connection setup is documented as web-only; web sch
 
 ## Work staged in this branch
 
-The portable `plugins/bee/` skill-only plugin contains common operating rules and a checked Beehive schema contract. Installation, access checks, user-facing verification, a properly authenticated MCP tool layer, safe timer-adjust/reminder APIs and game registry remain pending. Nothing in this branch changes the live Beehive website or database.
+The v0.2 development branch implements the private database interface, shares task
+transition logic with the existing browser RPCs, adds safe timer/reminder operations,
+recovers exhausted worker leases, and integrates installed-game visibility into the
+website. The portable plugin uses the connected Supabase app and remains gated on
+API availability. No production changes or installation have occurred.
+
+See [validation and release gates](VALIDATION.md) for implemented behavior, test
+results, limitations and the exact continuation steps. OAuth MCP remains a later
+adapter over this same business layer, not a parallel implementation.
