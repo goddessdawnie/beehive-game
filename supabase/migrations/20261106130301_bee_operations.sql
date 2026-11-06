@@ -294,6 +294,10 @@ declare result jsonb; lim integer:=least(greatest(coalesce(p_limit,25),1),100); 
 begin
  perform bee.check_owner(p_owner);
  case p_kind
+ when 'request' then
+  if p_id is null then raise exception 'Request ID required'; end if;
+  select to_jsonb(r) into result from
+   (select req.request_id,req.operation,req.result,req.created_at from bee.requests req where req.owner_id=p_owner and req.request_id=p_id) r;
  when 'tasks' then
   select coalesce(jsonb_agg(to_jsonb(r)),'[]') into result from
    (select * from public.tasks where owner_id=p_owner and (p_id is null or id=p_id) and strpos(lower(title||' '||coalesce(instructions,'')),lower(coalesce(p_query,'')))>0 order by created_at desc,id limit lim offset off) r;
@@ -403,3 +407,18 @@ grant execute on function public.set_task_status(uuid,text) to authenticated,ser
 
 revoke all on function public.complete_task_with_notes(uuid,text) from public,anon;
 grant execute on function public.complete_task_with_notes(uuid,text) to authenticated,service_role;
+
+-- The browser must obey the same delivery boundary as Bee commands.
+-- Keep the existing authenticated signature and privileged queue access.
+create or replace function public.beehive_cancel_timer(p_id uuid)
+returns boolean language plpgsql security definer set search_path='' as $$
+declare u uuid:=auth.uid(); cancelled uuid;
+begin
+ if u is null then raise exception 'Not signed in'; end if;
+ update public.beehive_timers set status='cancelled',updated_at=clock_timestamp(),lease_until=null
+ where id=p_id and owner_id=u and status='pending' and attempts=0
+ returning id into cancelled;
+ return cancelled is not null;
+end $$;
+revoke all on function public.beehive_cancel_timer(uuid) from public,anon;
+grant execute on function public.beehive_cancel_timer(uuid) to authenticated,service_role;

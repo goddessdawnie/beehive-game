@@ -22,6 +22,7 @@ const el=id=>document.getElementById(id),notice=s=>el('notice').textContent=s;co
 let loading=false, reloadRequested=false,taskFilter='today',chatLoaded=false,chatBusy=false,activities=[];
 let treasuryBusy=false;
 let timerCurrent=null;
+let timerCancelWarning=null;
 let ambientRequested=false;
 async function loadAmbientOnce(){
  if(ambientRequested)return;ambientRequested=true;
@@ -202,13 +203,13 @@ function paintTimer(){
  const timer=timerCurrent;
  const active=timer&&['pending','sending'].includes(timer.status);
  const start=el('timer-start-button'),test=el('timer-test'),cancel=el('timer-cancel'),readout=el('timer-readout');
- start.disabled=!!active;test.disabled=!!active;cancel.classList.toggle('hidden',!active);
+ start.disabled=!!active;test.disabled=!!active;cancel.classList.toggle('hidden',!active);cancel.disabled=!(timer?.status==='pending'&&timer.attempts===0);
  if(!timer){readout.textContent='No active timer';timerStatus('Set a timer or try the 15-second notification test.');return;}
  if(active){
   const remain=Math.max(0,Math.ceil((new Date(timer.due_at).getTime()-Date.now())/1000));
   const hours=Math.floor(remain/3600),minutes=Math.floor((remain%3600)/60),seconds=remain%60;
   readout.textContent=(hours?hours+':':'')+String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0');
-  timerStatus(timer.label+(remain===0?' · Time is up. Waiting for server notification…':' · Runs even with Beehive closed.'));
+  timerStatus(timer.label+(timerCancelWarning===timer.id?' · Delivery has started; the notification may still arrive.':remain===0?' · Time is up. Waiting for server notification…':' · Runs even with Beehive closed.'));
  }else{
   readout.textContent=timer.status==='sent'?'Timer finished':timer.status==='cancelled'?'Timer cancelled':'Timer not delivered';
   timerStatus(timer.label+' · '+(timer.status==='sent'?'Push accepted by notification service.':timer.status==='failed'?(timer.last_error||'Notification delivery failed.'):'Stopped before completion.'));
@@ -230,7 +231,7 @@ el('timer-cancel').onclick=async()=>{
  if(!timerCurrent)return;
  const {data,error}=await db.rpc('beehive_cancel_timer',{p_id:timerCurrent.id});
  if(error)timerStatus('Cancel failed: '+error.message);
- else if(!data)timerStatus('Timer was already being completed. It may still send a notification.');
+ else if(!data)timerCancelWarning=timerCurrent.id;
  await refreshTimer();
 };
 setInterval(paintTimer,1000);

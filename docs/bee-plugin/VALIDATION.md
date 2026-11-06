@@ -1,4 +1,4 @@
-# Bee v0.2 implementation and validation — 2026-11-06
+# Bee v0.2.1 implementation and validation — 2026-11-06
 
 ## Implemented on feature/bee-plugin-design (not deployed)
 
@@ -10,17 +10,17 @@
 - Worker claim RPCs recover an expired fifth-attempt lease to failed with an explicit *delivery status unknown* message; no sixth send is attempted. Existing service-only execution grants remain restricted.
 - Owner-specific installed-game visibility settings, with browser refresh on load, Play selection and foreground return. Unknown game keys cannot install executable code. Missing settings preserve existing enabled behavior. Scores/claims are untouched.
 - Sanitized health, bounded task/catalog/timer/reminder/history/ledger reads and pet state.
-- Portable Bee source v0.2.0 with verified Supabase app dependency, availability preflight, retry protocol and operation reference. No new hosted service or costs.
+- Portable Bee source v0.2.1 with verified Supabase app dependency, availability preflight, retry protocol and operation reference. No new hosted service or costs.
 
 ## Verified
 
-`npm ci --ignore-scripts && npm test`: 16 passing tests using PGlite (real PostgreSQL engine compiled to WASM).
+`npm ci --ignore-scripts && npm test`: 20 passing tests using PGlite (real PostgreSQL engine compiled to WASM).
 
 Production metadata was read, not mutated. `tests/fixtures/live-contract.json` and `live-policies.json` capture relevant columns, constraints, functions, triggers and policies without user rows or secrets. Test-only auth, pet and subscription scaffolding supplies the required dependencies; this is not a full Supabase replica.
 
 Coverage includes exact retry/conflicting retry, failed-write rollback, possibility defaults and imported ratings, difficulty rewards, one ledger entry, history counts/notes, undo/cancel, daily and weekly DST boundaries, recurrence successor deduplication, stale writes, invalid owner links/status/fields, timer limits and delivery races, reminder updates, safe deletion, browser-RPC authorization, game allowlist and worker final-lease recovery.
 
-`npm run test:browser`: passed at 393×851 and 1280×900 with a mocked Supabase client and all external requests blocked. Tests visibility toggles, active-panel closure, refresh failure, and absence of JS errors. This exercises the full page but **does not** test Supabase sign-in, PostgREST, real push, Android ChatGPT, or scheduled ChatGPT tasks.
+`npm run test:browser`: passed at 393×851 and 1280×900 with a mocked Supabase client and all external requests blocked. Tests visibility toggles, active-panel closure, refresh failure, the browser timer cancellation race and persistent warning, and absence of JS errors. This exercises the full page but **does not** test Supabase sign-in, PostgREST, real push, Android ChatGPT, or scheduled ChatGPT tasks.
 
 The runtime lacked a browser and normal Playwright browser downloads were corrupt. Browser tests ran with Chromium 153 from an npm-distributed binary, using `BEE_BROWSER_EXECUTABLE`. Normal setup: `npx playwright install chromium`. An existing compatible Chromium can be selected with `BEE_BROWSER_EXECUTABLE=/absolute/path` (and its required shared-library environment).
 
@@ -42,7 +42,7 @@ Plugin JSON, YAML, included reference paths and archive contents were checked. A
 3. Run browser regression with authenticated test users and RLS, plus security advisors. Test the real worker against a test subscription; verify actual receipt separately.
 4. Install the private plugin from `plugins/bee/` when the account-upload tool is available. Verify the skill and Supabase dependency appear. Test read-only use on Android/web, then one reversible task workflow and a scheduled Bee run. Do not replace existing routing until all pass.
 5. Apply the reviewed migration transactionally, verify functions/ACLs and owner reads, then merge/deploy the browser change. Keep the PR draft until release blockers are resolved. The registry code retains old games if the new table is absent; that fallback is not a substitute for the migration.
-6. If reverting, restore the original four public task/worker function definitions from the captured fixture and revert the website commit. Keep request receipts and game settings for diagnosis; do not drop them casually or delete reward/history tables. Test rollback before production rollout.
+6. If reverting, restore the original five public task/worker/timer-cancel function definitions from the captured fixture and revert the website commit. Keep request receipts and game settings for diagnosis; do not drop them casually or delete reward/history tables. Test rollback before production rollout.
 
 ## Deliberate boundaries
 
@@ -50,3 +50,17 @@ Plugin JSON, YAML, included reference paths and archive contents were checked. A
 - Game management enables/disables installed games. Installing new executable games remains a reviewed code change; historical game claims are not a registry.
 - Hard deletion is deliberately constrained to cancelled, nonrecurring tasks without history and inactive unreferenced possibilities. Other deletion requires explicit impact review through the retained full Supabase access.
 - Request receipts are retained to preserve retry safety. No automatic purge was introduced. Receipts include task content, stay in the private schema, and should be considered in future retention/export decisions.
+
+
+## Resumed hardening checkpoint
+
+After the usage interruption, verified saved GitHub commit `95d8259` against the local tested tree and recorded the recovery checkpoint in Notion before further work.
+
+- Fixed the browser's older timer-cancel RPC so it cannot cancel a sending or previously attempted timer. The timer UI disables unsafe cancellation and preserves the race warning across countdown repaints.
+- Added read-only request receipt lookup: `bee.read(owner,'request','',request_uuid)`. This supports checking an uncertain result without re-executing an operation. A missing receipt can still mean an in-flight transaction; exact replay remains the recovery mechanism.
+- Added and passed tests for browser cancellation ownership and delivery races, private receipt/game-setting access, request lookup owner isolation, and restoring the five original public RPC definitions without deleting receipts. Rollback verification runs inside an isolated transaction and restores the migrated test state afterward.
+- Re-ran the expanded phone/desktop browser checks successfully with a mocked backend. The updated source has 20 passing tests; no real phone or scheduled-task claim is implied.
+- Native concurrency remains blocked: no PostgreSQL/Docker runtime is available, this executor maps only UID 0, and a test user-namespace mapping failed with `Operation not permitted`. Installing PostgreSQL alone would not supply the non-root execution context it requires. No paid branch, production substitute or privilege escalation was attempted.
+- Account-plugin creation/upload tooling is still unavailable after rediscovery. The package remains ready for installation in a tool-enabled session, not installed.
+
+Resume from the latest head of the existing draft PR, not the older checkpoint commit. Keep using the validation gates above. This is a release-environment/tooling boundary, not a request to restart the design or increase model effort.

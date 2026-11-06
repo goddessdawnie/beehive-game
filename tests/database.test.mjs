@@ -205,3 +205,55 @@ test('activation uses imported rating defaults when no explicit suggestion exist
  const t=(await command('possibility.activate',{activity_id:a.id})).result;
  assert.equal(t.difficulty,'large');assert.equal(t.reward_coins,9);assert.equal(t.due_at,null);
 });
+
+test('browser cancellation respects the same delivery boundary and owner checks',async()=>{
+ await db.exec("update beehive_timers set status='failed' where status in ('pending','sending')");
+ const t=(await command('timer.create',{seconds:300})).result;
+ const cancelAs=async(user)=>{
+  await q("select set_config('request.jwt.claim.sub',$1,false)",[user]);await db.exec('set role authenticated');
+  try{return (await q('select public.beehive_cancel_timer($1) cancelled',[t.id]))[0].cancelled;}
+  finally{await db.exec('reset role');await q("select set_config('request.jwt.claim.sub','',false)");}
+ };
+ assert.equal(await cancelAs(other),false);
+ await q("update beehive_timers set status='sending',attempts=1 where id=$1",[t.id]);
+ assert.equal(await cancelAs(owner),false);
+ assert.equal((await current('timers',t.id)).status,'sending');
+ await q("update beehive_timers set status='pending' where id=$1",[t.id]);
+ assert.equal(await cancelAs(owner),false);
+ await q('update beehive_timers set attempts=0 where id=$1',[t.id]);
+ assert.equal(await cancelAs(owner),true);
+});
+
+test('private receipts and game preferences do not leak through authenticated access',async()=>{
+ await command('game.set',{game_key:'wordle',enabled:false},randomUUID(),other);
+ await q("select set_config('request.jwt.claim.sub',$1,false)",[owner]);await db.exec('set role authenticated');
+ try{
+  await assert.rejects(q('select * from bee.requests'),/permission denied/);
+  assert.equal((await q('select * from beehive_games where owner_id=$1',[other])).length,0);
+  await assert.rejects(q('update beehive_games set enabled=false'),/permission denied/);
+ }finally{await db.exec('reset role');await q("select set_config('request.jwt.claim.sub','',false)");}
+});
+
+test('public RPC rollback restores captured definitions without removing history or receipts',async()=>{
+ const names=['set_task_status','complete_task_with_notes','beehive_claim_due_timers','beehive_claim_due_bells','beehive_cancel_timer'];
+ const before=(await q('select count(*)::integer n from bee.requests'))[0].n;
+ await db.exec('begin');
+ try{
+  for(const name of names){
+   const original=fixture.functions.find(f=>f.proname===name).definition;
+   await db.exec(original+';');
+   const [row]=await q("select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname=$1",[name]);
+   assert.equal(row.definition,original);
+  }
+  assert.equal((await q('select count(*)::integer n from bee.requests'))[0].n,before);
+ }finally{await db.exec('rollback');}
+});
+
+test('request recovery can inspect a receipt without replaying or leaking another owner',async()=>{
+ const request=randomUUID(),t=(await command('task.create',{title:'Receipt lookup'},request)).result;
+ const receipt=(await q("select bee.read($1,'request','',$2) r",[owner,request]))[0].r;
+ assert.equal(receipt.result.id,t.id);assert.equal(receipt.operation,'task.create');
+ assert.equal((await q("select bee.read($1,'request','',$2) r",[other,request]))[0].r,null);
+ assert.equal((await q("select bee.read($1,'request','',$2) r",[owner,randomUUID()]))[0].r,null);
+ assert.equal((await q('select count(*)::integer n from tasks where id=$1',[t.id]))[0].n,1);
+});

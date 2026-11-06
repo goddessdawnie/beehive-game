@@ -33,7 +33,8 @@ one command, and one verification read. Reuse IDs and results already in context
    Resolve ambiguous records by title/status/context; never choose an arbitrary match.
 2. Assign a fresh UUID request ID to each intended write. Retry an uncertain call with
    **the exact same ID, operation and payload**. Never invent a new ID merely because
-   a call timed out. A replay returns the original outcome; re-read current state.
+   a call timed out. `bee.read` with kind `request` can inspect an existing receipt
+   without mutation. A replay returns the original outcome; re-read current state.
 3. Supply the record's exact `updated_at` as `expected_updated_at` for edits/transitions.
    On a conflict, re-read and reassess before creating a new request ID.
 4. Verify consequential writes by ID. Creation defaults to `task_origin='bee'`.

@@ -15,7 +15,8 @@ never interpolate raw user text as SQL or use unvalidated dollar delimiters.
 
 `bee.read(owner, kind, query='', id=null, limit=25, offset=0)` returns JSON.
 Kinds: `tasks`, `possibilities`, `timers`, `reminders`, `games`, `ledger`, `activity`,
-`pet`, `health`. Query is literal case-insensitive substring search for tasks and
+`pet`, `health`, `request`. The `request` kind requires id=request UUID and returns
+a historical receipt or null, without executing a mutation. Query is literal case-insensitive substring search for tasks and
 possibilities. Results include all statuses; inspect them, and paginate if necessary.
 Maximum page size is 100. Tasks/timers/reminders sort newest first; possibilities
 sort by title. An ID read returns zero or one record.
@@ -23,7 +24,10 @@ sort by title. An ID read returns zero or one record.
 `bee.command(owner, request_uuid, operation, payload)` returns
 `{"replayed":false,"result":{...}}`. Replayed results are historical receipts, not
 current state. Failures roll back both changes and receipt. UUIDs identify intended
-operations, not user conversations. Preserve them across uncertain retries.
+operations, not user conversations. Preserve them across uncertain retries. To inspect a timed-out request without
+retrying it, use `bee.read(owner,'request','',request_uuid)`, then verify the
+current entity by its returned ID. A null receipt does not rule out an in-flight
+transaction; an exact command replay remains the safe recovery path.
 
 For edits, status transitions, completions, cancellations and deletions of existing
 records, payload requires `id` and `expected_updated_at` copied from the latest read.

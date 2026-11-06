@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bee",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Private Beehive task, possibility, timer and bell operations for Dawn's Bees.",
   "author": {
     "name": "Dawn"
