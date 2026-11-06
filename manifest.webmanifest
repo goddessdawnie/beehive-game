@@ -1,0 +1,25 @@
+{
+  "name": "Beehive",
+  "short_name": "Beehive",
+  "description": "Private tasks, possibilities, games, and Kae's little kingdom.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff8eb",
+  "theme_color": "#fff8eb",
+  "icons": [
+    {
+      "src": "./icons/beehive-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/beehive-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
