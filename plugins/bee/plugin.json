@@ -1,0 +1,28 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "bee",
+  "version": "0.1.0",
+  "description": "Private Beehive task, possibility, timer and bell operations for Dawn's Bees.",
+  "author": {
+    "name": "Dawn"
+  },
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Bee",
+        "shortDescription": "Manage your Beehive",
+        "longDescription": "Operate the existing Beehive task, possibility, timer, reminder, notification, and pet activity data via connected Supabase without creating a duplicate store.",
+        "developerName": "Dawn",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive"
+        ],
+        "defaultPrompt": [
+          "Find my Beehive tasks.",
+          "Set a Beehive timer.",
+          "Add a task possibility."
+        ]
+      }
+    }
+  }
+}
