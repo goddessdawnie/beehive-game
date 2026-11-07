@@ -23,8 +23,10 @@ Task and gift actions improve Kae's comfort; normal time passage reduces it. Com
 
 Use Supabase RPCs for transitions with reward, inventory or recurrence side effects. Do not update task status directly without preserving the same effects. Keep Kae's character card authoritative and his supporting prompts small. Preserve the difference between deployed features and future game ideas; Installed game keys in the current code are Wordle, Sudoku, 2048 and Wumpus, plus Three Things.
 
-The app currently has no automated integration tests; database probes, saved-state checks and signed-in browser regression tests are complementary, not interchangeable.
+The repository includes automated database/regression tests, native PostgreSQL overlap and authenticated HTTP checks, and mocked mobile/desktop browser smoke tests. Real signed-in Android acceptance remains complementary to CI.
 
 ## Bee plugin development
 
-Private plugin source: `plugins/bee/`. Backend migration and tests are staged on the development branch; see [validation and release gates](docs/bee-plugin/VALIDATION.md). Run `npm ci --ignore-scripts && npm test`; browser smoke checks use `npm run test:browser` with Playwright Chromium installed. Nothing in the draft PR has been deployed.
+The private **Bee** plugin source is in `plugins/bee/`. Its backend functions `bee.read` and `bee.command` and corresponding website compatibility changes were deployed, tested and merged in [PR #1](https://github.com/goddessdawnie/beehive-game/pull/1). The private plugin is installed in the user's account; do not create another plugin for routine updates. See [Bee validation and compatibility notes](docs/bee-plugin/VALIDATION.md) and the Notion roadmap for current status. Future changes must start from current `main` and preserve shared task transition/rewards, recurrence, timers and game registry behavior.
+
+Run `npm ci --ignore-scripts && npm test` for standard regressions, `npm run test:browser` with Playwright Chromium for mocked phone/desktop checks, and `npm run test:postgres` only using its documented isolated test environment. These checks are also run in GitHub Actions on pull requests.
