@@ -25,7 +25,12 @@ await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').
 await page.evaluate(()=>{window.chatRequests=[];const oldFetch=window.fetch;window.fetch=async(url,opts)=>{if(String(url).includes('/functions/v1/kae-chat')){const request=JSON.parse(opts.body);window.chatRequests.push(request);window.chatRows.push({role:'user',content:request.message,created_at:'2026-11-07T08:02:00Z'});return {ok:true,json:async()=>({})}}return oldFetch(url,opts)}});
 const composer=page.locator('#chattext');
 assert.equal(await composer.evaluate(el=>el.tagName),'TEXTAREA');
-assert.equal(await composer.getAttribute('maxlength'),'1000');
+assert.equal(await composer.getAttribute('maxlength'),'4000');
+await composer.fill('x'.repeat(4000));
+assert.equal((await composer.inputValue()).length,4000,'Composer accepts 4000 characters');
+await composer.evaluate(el=>el.setRangeText('y',4000,4000,'end'));
+assert.equal((await composer.inputValue()).length,4000,'Typing cannot exceed 4000 characters');
+await composer.fill('');
 await composer.fill('First paragraph');
 const initialHeight=await composer.evaluate(el=>el.offsetHeight);
 await composer.press('Enter');
