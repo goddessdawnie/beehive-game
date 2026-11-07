@@ -6,22 +6,24 @@
  <radialGradient id="shine"><stop stop-color="#e5b6e3" stop-opacity=".5"/><stop offset="1" stop-color="#e5b6e3" stop-opacity="0"/></radialGradient>
  <filter id="shadow" x="-30%" y="-70%" width="160%" height="240%"><feGaussianBlur stdDeviation="8"/></filter>
 </defs>
-<ellipse cx="320" cy="189" rx="268" ry="22" fill="#1a1326" opacity=".4" filter="url(#shadow)"/>
+<ellipse cx="320" cy="199" rx="268" ry="18" fill="#1a1326" opacity=".4" filter="url(#shadow)"/>
 <!-- Tassels rest to either side, behind the cushion's body. -->
 <g stroke="#9c6d2e" stroke-width="3" stroke-linecap="round">
  <path d="M69 139Q41 156 30 182" fill="none"/><path d="M30 176L16 199M30 176L30 205M30 176L45 199" fill="none" stroke="#dfb85c" stroke-width="6"/>
  <path d="M571 139Q598 156 611 182" fill="none"/><path d="M610 176L594 198M610 176L612 205M610 176L627 197" fill="none" stroke="#dfb85c" stroke-width="6"/>
 </g>
-<path d="M49 109Q72 73 169 66Q320 37 470 66Q568 71 591 109L587 148Q562 190 438 192Q318 204 198 192Q77 187 53 148Z" fill="url(#silkFront)" stroke="#3c254a" stroke-width="5"/>
-<path d="M56 132Q103 174 197 180Q322 198 445 180Q552 172 584 132" fill="none" stroke="url(#cord)" stroke-width="10" stroke-linecap="round"/>
-<path d="M56 138Q110 174 201 182Q326 198 442 181Q543 174 583 138" fill="none" stroke="#ffe7a1" stroke-opacity=".55" stroke-width="2.5"/>
+<path d="M49 106Q72 68 169 61Q320 32 470 61Q568 67 591 106L587 163Q562 205 438 207Q318 215 198 207Q77 202 53 163Z" fill="url(#silkFront)" stroke="#3c254a" stroke-width="5"/>
+<path d="M56 142Q103 170 197 174Q322 188 445 174Q552 168 584 142" fill="none" stroke="url(#cord)" stroke-width="10" stroke-linecap="round"/>
+<path d="M56 148Q110 172 201 177Q326 190 442 177Q543 172 583 148" fill="none" stroke="#ffe7a1" stroke-opacity=".55" stroke-width="2.5"/>
 <!-- Top silk surface swells softly above the front seam. -->
-<path d="M49 111Q63 71 174 58Q323 29 466 58Q574 69 591 111Q568 157 455 169Q320 188 186 169Q73 157 49 111Z" fill="url(#silkTop)" stroke="url(#cord)" stroke-width="8"/>
+<path d="M49 110Q63 70 174 57Q323 28 466 57Q574 68 591 110Q568 139 455 149Q320 164 186 149Q73 139 49 110Z" fill="url(#silkTop)" stroke="url(#cord)" stroke-width="8"/>
 <ellipse cx="274" cy="87" rx="188" ry="48" fill="url(#shine)"/>
 <path d="M93 110Q160 75 245 86M394 84Q485 75 548 114" stroke="#f0c9ed" stroke-opacity=".35" stroke-width="4" stroke-linecap="round" fill="none"/>
+<!-- Soft vertical folds catch the light along the thick silk front. -->
+<path d="M133 171Q126 185 137 199M505 171Q512 188 501 199M225 178Q219 191 225 206M416 178Q421 195 414 205" fill="none" stroke="#b889c0" stroke-width="5" opacity=".42" stroke-linecap="round"/>
 <!-- Restrained gold embroidery around the exposed perimeter. -->
-<path d="M139 142q22 13 39 1q12-10 21 1q9 11 20 3M421 147q12-12 24-3q12 10 30-2" fill="none" stroke="#e7bd6f" stroke-width="3" stroke-linecap="round"/>
-<path d="M282 162q19-16 38-6q18-10 38 6q-16 13-38 7q-22 6-38-7Z" fill="none" stroke="#f2d18c" stroke-opacity=".85" stroke-width="2"/>
-<circle cx="320" cy="162" r="4" fill="#e8bf76"/>
-<path d="M71 144q-10 19 1 32M565 145q10 18-2 30" fill="none" stroke="#a87437" stroke-width="5"/>
+<path d="M139 182q22 10 39 1q12-10 21 1q9 11 20 3M421 187q12-12 24-3q12 10 30-2" fill="none" stroke="#e7bd6f" stroke-width="3" stroke-linecap="round"/>
+<path d="M282 192q19-16 38-6q18-10 38 6q-16 13-38 7q-22 6-38-7Z" fill="none" stroke="#f2d18c" stroke-opacity=".85" stroke-width="2"/>
+<circle cx="320" cy="192" r="4" fill="#e8bf76"/>
+<path d="M71 158q-10 19 1 32M565 159q10 18-2 30" fill="none" stroke="#a87437" stroke-width="5"/>
 </svg>
