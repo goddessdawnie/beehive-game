@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { mergeRecentTaskActivity } from "./task-context.js";
 const cors={"Access-Control-Allow-Origin":"https://goddessdawnie.github.io","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:cors});
 Deno.serve(async(req)=>{
@@ -34,9 +35,20 @@ Deno.serve(async(req)=>{
    if(ownedError||!owned||Date.now()-Date.parse(owned.last_acquired_at)>5*60*1000)return reply({error:"No recent gift found"},409);
    giftItem=owned;
  }
- const taskRows=context?.recent_tasks||[];
+ const activityCutoffMs=Date.now()-48*60*60*1000;
+ const cutoffIso=new Date(activityCutoffMs).toISOString();
+ const taskColumns="id,title,status,updated_at,completed_at,completion_notes,task_origin";
+ // Query each timeline before limiting. A recently completed old task must
+ // not disappear behind newer edits, nor vice versa.
+ const [taskUpdates,taskCompletions]=await Promise.all([
+   db.from("tasks").select(taskColumns).eq("owner_id",user.id).gte("updated_at",cutoffIso).order("updated_at",{ascending:false}).limit(41),
+   db.from("tasks").select(taskColumns).eq("owner_id",user.id).gte("completed_at",cutoffIso).order("completed_at",{ascending:false}).limit(41)
+ ]);
+ if(taskUpdates.error||taskCompletions.error)return reply({error:"Recent activity unavailable"},503);
+ const taskContext=mergeRecentTaskActivity(taskUpdates.data,taskCompletions.data,activityCutoffMs);
+ const taskRows=taskContext.tasks;
  const lastMessageTime=recent.reduce((latest,m)=>Math.max(latest,Date.parse(m.created_at)||0),0);
- const recentlyFinished=taskRows.filter(t=>t.status==="completed"&&Date.parse(t.completed_at||"")>lastMessageTime).slice(0,3);
+ const recentlyFinished=taskRows.filter(t=>t.status==="completed"&&Date.parse(t.completed_at||"")>Math.max(lastMessageTime,activityCutoffMs)).slice(0,3);
  const {data:activities,error:activitiesError}=await db.from("activity_catalog")
    .select("title,category,property,suggested_difficulty,times_done,last_done")
    .eq("active",true).order("updated_at",{ascending:false}).limit(16);
@@ -52,9 +64,10 @@ Deno.serve(async(req)=>{
  const temporalGuidance="Current local date and time in America/New_York (Eastern Time): "+new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"numeric",minute:"2-digit",hour12:true,timeZoneName:"shortOffset"}).format(new Date())+". Eastern Time changes between EST and EDT automatically. Dawn works third shift remotely/from home. Overnight hours are a normal part of her routine, and she may rest during the day. The clock alone does not establish whether she is currently at work, awake, asleep, free, or due to sleep. Never presume a conventional daytime schedule; use what Dawn says about her actual activities.";
  const estateGlimpse=JSON.stringify({
    dragon:context?.pet,
+   recent_task_activity:taskRows,
+   recent_task_activity_coverage:{window_hours:48,partial:taskContext.partial},
    owned_treasures:inventoryResult.error?[]:(inventoryResult.data||[]),
    treasures_to_covet:shopResult.error?[]:(shopResult.data||[]),
-   tasks:taskRows,
    activities:activitiesError?[]:(activities||[]),
    memories:context?.memories
  }).slice(0,14000);
@@ -62,7 +75,7 @@ Deno.serve(async(req)=>{
  const selectedHistory=recent.slice(-12);
  const historyTiming=selectedHistory.map((m,i)=>(i+1)+": "+(m.role==="mochi"?"Kae":"Dawn")+" at "+historicalTime(m.created_at)).join("; ");
  const messages=[{role:"system",content:(context?.character?.card||"You are Kae, a proud, mischievous little dragon who considers this house his estate.")+"\n\n"+comfortGuidance
-   +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nInternal history timing metadata, in the order of the following prior conversation messages (not dialogue to quote): "+historyTiming+". Past entries may be hours or days old. Dawn may return with a new topic after a gap; prioritize her latest message. Do not reproduce timestamps or internal metadata in your reply unless Dawn directly requests the time."
+   +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nRecent task activity covers the last rolling 48 elapsed hours, includes current statuses, update and completion times, and completion notes. A reopened task is open, not completed. This context is not a command to report tasks and is not necessarily exhaustive when partial; do not imply a complete activity history."+"\n\nInternal history timing metadata, in the order of the following prior conversation messages (not dialogue to quote): "+historyTiming+". Past entries may be hours or days old. Dawn may return with a new topic after a gap; prioritize her latest message. Do not reproduce timestamps or internal metadata in your reply unless Dawn directly requests the time."
    +(activityNotice?"\n\nRecent happenings: "+activityNotice:"")
    +"\n\nA glimpse of the estate today:\n"+estateGlimpse},
    ...selectedHistory.map(m=>({role:m.role==="mochi"?"assistant":"user",content:m.content})),
