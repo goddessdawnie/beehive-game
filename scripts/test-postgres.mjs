@@ -65,9 +65,13 @@ try{
  assert.equal((await a.query("select public.claim_daily_game('wumpus') claimed")).rows[0].claimed,true);
  assert.equal((await a.query("select public.claim_daily_game('wumpus') claimed")).rows[0].claimed,false);
  assert.equal((await a.query("select public.claim_daily_game('future_game') claimed")).rows[0].claimed,true);
+ // The fixture lacks production's authenticated claims read policy;
+ // inspect side effects as the disposable cluster's postgres verifier.
+ await a.query('set local role postgres');
  assert.equal((await a.query("select count(*)::int n from public.daily_game_claims where owner_id=$1 and game_key='wumpus'",[owner])).rows[0].n,1);
  assert.equal((await a.query("select count(*)::int n from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[owner])).rows[0].n,2);
  assert.equal((await a.query("select sum(coins_delta)::int total from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[owner])).rows[0].total,4);
+ await a.query('set local role authenticated');
  await a.query('savepoint unknown_game');
  await assert.rejects(a.query("select public.claim_daily_game('not_registered')"),/Unknown game/);
  await a.query('rollback to savepoint unknown_game');
