@@ -50,6 +50,31 @@ try{
  const [a,b,observer]=clients;
  await initializeFixture({exec:s=>a.query(s),query:(s,p)=>a.query(s,p)},owner,other,{createRoles:false});
 
+ // Daily claims: server-controlled catalog, existing Wumpus key, once/day,
+ // fixed two-coin ledger award, and future catalog-only registration.
+ // The recorded fixture omits the claims PK; restore that invariant in
+ // this disposable test database before exercising ON CONFLICT.
+ await a.query('alter table public.daily_game_claims add primary key (owner_id,game_key,play_date)');
+ assert.equal((await a.query("select count(*)::int n from public.daily_reward_games where game_key in ('wordle','sudoku','2048','wumpus')")).rows[0].n,4);
+ assert.equal((await a.query("select has_table_privilege('authenticated','public.daily_reward_games','INSERT') allowed")).rows[0].allowed,false);
+ assert.equal((await a.query("select has_table_privilege('authenticated','public.daily_reward_games','UPDATE') allowed")).rows[0].allowed,false);
+ await a.query("insert into public.daily_reward_games(game_key) values('future_game')");
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
+ await a.query('set local role authenticated');
+ assert.equal((await a.query("select public.claim_daily_game('wumpus') claimed")).rows[0].claimed,true);
+ assert.equal((await a.query("select public.claim_daily_game('wumpus') claimed")).rows[0].claimed,false);
+ assert.equal((await a.query("select public.claim_daily_game('future_game') claimed")).rows[0].claimed,true);
+ assert.equal((await a.query("select count(*)::int n from public.daily_game_claims where owner_id=$1 and game_key='wumpus'",[owner])).rows[0].n,1);
+ assert.equal((await a.query("select count(*)::int n from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[owner])).rows[0].n,2);
+ assert.equal((await a.query("select sum(coins_delta)::int total from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[owner])).rows[0].total,4);
+ await a.query('savepoint unknown_game');
+ await assert.rejects(a.query("select public.claim_daily_game('not_registered')"),/Unknown game/);
+ await a.query('rollback to savepoint unknown_game');
+ await a.query('rollback');
+ console.log('PASS Wumpus claim, duplicate protection, catalog extension and ledger rewards');
+
+
  // Exact retries must wait for the first transaction and return its original ID.
  const request=randomUUID(),payload={title:'Concurrent retry',difficulty:'tiny'};
  await a.query('begin');
