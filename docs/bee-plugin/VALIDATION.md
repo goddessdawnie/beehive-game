@@ -1,5 +1,25 @@
 # Bee v0.2.1 implementation and validation
 
+## Backend deployed checkpoint — 2026-11-07
+
+The reviewed `bee_operations` migration is now applied to the existing Supabase project. Both `bee.command` and `bee.read` availability checks return true. The first connector confirmation expired without applying it; absence was checked before the second attempt succeeded. No duplicate migration attempt was made after success.
+
+Before deployment:
+- Compared 86 captured columns, 36 constraints and three triggers against live metadata: exact matches. Eleven captured policies match; an additional daily-game-claims read policy is outside the changed operations. Required unique indexes match the fixture assumptions. Six public function definitions matched earlier in this session.
+- Captured actual table grants and the real `auth.uid()` definition in `tests/fixtures/live-access.json`, replacing the fixture's broader grants.
+- [CI run 42328127740](https://github.com/goddessdawnie/beehive-game/actions/runs/42328127740) passed: 20 regressions, five native overlap checks, authenticated HTTP operations through PostgREST 12.2.3, and phone/desktop mocked browser checks. Source commit `33128baa7bb3399a663f276291cb330d63686939`.
+- HTTP checks cover task completion/undo, rewards, timer start/cancel, game preference reads, wrong-owner/anonymous denial, worker RPC denial and private-schema exclusion. Tokens and accounts are synthetic and confined to the disposable local test database; no production token fabrication. This is not a test of hosted Supabase sign-in or phone delivery.
+
+After deployment:
+- Live private-command privilege checks deny authenticated browser execution; anonymous worker claiming is denied.
+- Health read succeeds: one notification device, no overdue timers/reminders at verification time. It does not establish phone receipt.
+- A real connector transaction exercised create, exact retry, completion/retry with exactly one two-coin reward, reopen with reward removal, cancel and constrained delete. The entire test transaction was rolled back; verified no test task remained, and no test reward/comfort/receipt changes committed.
+- Security advisor baseline unchanged except informational RLS-without-policy for private `bee.requests`, intentional deny-by-default with administrative access only. Existing authenticated SECURITY DEFINER warnings are intentional owner-checked timer endpoints plus unchanged game/shop functions; existing leaked-password protection warning is unrelated. References: [private RLS advisory](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [function advisory](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [password advisory](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
+**Next user/Chat handoff:** use installed Bee to create one zero-reward Android test task; Dawn completes it in the existing website, then Chat verifies and cleans up only that task. This checks actual hosted sign-in/browser RPC and Android plugin operation. Then verify one real notification with Dawn's receipt confirmation. Regular Bee routing is unchanged.
+
+**Website remains undeployed:** PR is still draft/unmerged. New game visibility controls will not affect the current website until the tested browser change is merged/deployed. Timer cancellation backend protection is active now. Do not describe the entire project as undeployed; backend and website now have separate release states. Earlier checkpoints below are historical.
+
 ## CI acceptance checkpoint — 2026-11-07
 
 [GitHub verification run](https://github.com/goddessdawnie/beehive-game/actions/runs/42327424267), source commit `771bbe85bab224f8bad92b90c525dd906ea8493f`:
@@ -24,7 +44,7 @@
 Earlier checkpoint statements below describe their original date; installation blockers are superseded by this section.
 
 
-## Implemented on feature/bee-plugin-design (not deployed)
+## Implemented on feature/bee-plugin-design (backend deployed; website pending)
 
 - Private `bee.command` and bounded `bee.read`, using the existing Supabase management connector. Live connection verified as `postgres`; no JWT/session impersonation. Full connector access is unchanged.
 - Request receipts committed atomically with each operation. Exact retry returns the original result; reusing a request ID with changed input fails. Per-owner transaction lock serializes new requests. Record locks plus expected timestamps guard edits against stale reads.
