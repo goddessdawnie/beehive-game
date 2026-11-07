@@ -28,7 +28,7 @@ assert.equal(await composer.evaluate(el=>el.tagName),'TEXTAREA');
 assert.equal(await composer.getAttribute('maxlength'),'4000');
 await composer.fill('x'.repeat(4000));
 assert.equal((await composer.inputValue()).length,4000,'Composer accepts 4000 characters');
-await composer.evaluate(el=>el.setRangeText('y',4000,4000,'end'));
+await composer.press('End');await composer.type('y');
 assert.equal((await composer.inputValue()).length,4000,'Typing cannot exceed 4000 characters');
 await composer.fill('');
 await composer.fill('First paragraph');
