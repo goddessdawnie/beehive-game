@@ -1,4 +1,15 @@
-# Bee v0.2.1 implementation and validation — 2026-11-06
+# Bee v0.2.1 implementation and validation
+
+## Current checkpoint — 2026-11-07
+
+- GPT-6 installed the existing package privately using direct Plugin Creator upload. Plugin ID `plugins_6aee2379756881918d3fd643ea4fb5dc`, release `pluginrel_6aee2379f9088191a8a71c7a5c41fa7e`. No Sites adapter is needed. Dawn verified Android discovery, loaded instructions and Supabase tool availability in a separate chat. This Work session also loaded the installed skill and successfully ran its read-only Supabase preflight.
+- Both backend availability flags remain false. No production migration, deployment or merge. Six captured public function definitions still match production byte-for-byte by MD5 (comparison only, not a security hash). This checks those functions, not all schema/policy drift.
+- Refactored the synthetic database setup into a shared fixture; all 20 existing tests pass afterward. Added five native concurrency checks, with explicit lock-wait observation, in `scripts/test-postgres.mjs`. Syntax and refusal without opt-in were checked; native execution is **not yet verified**.
+- Only the live Supabase project is available; this executor still has no usable native PostgreSQL runtime. No paid branch or service was created.
+- A one-time read-only scheduled compatibility check was created from this Work conversation. Its result is pending; regular Bee schedules are unchanged. Success would verify only this scheduling environment, not the separate Chat Bee configuration.
+
+Earlier checkpoint statements below describe their original date; installation blockers are superseded by this section.
+
 
 ## Implemented on feature/bee-plugin-design (not deployed)
 
@@ -30,8 +41,8 @@ Plugin JSON, YAML, included reference paths and archive contents were checked. A
 
 1. A real multi-connection Postgres integration run: PGlite runs one connection. The transaction and row-lock logic has sequential coverage, not a genuine concurrent browser/worker/Bee stress test.
 2. Full Supabase staging integration: migration with the current production schema, RLS/privileges, browser sign-in and actual worker. No paid Supabase branch was created. No schema or live user data was changed.
-3. Private-plugin installation: `create_plugin`/update-upload tools are not exposed in this session. Source/package validation is not account installation; no claim that `@bee` is selectable yet.
-4. Android ChatGPT, web ChatGPT and scheduled Bee execution with the installed plugin and connected Supabase. Existing scheduled prompts were not changed.
+3. Private-plugin installation is resolved; reuse the installed plugin ID above. Do not create another plugin.
+4. Android discovery/instructions/tool availability are verified by Dawn. Actual backend workflows remain blocked on deployment. Separate Chat/Work scheduled compatibility and web Chat acceptance still need evidence; a read-only Work-origin test is pending. Existing scheduled prompts were not changed.
 5. Real notification delivery/phone receipt. No live test bell was sent. Queue acceptance and push acceptance cannot prove receipt.
 6. OAuth MCP adapter: deferred as the saved architecture specifies, until its cross-surface value is established. No unauthenticated write endpoint was published.
 
@@ -40,7 +51,7 @@ Plugin JSON, YAML, included reference paths and archive contents were checked. A
 1. Re-read live function/schema metadata and compare against the fixtures; account for any drift. Keep main unchanged until the release gate passes.
 2. Run this migration in a disposable PostgreSQL/Supabase test environment, with no production cron/network credentials. Test simultaneous retry IDs, simultaneous task completion through both wrappers, and worker claiming against cancellation. Do not buy branching capacity without Dawn's approval.
 3. Run browser regression with authenticated test users and RLS, plus security advisors. Test the real worker against a test subscription; verify actual receipt separately.
-4. Install the private plugin from `plugins/bee/` when the account-upload tool is available. Verify the skill and Supabase dependency appear. Test read-only use on Android/web, then one reversible task workflow and a scheduled Bee run. Do not replace existing routing until all pass.
+4. Reuse the installed private plugin. Complete web and scheduled compatibility checks, then one reversible task workflow after the backend is safely deployed. Do not replace existing routing until all pass.
 5. Apply the reviewed migration transactionally, verify functions/ACLs and owner reads, then merge/deploy the browser change. Keep the PR draft until release blockers are resolved. The registry code retains old games if the new table is absent; that fallback is not a substitute for the migration.
 6. If reverting, restore the original five public task/worker/timer-cancel function definitions from the captured fixture and revert the website commit. Keep request receipts and game settings for diagnosis; do not drop them casually or delete reward/history tables. Test rollback before production rollout.
 
@@ -64,3 +75,26 @@ After the usage interruption, verified saved GitHub commit `95d8259` against the
 - Account-plugin creation/upload tooling is still unavailable after rediscovery. The package remains ready for installation in a tool-enabled session, not installed.
 
 Resume from the latest head of the existing draft PR, not the older checkpoint commit. Keep using the validation gates above. This is a release-environment/tooling boundary, not a request to restart the design or increase model effort.
+
+## Native concurrency runner
+
+Run `npm ci --ignore-scripts` in the repository on a machine with a **disposable local PostgreSQL 17 cluster**. This does not require any paid Supabase resource. Do not point it at a production tunnel. A local Docker example (requires Docker already installed):
+
+```sh
+docker run --rm -d --name bee-postgres-test -e POSTGRES_PASSWORD=bee-local-test -p 127.0.0.1:55432:5432 postgres:17
+docker exec bee-postgres-test pg_isready -U postgres
+BEE_ALLOW_DISPOSABLE_CLUSTER=yes BEE_TEST_CLUSTER_URL=postgresql://postgres:bee-local-test@127.0.0.1:55432/postgres npm run test:postgres
+docker stop bee-postgres-test
+```
+
+Wait for `pg_isready` to report accepting connections before the test command. The Docker recipe has not been executed in this workspace. The password above is for the disposable local container only. No production credentials are needed.
+
+The runner creates a uniquely named empty database, loads the same captured contract and synthetic users as the PGlite suite, applies the development migration, opens three independent connections, and exercises:
+
+1. Exact retry while its original transaction remains uncommitted.
+2. Conflicting edits based on the same record version.
+3. Authenticated browser completion versus Bee completion, checking single reward and successor.
+4. Browser cancellation holding the row while the worker attempts to claim it.
+5. Worker claim holding the row while the browser attempts cancellation.
+
+Cleanup closes its sessions, drops only the database it created, and drops only missing test roles it created. Existing cluster roles are preserved. Use a disposable cluster nevertheless; a process kill can bypass cleanup. It rejects nonlocal hosts, URL query overrides, missing explicit opt-in and PostgreSQL majors other than 17. Native success is a concurrency gate, not full Supabase/PostgREST/auth/push acceptance.
