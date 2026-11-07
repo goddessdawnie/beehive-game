@@ -59,11 +59,13 @@ Deno.serve(async(req)=>{
    memories:context?.memories
  }).slice(0,14000);
  const historicalTime=(timestamp)=>new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"shortOffset"}).format(new Date(timestamp));
+ const selectedHistory=recent.slice(-12);
+ const historyTiming=selectedHistory.map((m,i)=>(i+1)+": "+(m.role==="mochi"?"Kae":"Dawn")+" at "+historicalTime(m.created_at)).join("; ");
  const messages=[{role:"system",content:(context?.character?.card||"You are Kae, a proud, mischievous little dragon who considers this house his estate.")+"\n\n"+comfortGuidance
-   +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nThe prior dialogue entries include their historical Eastern timestamps. Treat older conversation as past, not as announcements happening now. After a long gap Dawn may start a different subject; respond to her newest message rather than replaying old topics. The latest user message is current."
+   +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nInternal history timing metadata, in the order of the following prior conversation messages (not dialogue to quote): "+historyTiming+". Past entries may be hours or days old. Dawn may return with a new topic after a gap; prioritize her latest message. Do not reproduce timestamps or internal metadata in your reply unless Dawn directly requests the time."
    +(activityNotice?"\n\nRecent happenings: "+activityNotice:"")
    +"\n\nA glimpse of the estate today:\n"+estateGlimpse},
-   ...recent.slice(-12).map(m=>({role:m.role==="mochi"?"assistant":"user",content:"[Historical message recorded "+historicalTime(m.created_at)+" in America/New_York; timestamp is context, not dialogue.]\n"+m.content})),
+   ...selectedHistory.map(m=>({role:m.role==="mochi"?"assistant":"user",content:m.content})),
    {role:"user",content:mode==="chat"?message:mode==="gift"?"Dawn has just given you "+giftItem.item.name+" as a gift for your hoard. You now own "+giftItem.quantity+". React however you wish.":initiative}];
  const upstream=await fetch("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",messages,max_tokens:1600,temperature:0.9}),signal:AbortSignal.timeout(25000)}).catch(()=>null);
  if(!upstream)return reply({error:"Kae is unavailable right now"},502);
