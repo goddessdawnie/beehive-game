@@ -25,7 +25,7 @@ await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').
 assert.equal(await page.locator('#chatlog .chat-copy').count(),1,'Only Kae replies receive copy controls');
 await page.evaluate(()=>{window.lastCopiedText=null;Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.lastCopiedText=text}}});});
 await page.locator('#chatlog .chat-copy').click();
-assert.equal(await page.evaluate(()=>window.lastCopiedText),'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*','Copy preserves entire raw response');
+assert.equal(await page.evaluate(()=>window.lastCopiedText),'Dragon decree:\nNo more paperwork. 🐉 *I insist.*','Copy preserves entire raw response');
 assert.match(await page.locator('#chatlog .chat-copy').innerText(),/Copied/);
 assert.match(await page.locator('#chatlog .chat-line').last().innerText(),/No more paperwork/);
 await page.locator('#tab-tasks').click();
