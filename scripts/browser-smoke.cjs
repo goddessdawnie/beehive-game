@@ -7,7 +7,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(pro
 const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.registryError=false;window.timerRow=null;window.cancelDuringSend=false;
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
-{id:'recent',title:'Recently finished',status:'completed',created_at:'2026-09-01T10:00:00Z',completed_at:'2026-11-06T18:00:00Z',updated_at:'2026-11-06T18:00:00Z',reward_coins:5},
+{id:'recent',title:'Recently finished',status:'completed',created_at:'2026-09-01T10:00:00Z',completed_at:'2026-11-06T18:00:00Z',updated_at:'2026-11-06T18:00:00Z',due_at:'2026-12-25T12:00:00Z',reward_coins:5},
 {id:'legacy',title:'Legacy completion',status:'completed',created_at:'2026-10-30T10:00:00Z',completed_at:null,updated_at:'2026-11-07T21:00:00Z',reward_coins:5},
 {id:'cancelled',title:'Cancelled item',status:'cancelled',created_at:'2026-11-04T10:00:00Z',updated_at:'2026-11-07T22:00:00Z',reward_coins:5},
 {id:'deferred',title:'Deferred item',status:'deferred',created_at:'2026-11-03T10:00:00Z',updated_at:'2026-11-07T23:00:00Z',reward_coins:5},
@@ -23,6 +23,14 @@ await page.locator('[data-filter="completed"]').click();
 await page.waitForFunction(()=>document.querySelectorAll('#tasks .task').length===5);
 const completedTitles=()=>page.locator('#tasks .task strong').allTextContents();
 assert.deepEqual(await completedTitles(),['Recently finished','Earlier finished, edited later','Cancelled item','Deferred item','Legacy completion']);
+const renderedDetails=await page.locator('#tasks .task small').allTextContents();
+const expectedCompletedDate=await page.evaluate(()=>new Date('2026-11-06T18:00:00Z').toLocaleString());
+const hiddenScheduledDate=await page.evaluate(()=>new Date('2026-12-25T12:00:00Z').toLocaleString());
+assert.ok(renderedDetails[0].includes(expectedCompletedDate),'Completed view must show actual completion time');
+assert.ok(!renderedDetails[0].includes(hiddenScheduledDate),'Completed view must hide scheduled due date');
+assert.ok(renderedDetails[4].includes('Completion time unavailable'),'Legacy completion must not fabricate a date');
+assert.ok(!renderedDetails[2].includes('Someday')&&!renderedDetails[3].includes('Someday'),'Other closed statuses must not show scheduled placeholders');
+
 await page.locator('#tasks .task').first().getByRole('button',{name:'Undo'}).click();
 await page.waitForFunction(()=>document.querySelectorAll('#tasks .task').length===4);
 assert.deepEqual(await completedTitles(),['Earlier finished, edited later','Cancelled item','Deferred item','Legacy completion']);
