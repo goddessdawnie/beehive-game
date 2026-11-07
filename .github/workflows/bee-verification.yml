@@ -1,0 +1,44 @@
+name: Bee verification
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'js/**'
+      - 'index.html'
+      - 'package*.json'
+      - '.github/workflows/bee-verification.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: bee-disposable-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run test:postgres
+        env:
+          BEE_ALLOW_DISPOSABLE_CLUSTER: 'yes'
+          BEE_TEST_CLUSTER_URL: postgresql://postgres:bee-disposable-test@127.0.0.1:5432/postgres
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
