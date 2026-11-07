@@ -15,13 +15,35 @@ window.taskRows=[
 {id:'open',title:'Open task',status:'open',created_at:'2026-11-07T10:00:00Z',updated_at:'2026-11-07T10:00:00Z',reward_coins:5}
 ];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.request().url().includes('supabase.min.js')?route.fulfill({contentType:'application/javascript',body:mock}):route.abort());
 await page.goto(origin);
 await page.locator('#tab-estate').click();
 await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===2);
+await page.evaluate(()=>{window.chatRequests=[];const oldFetch=window.fetch;window.fetch=async(url,opts)=>{if(String(url).includes('/functions/v1/kae-chat')){const request=JSON.parse(opts.body);window.chatRequests.push(request);window.chatRows.push({role:'user',content:request.message,created_at:'2026-11-07T08:02:00Z'});return {ok:true,json:async()=>({})}}return oldFetch(url,opts)}});
+const composer=page.locator('#chattext');
+assert.equal(await composer.evaluate(el=>el.tagName),'TEXTAREA');
+assert.equal(await composer.getAttribute('maxlength'),'1000');
+await composer.fill('First paragraph');
+const initialHeight=await composer.evaluate(el=>el.offsetHeight);
+await composer.press('Enter');
+await composer.type('Second paragraph');
+assert.equal(await composer.inputValue(),'First paragraph\\nSecond paragraph');
+assert.equal(await page.evaluate(()=>window.chatRequests.length),0,'Enter must not submit chat');
+const expandedHeight=await composer.evaluate(el=>el.offsetHeight);
+assert.ok(expandedHeight>=initialHeight,'Composer must not shrink while adding lines');
+await page.locator('#chat button[type="submit"]').click();
+await page.waitForFunction(()=>window.chatRequests.length===1);
+assert.equal(await page.evaluate(()=>window.chatRequests[0].message),'First paragraph\\nSecond paragraph','Send preserves newline content');
+await page.waitForFunction(()=>document.querySelector('#chattext').value==='');
+await composer.fill('Keyboard shortcut works');
+await composer.press('Control+Enter');
+await page.waitForFunction(()=>window.chatRequests.length===2);
+assert.equal(await page.evaluate(()=>window.chatRequests[1].message),'Keyboard shortcut works');
+assert.equal(await composer.inputValue(),'');
+
 assert.equal(await page.locator('#chatlog .chat-copy').count(),2,'Both speakers receive copy controls');
 assert.equal(await page.getByRole('button',{name:'Copy your message'}).count(),1);
 assert.equal(await page.getByRole('button',{name:'Copy Kae message'}).count(),1);
@@ -69,7 +91,7 @@ await page.waitForFunction(()=>document.querySelector('#timer-status').textConte
 assert.equal(await page.locator('#timer-cancel').isDisabled(),true);
 await page.waitForTimeout(1100);assert.match(await page.locator('#timer-status').textContent(),/Delivery has started/);
 assert.deepEqual(errors,[]);
-console.log('PASS mocked browser viewport '+viewport.width+'x'+viewport.height+': disable/enable, active panel, refresh error, timer cancellation race, completed ordering/undo/recompletion, Kae reply copy, no JS errors');await ctx.close();
+console.log('PASS mocked browser viewport '+viewport.width+'x'+viewport.height+': disable/enable, active panel, refresh error, timer cancellation race, completed ordering/undo/recompletion, Kae reply copy and multiline composer, no JS errors');await ctx.close();
 }
 await browser.close();server.close();
 })().catch(e=>{console.error(e);process.exit(1)});
