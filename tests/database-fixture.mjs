@@ -11,7 +11,7 @@ export async function initializeFixture(db,owner,other,{createRoles=true}={}){
  ${access.auth_uid};
  grant usage on schema auth to authenticated,anon,service_role;
  grant execute on function auth.uid() to authenticated,anon,service_role;
- create table public.pet_state(owner_id uuid primary key,comfort_value numeric,comfort_updated_at timestamptz,care_anchor_at timestamptz,care_points numeric,last_care_at timestamptz);
+ create table public.pet_state(owner_id uuid primary key,name text,comfort_value numeric,comfort_updated_at timestamptz,care_anchor_at timestamptz,care_points numeric,last_care_at timestamptz);
  create table public.character_profiles(owner_id uuid,character_name text,character_card text);
  create table public.mochi_messages(id uuid primary key default gen_random_uuid(),owner_id uuid,role text,content text,created_at timestamptz default now());
  create table public.mochi_memories(owner_id uuid,kind text,memory_text text,updated_at timestamptz);
