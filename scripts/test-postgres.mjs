@@ -50,6 +50,19 @@ try{
  const [a,b,observer]=clients;
  await initializeFixture({exec:s=>a.query(s),query:(s,p)=>a.query(s,p)},owner,other,{createRoles:false});
 
+ // A user message and Kae's reply share a transaction timestamp.
+ // Insert the reply first to prove the snapshot supplies human-before-dragon order.
+ await a.query('begin');
+ await a.query("insert into public.mochi_messages(owner_id,role,content,created_at) values ($1,'mochi','Old reply','2026-11-06 08:00:00+00'),($1,'user','Old question','2026-11-06 08:00:00+00'),($1,'mochi','New reply','2026-11-07 11:00:00+00'),($1,'user','New question','2026-11-07 11:00:00+00'),($2,'user','Other owner','2026-11-07 11:01:00+00')",[owner,other]);
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
+ const snapshot=(await a.query('select public.mochi_context_snapshot() value')).rows[0].value;
+ assert.deepEqual(snapshot.recent_messages.map(m=>[m.role,m.content]),[['user','Old question'],['mochi','Old reply'],['user','New question'],['mochi','New reply']]);
+ assert.equal(snapshot.recent_messages[0].created_at,snapshot.recent_messages[1].created_at);
+ assert.notEqual(snapshot.recent_messages[1].created_at,snapshot.recent_messages[2].created_at);
+ await a.query('rollback');
+ console.log('PASS ordered and time-stamped Kae history, including timestamp ties and owner separation');
+
+
  // Daily claims: server-controlled catalog, existing Wumpus key, once/day,
  // fixed two-coin ledger award, and future catalog-only registration.
  // The recorded fixture omits the claims PK; restore that invariant in
