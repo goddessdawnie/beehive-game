@@ -1,29 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-label="Ornate plum silk dragon cushion with gold piping and tassels">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-label="Plump ornate plum silk cushion with rounded upholstered sides and gold piping">
 <defs>
- <linearGradient id="silkTop" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#b383c4"/><stop offset=".24" stop-color="#824e9d"/><stop offset=".62" stop-color="#653c83"/><stop offset="1" stop-color="#3e285e"/></linearGradient>
- <linearGradient id="silkFront" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#754585"/><stop offset=".55" stop-color="#512d6a"/><stop offset="1" stop-color="#2f2046"/></linearGradient>
- <linearGradient id="cord" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fff1b5"/><stop offset=".42" stop-color="#d9af58"/><stop offset=".8" stop-color="#a47336"/><stop offset="1" stop-color="#f4d88a"/></linearGradient>
- <radialGradient id="shine"><stop stop-color="#e5b6e3" stop-opacity=".5"/><stop offset="1" stop-color="#e5b6e3" stop-opacity="0"/></radialGradient>
- <filter id="shadow" x="-30%" y="-70%" width="160%" height="240%"><feGaussianBlur stdDeviation="8"/></filter>
+  <linearGradient id="body" x1="0" y1="0" x2="0.15" y2="1">
+    <stop stop-color="#a978b6"/><stop offset=".37" stop-color="#854f9c"/>
+    <stop offset=".67" stop-color="#6c3c82"/><stop offset="1" stop-color="#39224d"/>
+  </linearGradient>
+  <linearGradient id="front" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#9c5da9"/><stop offset=".33" stop-color="#824993"/>
+    <stop offset=".73" stop-color="#623576"/><stop offset="1" stop-color="#4b2c61"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#fff0b3"/><stop offset=".4" stop-color="#dbb46a"/>
+    <stop offset="1" stop-color="#9b6c35"/>
+  </linearGradient>
+  <radialGradient id="softLight" cx=".4" cy=".05" r=".85">
+    <stop stop-color="#e3b0d9" stop-opacity=".36"/>
+    <stop offset="1" stop-color="#e3b0d9" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="blur"><feGaussianBlur stdDeviation="7"/></filter>
 </defs>
-<ellipse cx="320" cy="199" rx="268" ry="18" fill="#1a1326" opacity=".4" filter="url(#shadow)"/>
-<!-- Tassels rest to either side, behind the cushion's body. -->
-<g stroke="#9c6d2e" stroke-width="3" stroke-linecap="round">
- <path d="M69 139Q41 156 30 182" fill="none"/><path d="M30 176L16 199M30 176L30 205M30 176L45 199" fill="none" stroke="#dfb85c" stroke-width="6"/>
- <path d="M571 139Q598 156 611 182" fill="none"/><path d="M610 176L594 198M610 176L612 205M610 176L627 197" fill="none" stroke="#dfb85c" stroke-width="6"/>
+<!-- Shadow is part of the cushion asset, not a separate oval CSS base. -->
+<ellipse cx="320" cy="200" rx="254" ry="12" fill="#20142a" opacity=".28" filter="url(#blur)"/>
+<!-- A single continuous, rounded stuffed silhouette, not a small oval on a larger disc. -->
+<path d="M37 111 C44 71 126 45 213 38 C302 24 398 31 486 45
+ C566 57 604 77 607 117 C616 159 578 193 495 202
+ C398 219 244 219 145 204 C75 194 32 162 37 111Z"
+ fill="url(#body)" stroke="#4c2a60" stroke-width="4"/>
+<!-- The front is an inflated vertical silk face; curved ends continue into it. -->
+<path d="M40 125 C81 150 156 155 222 161 C333 177 444 163 507 154
+ C557 147 592 135 607 117 C611 160 578 190 495 200
+ C395 218 244 216 147 202 C80 192 42 161 40 125Z"
+ fill="url(#front)"/>
+<!-- Light falls on a cushion dome, without defining a separate central oval. -->
+<path d="M48 106 C72 72 150 53 232 45 C356 31 465 43 536 67
+ C572 78 595 92 599 113 C549 136 478 147 405 151
+ C291 163 166 149 83 130Z" fill="url(#softLight)"/>
+<!-- Continuous curved piping defines the join between upper dome and stuffed front. -->
+<path d="M42 124 C83 145 159 151 226 157 C335 171 443 160 506 150 C559 142 591 128 606 115"
+ fill="none" stroke="#8c5b35" stroke-width="9" stroke-linecap="round"/>
+<path d="M42 122 C83 143 159 149 226 155 C335 169 443 158 506 148 C559 140 591 126 606 113"
+ fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+<!-- Soft gathers and glints emphasize fabric tension and volume. -->
+<g fill="none" stroke-linecap="round">
+ <path d="M128 159 C118 174 124 186 138 197 M208 169 C202 187 208 199 222 208
+ M429 167 C435 185 431 199 416 207 M523 157 C535 174 531 185 512 196"
+ stroke="#d59dd4" stroke-opacity=".42" stroke-width="5"/>
+ <path d="M95 91 C149 69 200 66 252 68 M389 59 C451 61 505 76 544 93"
+ stroke="#efd2f1" stroke-opacity=".37" stroke-width="5"/>
+ <path d="M117 188 C158 207 201 212 247 213 M406 212 C460 213 509 199 544 182"
+ stroke="#b67ac1" stroke-opacity=".4" stroke-width="4"/>
 </g>
-<path d="M49 106Q72 68 169 61Q320 32 470 61Q568 67 591 106L587 163Q562 205 438 207Q318 215 198 207Q77 202 53 163Z" fill="url(#silkFront)" stroke="#3c254a" stroke-width="5"/>
-<path d="M56 142Q103 170 197 174Q322 188 445 174Q552 168 584 142" fill="none" stroke="url(#cord)" stroke-width="10" stroke-linecap="round"/>
-<path d="M56 148Q110 172 201 177Q326 190 442 177Q543 172 583 148" fill="none" stroke="#ffe7a1" stroke-opacity=".55" stroke-width="2.5"/>
-<!-- Top silk surface swells softly above the front seam. -->
-<path d="M49 110Q63 70 174 57Q323 28 466 57Q574 68 591 110Q568 139 455 149Q320 164 186 149Q73 139 49 110Z" fill="url(#silkTop)" stroke="url(#cord)" stroke-width="8"/>
-<ellipse cx="274" cy="87" rx="188" ry="48" fill="url(#shine)"/>
-<path d="M93 110Q160 75 245 86M394 84Q485 75 548 114" stroke="#f0c9ed" stroke-opacity=".35" stroke-width="4" stroke-linecap="round" fill="none"/>
-<!-- Soft vertical folds catch the light along the thick silk front. -->
-<path d="M133 171Q126 185 137 199M505 171Q512 188 501 199M225 178Q219 191 225 206M416 178Q421 195 414 205" fill="none" stroke="#b889c0" stroke-width="5" opacity=".42" stroke-linecap="round"/>
-<!-- Restrained gold embroidery around the exposed perimeter. -->
-<path d="M139 182q22 10 39 1q12-10 21 1q9 11 20 3M421 187q12-12 24-3q12 10 30-2" fill="none" stroke="#e7bd6f" stroke-width="3" stroke-linecap="round"/>
-<path d="M282 192q19-16 38-6q18-10 38 6q-16 13-38 7q-22 6-38-7Z" fill="none" stroke="#f2d18c" stroke-opacity=".85" stroke-width="2"/>
-<circle cx="320" cy="192" r="4" fill="#e8bf76"/>
-<path d="M71 158q-10 19 1 32M565 159q10 18-2 30" fill="none" stroke="#a87437" stroke-width="5"/>
+<!-- Small embroidered motifs on the front, not a decorative ring or central disc. -->
+<g fill="none" stroke="#e2bc78" stroke-width="2.7" stroke-linecap="round" opacity=".85">
+ <path d="M289 193 q12-12 25 0 q12-12 25 0 q-24 14-50 0Z"/>
+ <path d="M179 192 q9-6 18 0 M448 191 q9-7 18 0"/>
+</g>
+<!-- Tassels are sewn into the cushion's two corners. -->
+<g stroke-linecap="round">
+ <path d="M48 144 Q26 156 22 175 M590 143 Q616 157 617 175"
+ stroke="#a67c40" stroke-width="5" fill="none"/>
+ <path d="M22 173 l-9 19 M22 173 l0 23 M22 173 l10 19
+ M617 173 l-10 19 M617 173 l0 23 M617 173 l10 19"
+ stroke="#dfb766" stroke-width="5" fill="none"/>
+</g>
 </svg>
