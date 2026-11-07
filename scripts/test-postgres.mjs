@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {setTimeout as delay} from 'node:timers/promises';
 import {Client} from 'pg';
+import {testRest} from './test-rest.mjs';
 import {initializeFixture} from '../tests/database-fixture.mjs';
 
 const raw=process.env.BEE_TEST_CLUSTER_URL;
@@ -103,7 +104,8 @@ try{
  await blocked(observer,b,a);await a.query('commit');
  assert.equal((await cancel).rows[0].cancelled,false);await b.query('commit');
  console.log('PASS worker claim/cancellation race');
- console.log('All 5 native concurrency checks passed. This is not full Supabase or push acceptance.');
+ console.log('All 5 native concurrency checks passed.');
+ if(process.env.BEE_TEST_REST==='yes')await testRest(observer,url.toString(),owner,other);
 }finally{
  // Closing sessions rolls back any unfinished transaction before dropping our database.
  await Promise.allSettled(clients.map(c=>c.end()));

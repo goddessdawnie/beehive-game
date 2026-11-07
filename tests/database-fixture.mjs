@@ -1,5 +1,6 @@
 import {readFile,readdir} from 'node:fs/promises';
 const fixture=JSON.parse(await readFile(new URL('./fixtures/live-contract.json',import.meta.url)));
+const access=JSON.parse(await readFile(new URL('./fixtures/live-access.json',import.meta.url)));
 const policies=JSON.parse(await readFile(new URL('./fixtures/live-policies.json',import.meta.url)));
 
 // Synthetic data only. Caller must provide an empty, isolated database.
@@ -7,7 +8,7 @@ export async function initializeFixture(db,owner,other,{createRoles=true}={}){
  if(createRoles) await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;`);
  await db.exec(`
  create schema auth; create table auth.users(id uuid primary key);
- create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+ ${access.auth_uid};
  grant usage on schema auth to authenticated,anon,service_role;
  grant execute on function auth.uid() to authenticated,anon,service_role;
  create table public.pet_state(owner_id uuid primary key,comfort_value numeric,comfort_updated_at timestamptz);
@@ -27,7 +28,8 @@ export async function initializeFixture(db,owner,other,{createRoles=true}={}){
  create unique index beehive_timers_one_active_per_user on public.beehive_timers(owner_id) where status in ('pending','sending');`);
  for(const f of fixture.functions) await db.exec(f.definition);
  for(const t of fixture.triggers) await db.exec(t.function_definition+';'+t.definition+';');
- for(const table of tables) await db.exec(`alter table public.${table} enable row level security; grant all on public.${table} to authenticated,service_role;`);
+ for(const table of tables) await db.exec(`alter table public.${table} enable row level security;`);
+ for(const g of access.grants) await db.exec(`grant ${g.privilege_type} on public.${g.table_name} to ${g.grantee};`);
  for(const p of policies) await db.exec(`create policy ${p.policyname} on public.${p.tablename} for ${p.cmd} to authenticated ${p.qual?'using ('+p.qual+')':''} ${p.with_check?'with check ('+p.with_check+')':''};`);
  await db.query('insert into auth.users values ($1),($2)',[owner,other]);
  await db.query('insert into pet_state values ($1,20,now())',[owner]);
