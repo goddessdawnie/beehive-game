@@ -1,5 +1,18 @@
 # Bee v0.2.1 implementation and validation
 
+## CI acceptance checkpoint — 2026-11-07
+
+[GitHub verification run](https://github.com/goddessdawnie/beehive-game/actions/runs/42327424267), source commit `771bbe85bab224f8bad92b90c525dd906ea8493f`:
+
+- All 20 regression tests passed.
+- All five native overlap checks passed against an isolated PostgreSQL 17 service container.
+- Full-page mocked browser checks passed at phone and desktop sizes using normally installed Playwright Chromium.
+- The workflow uses the standard Ubuntu runner in this existing public repository (free standard runner usage), read-only repository permissions, no production secrets, no deployment, and a disposable database. It reruns for relevant PR changes.
+- Dawn clarified the operating scope: one human owner, potentially overlapping with a Bee and the timer worker. These are correctness tests for that overlap and retries, not multi-user load testing. No further stress-test expansion is required for this release absent a concrete defect.
+- The one-time scheduled probe loaded the installed Bee skill and both references and successfully queried Supabase; both new backend availability flags remain false. This verifies that execution environment only, not the separate regular Chat Bee configuration.
+
+**Resolved:** native database test environment and overlap verification. Earlier environment-blocker notes below are historical. **Still pending:** full live schema/policy drift review, authenticated Supabase/browser integration, reviewed migration rollout, real connected Bee task workflow and notification receipt. Main and production remain unchanged.
+
 ## Current checkpoint — 2026-11-07
 
 - GPT-6 installed the existing package privately using direct Plugin Creator upload. Plugin ID `plugins_6aee2379756881918d3fd643ea4fb5dc`, release `pluginrel_6aee2379f9088191a8a71c7a5c41fa7e`. No Sites adapter is needed. Dawn verified Android discovery, loaded instructions and Supabase tool availability in a separate chat. This Work session also loaded the installed skill and successfully ran its read-only Supabase preflight.
@@ -39,7 +52,7 @@ Plugin JSON, YAML, included reference paths and archive contents were checked. A
 
 ## Not verified / release blockers
 
-1. A real multi-connection Postgres integration run: PGlite runs one connection. The transaction and row-lock logic has sequential coverage, not a genuine concurrent browser/worker/Bee stress test.
+1. Native PostgreSQL overlap testing is complete in the linked CI run. Full Supabase integration remains a separate gate below.
 2. Full Supabase staging integration: migration with the current production schema, RLS/privileges, browser sign-in and actual worker. No paid Supabase branch was created. No schema or live user data was changed.
 3. Private-plugin installation is resolved; reuse the installed plugin ID above. Do not create another plugin.
 4. Android discovery/instructions/tool availability are verified by Dawn. Actual backend workflows remain blocked on deployment. Separate Chat/Work scheduled compatibility and web Chat acceptance still need evidence; a read-only Work-origin test is pending. Existing scheduled prompts were not changed.
@@ -49,7 +62,7 @@ Plugin JSON, YAML, included reference paths and archive contents were checked. A
 ## Next release steps (do not skip)
 
 1. Re-read live function/schema metadata and compare against the fixtures; account for any drift. Keep main unchanged until the release gate passes.
-2. Run this migration in a disposable PostgreSQL/Supabase test environment, with no production cron/network credentials. Test simultaneous retry IDs, simultaneous task completion through both wrappers, and worker claiming against cancellation. Do not buy branching capacity without Dawn's approval.
+2. Native migration and overlap testing passed in disposable PostgreSQL 17 on GitHub Actions. Retain this regression workflow; complete the remaining Supabase integration checks without purchasing capacity unless Dawn approves.
 3. Run browser regression with authenticated test users and RLS, plus security advisors. Test the real worker against a test subscription; verify actual receipt separately.
 4. Reuse the installed private plugin. Complete web and scheduled compatibility checks, then one reversible task workflow after the backend is safely deployed. Do not replace existing routing until all pass.
 5. Apply the reviewed migration transactionally, verify functions/ACLs and owner reads, then merge/deploy the browser change. Keep the PR draft until release blockers are resolved. The registry code retains old games if the new table is absent; that fallback is not a substitute for the migration.
