@@ -21,6 +21,10 @@ Task and gift actions improve Kae's comfort; normal time passage reduces it. Com
 
 ## Maintenance boundaries
 
-Use Supabase RPCs for transitions with reward, inventory or recurrence side effects. Do not update task status directly without preserving the same effects. Keep Kae's character card authoritative and his supporting prompts small. Preserve the difference between deployed features and future game ideas; Sudoku and 2048 are not deployed yet.
+Use Supabase RPCs for transitions with reward, inventory or recurrence side effects. Do not update task status directly without preserving the same effects. Keep Kae's character card authoritative and his supporting prompts small. Preserve the difference between deployed features and future game ideas; Installed game keys in the current code are Wordle, Sudoku, 2048 and Wumpus, plus Three Things.
 
 The app currently has no automated integration tests; database probes, saved-state checks and signed-in browser regression tests are complementary, not interchangeable.
+
+## Bee plugin development
+
+Private plugin source: `plugins/bee/`. Backend migration and tests are staged on the development branch; see [validation and release gates](docs/bee-plugin/VALIDATION.md). Run `npm ci --ignore-scripts && npm test`; browser smoke checks use `npm run test:browser` with Playwright Chromium installed. Nothing in the draft PR has been deployed.

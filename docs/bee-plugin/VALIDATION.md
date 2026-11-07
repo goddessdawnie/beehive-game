@@ -1,0 +1,133 @@
+# Bee v0.2.1 implementation and validation
+
+## Backend deployed checkpoint — 2026-11-07
+
+The reviewed `bee_operations` migration is now applied to the existing Supabase project. Both `bee.command` and `bee.read` availability checks return true. The first connector confirmation expired without applying it; absence was checked before the second attempt succeeded. No duplicate migration attempt was made after success.
+
+Before deployment:
+- Compared 86 captured columns, 36 constraints and three triggers against live metadata: exact matches. Eleven captured policies match; an additional daily-game-claims read policy is outside the changed operations. Required unique indexes match the fixture assumptions. Six public function definitions matched earlier in this session.
+- Captured actual table grants and the real `auth.uid()` definition in `tests/fixtures/live-access.json`, replacing the fixture's broader grants.
+- [CI run 42328127740](https://github.com/goddessdawnie/beehive-game/actions/runs/42328127740) passed: 20 regressions, five native overlap checks, authenticated HTTP operations through PostgREST 12.2.3, and phone/desktop mocked browser checks. Source commit `33128baa7bb3399a663f276291cb330d63686939`.
+- HTTP checks cover task completion/undo, rewards, timer start/cancel, game preference reads, wrong-owner/anonymous denial, worker RPC denial and private-schema exclusion. Tokens and accounts are synthetic and confined to the disposable local test database; no production token fabrication. This is not a test of hosted Supabase sign-in or phone delivery.
+
+After deployment:
+- Live private-command privilege checks deny authenticated browser execution; anonymous worker claiming is denied.
+- Health read succeeds: one notification device, no overdue timers/reminders at verification time. It does not establish phone receipt.
+- A real connector transaction exercised create, exact retry, completion/retry with exactly one two-coin reward, reopen with reward removal, cancel and constrained delete. The entire test transaction was rolled back; verified no test task remained, and no test reward/comfort/receipt changes committed.
+- Security advisor baseline unchanged except informational RLS-without-policy for private `bee.requests`, intentional deny-by-default with administrative access only. Existing authenticated SECURITY DEFINER warnings are intentional owner-checked timer endpoints plus unchanged game/shop functions; existing leaked-password protection warning is unrelated. References: [private RLS advisory](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [function advisory](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [password advisory](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
+**Next user/Chat handoff:** use installed Bee to create one zero-reward Android test task; Dawn completes it in the existing website, then Chat verifies and cleans up only that task. This checks actual hosted sign-in/browser RPC and Android plugin operation. Then verify one real notification with Dawn's receipt confirmation. Regular Bee routing is unchanged.
+
+**Website remains undeployed:** PR is still draft/unmerged. New game visibility controls will not affect the current website until the tested browser change is merged/deployed. Timer cancellation backend protection is active now. Do not describe the entire project as undeployed; backend and website now have separate release states. Earlier checkpoints below are historical.
+
+## CI acceptance checkpoint — 2026-11-07
+
+[GitHub verification run](https://github.com/goddessdawnie/beehive-game/actions/runs/42327424267), source commit `771bbe85bab224f8bad92b90c525dd906ea8493f`:
+
+- All 20 regression tests passed.
+- All five native overlap checks passed against an isolated PostgreSQL 17 service container.
+- Full-page mocked browser checks passed at phone and desktop sizes using normally installed Playwright Chromium.
+- The workflow uses the standard Ubuntu runner in this existing public repository (free standard runner usage), read-only repository permissions, no production secrets, no deployment, and a disposable database. It reruns for relevant PR changes.
+- Dawn clarified the operating scope: one human owner, potentially overlapping with a Bee and the timer worker. These are correctness tests for that overlap and retries, not multi-user load testing. No further stress-test expansion is required for this release absent a concrete defect.
+- The one-time scheduled probe loaded the installed Bee skill and both references and successfully queried Supabase; both new backend availability flags remain false. This verifies that execution environment only, not the separate regular Chat Bee configuration.
+
+**Resolved:** native database test environment and overlap verification. Earlier environment-blocker notes below are historical. **Still pending:** full live schema/policy drift review, authenticated Supabase/browser integration, reviewed migration rollout, real connected Bee task workflow and notification receipt. Main and production remain unchanged.
+
+## Current checkpoint — 2026-11-07
+
+- GPT-6 installed the existing package privately using direct Plugin Creator upload. Plugin ID `plugins_6aee2379756881918d3fd643ea4fb5dc`, release `pluginrel_6aee2379f9088191a8a71c7a5c41fa7e`. No Sites adapter is needed. Dawn verified Android discovery, loaded instructions and Supabase tool availability in a separate chat. This Work session also loaded the installed skill and successfully ran its read-only Supabase preflight.
+- Both backend availability flags remain false. No production migration, deployment or merge. Six captured public function definitions still match production byte-for-byte by MD5 (comparison only, not a security hash). This checks those functions, not all schema/policy drift.
+- Refactored the synthetic database setup into a shared fixture; all 20 existing tests pass afterward. Added five native concurrency checks, with explicit lock-wait observation, in `scripts/test-postgres.mjs`. Syntax and refusal without opt-in were checked; native execution is **not yet verified**.
+- Only the live Supabase project is available; this executor still has no usable native PostgreSQL runtime. No paid branch or service was created.
+- A one-time read-only scheduled compatibility check was created from this Work conversation. Its result is pending; regular Bee schedules are unchanged. Success would verify only this scheduling environment, not the separate Chat Bee configuration.
+
+Earlier checkpoint statements below describe their original date; installation blockers are superseded by this section.
+
+
+## Implemented on feature/bee-plugin-design (backend deployed; website pending)
+
+- Private `bee.command` and bounded `bee.read`, using the existing Supabase management connector. Live connection verified as `postgres`; no JWT/session impersonation. Full connector access is unchanged.
+- Request receipts committed atomically with each operation. Exact retry returns the original result; reusing a request ID with changed input fails. Per-owner transaction lock serializes new requests. Record locks plus expected timestamps guard edits against stale reads.
+- Task create/edit/complete/status/cancel/reopen and constrained intentional deletion; possibility create/edit/archive/restore/activation and constrained deletion. Default rewards match the website (2/5/9/12; unrated 5). Imported rating defaults are preserved on activation.
+- Existing task transition implementations moved to one owner-checked core; existing public browser signatures delegate to it. Catalog triggers, ledger, comfort and New York recurrence remain in use. Null status is now rejected explicitly; completion-note changes update their timestamp.
+- Timer create/list/read/adjust/cancel; immediate bell and scheduled reminder create/read/reschedule/cancel. Existing tables, worker and cron are reused. Modification requires pending/zero attempts so an already attempted push is never represented as safely recalled.
+- Worker claim RPCs recover an expired fifth-attempt lease to failed with an explicit *delivery status unknown* message; no sixth send is attempted. Existing service-only execution grants remain restricted.
+- Owner-specific installed-game visibility settings, with browser refresh on load, Play selection and foreground return. Unknown game keys cannot install executable code. Missing settings preserve existing enabled behavior. Scores/claims are untouched.
+- Sanitized health, bounded task/catalog/timer/reminder/history/ledger reads and pet state.
+- Portable Bee source v0.2.1 with verified Supabase app dependency, availability preflight, retry protocol and operation reference. No new hosted service or costs.
+
+## Verified
+
+`npm ci --ignore-scripts && npm test`: 20 passing tests using PGlite (real PostgreSQL engine compiled to WASM).
+
+Production metadata was read, not mutated. `tests/fixtures/live-contract.json` and `live-policies.json` capture relevant columns, constraints, functions, triggers and policies without user rows or secrets. Test-only auth, pet and subscription scaffolding supplies the required dependencies; this is not a full Supabase replica.
+
+Coverage includes exact retry/conflicting retry, failed-write rollback, possibility defaults and imported ratings, difficulty rewards, one ledger entry, history counts/notes, undo/cancel, daily and weekly DST boundaries, recurrence successor deduplication, stale writes, invalid owner links/status/fields, timer limits and delivery races, reminder updates, safe deletion, browser-RPC authorization, game allowlist and worker final-lease recovery.
+
+`npm run test:browser`: passed at 393×851 and 1280×900 with a mocked Supabase client and all external requests blocked. Tests visibility toggles, active-panel closure, refresh failure, the browser timer cancellation race and persistent warning, and absence of JS errors. This exercises the full page but **does not** test Supabase sign-in, PostgREST, real push, Android ChatGPT, or scheduled ChatGPT tasks.
+
+The runtime lacked a browser and normal Playwright browser downloads were corrupt. Browser tests ran with Chromium 153 from an npm-distributed binary, using `BEE_BROWSER_EXECUTABLE`. Normal setup: `npx playwright install chromium`. An existing compatible Chromium can be selected with `BEE_BROWSER_EXECUTABLE=/absolute/path` (and its required shared-library environment).
+
+Plugin JSON, YAML, included reference paths and archive contents were checked. An independent offline request exercise confirmed exact retry handling; two ambiguities about activation timestamps and Anytime scheduling were clarified. This is an instruction check, not installation verification.
+
+## Not verified / release blockers
+
+1. Native PostgreSQL overlap testing is complete in the linked CI run. Full Supabase integration remains a separate gate below.
+2. Full Supabase staging integration: migration with the current production schema, RLS/privileges, browser sign-in and actual worker. No paid Supabase branch was created. No schema or live user data was changed.
+3. Private-plugin installation is resolved; reuse the installed plugin ID above. Do not create another plugin.
+4. Android discovery/instructions/tool availability are verified by Dawn. Actual backend workflows remain blocked on deployment. Separate Chat/Work scheduled compatibility and web Chat acceptance still need evidence; a read-only Work-origin test is pending. Existing scheduled prompts were not changed.
+5. Real notification delivery/phone receipt. No live test bell was sent. Queue acceptance and push acceptance cannot prove receipt.
+6. OAuth MCP adapter: deferred as the saved architecture specifies, until its cross-surface value is established. No unauthenticated write endpoint was published.
+
+## Next release steps (do not skip)
+
+1. Re-read live function/schema metadata and compare against the fixtures; account for any drift. Keep main unchanged until the release gate passes.
+2. Native migration and overlap testing passed in disposable PostgreSQL 17 on GitHub Actions. Retain this regression workflow; complete the remaining Supabase integration checks without purchasing capacity unless Dawn approves.
+3. Run browser regression with authenticated test users and RLS, plus security advisors. Test the real worker against a test subscription; verify actual receipt separately.
+4. Reuse the installed private plugin. Complete web and scheduled compatibility checks, then one reversible task workflow after the backend is safely deployed. Do not replace existing routing until all pass.
+5. Apply the reviewed migration transactionally, verify functions/ACLs and owner reads, then merge/deploy the browser change. Keep the PR draft until release blockers are resolved. The registry code retains old games if the new table is absent; that fallback is not a substitute for the migration.
+6. If reverting, restore the original five public task/worker/timer-cancel function definitions from the captured fixture and revert the website commit. Keep request receipts and game settings for diagnosis; do not drop them casually or delete reward/history tables. Test rollback before production rollout.
+
+## Deliberate boundaries
+
+- `task.status(open)` reopens an occurrence; it does not implement the website's separate restart-series action. Use that UI for restarting a stopped recurring series.
+- Game management enables/disables installed games. Installing new executable games remains a reviewed code change; historical game claims are not a registry.
+- Hard deletion is deliberately constrained to cancelled, nonrecurring tasks without history and inactive unreferenced possibilities. Other deletion requires explicit impact review through the retained full Supabase access.
+- Request receipts are retained to preserve retry safety. No automatic purge was introduced. Receipts include task content, stay in the private schema, and should be considered in future retention/export decisions.
+
+
+## Resumed hardening checkpoint
+
+After the usage interruption, verified saved GitHub commit `95d8259` against the local tested tree and recorded the recovery checkpoint in Notion before further work.
+
+- Fixed the browser's older timer-cancel RPC so it cannot cancel a sending or previously attempted timer. The timer UI disables unsafe cancellation and preserves the race warning across countdown repaints.
+- Added read-only request receipt lookup: `bee.read(owner,'request','',request_uuid)`. This supports checking an uncertain result without re-executing an operation. A missing receipt can still mean an in-flight transaction; exact replay remains the recovery mechanism.
+- Added and passed tests for browser cancellation ownership and delivery races, private receipt/game-setting access, request lookup owner isolation, and restoring the five original public RPC definitions without deleting receipts. Rollback verification runs inside an isolated transaction and restores the migrated test state afterward.
+- Re-ran the expanded phone/desktop browser checks successfully with a mocked backend. The updated source has 20 passing tests; no real phone or scheduled-task claim is implied.
+- Native concurrency remains blocked: no PostgreSQL/Docker runtime is available, this executor maps only UID 0, and a test user-namespace mapping failed with `Operation not permitted`. Installing PostgreSQL alone would not supply the non-root execution context it requires. No paid branch, production substitute or privilege escalation was attempted.
+- Account-plugin creation/upload tooling is still unavailable after rediscovery. The package remains ready for installation in a tool-enabled session, not installed.
+
+Resume from the latest head of the existing draft PR, not the older checkpoint commit. Keep using the validation gates above. This is a release-environment/tooling boundary, not a request to restart the design or increase model effort.
+
+## Native concurrency runner
+
+Run `npm ci --ignore-scripts` in the repository on a machine with a **disposable local PostgreSQL 17 cluster**. This does not require any paid Supabase resource. Do not point it at a production tunnel. A local Docker example (requires Docker already installed):
+
+```sh
+docker run --rm -d --name bee-postgres-test -e POSTGRES_PASSWORD=bee-local-test -p 127.0.0.1:55432:5432 postgres:17
+docker exec bee-postgres-test pg_isready -U postgres
+BEE_ALLOW_DISPOSABLE_CLUSTER=yes BEE_TEST_CLUSTER_URL=postgresql://postgres:bee-local-test@127.0.0.1:55432/postgres npm run test:postgres
+docker stop bee-postgres-test
+```
+
+Wait for `pg_isready` to report accepting connections before the test command. The Docker recipe has not been executed in this workspace. The password above is for the disposable local container only. No production credentials are needed.
+
+The runner creates a uniquely named empty database, loads the same captured contract and synthetic users as the PGlite suite, applies the development migration, opens three independent connections, and exercises:
+
+1. Exact retry while its original transaction remains uncommitted.
+2. Conflicting edits based on the same record version.
+3. Authenticated browser completion versus Bee completion, checking single reward and successor.
+4. Browser cancellation holding the row while the worker attempts to claim it.
+5. Worker claim holding the row while the browser attempts cancellation.
+
+Cleanup closes its sessions, drops only the database it created, and drops only missing test roles it created. Existing cluster roles are preserved. Use a disposable cluster nevertheless; a process kill can bypass cleanup. It rejects nonlocal hosts, URL query overrides, missing explicit opt-in and PostgreSQL majors other than 17. Native success is a concurrency gate, not full Supabase/PostgREST/auth/push acceptance.
