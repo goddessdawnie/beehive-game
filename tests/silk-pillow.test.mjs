@@ -20,7 +20,8 @@ test('pillow remains inventory-backed and beneath dragon without changing purcha
 test('cushion is tucked under Kae and has a visibly deeper front profile',()=>{
  const style=page.match(/\.chamber-pillow\{([^}]+)\}/)?.[1]||'';
  assert.match(style,/left:33%;bottom:11%;width:36%;height:12%/);
- assert.match(style,/silk-pillow\.svg\?v=2/);
- assert.match(asset,/Soft vertical folds catch the light along the thick silk front/);
- assert.match(asset,/Q318 215 198 207/);
+ assert.match(style,/silk-pillow\\.svg\\?v=3/);
+ assert.doesNotMatch(style,/radial-gradient|box-shadow|border-radius/);
+ assert.match(asset,/single continuous, rounded stuffed silhouette/);
+ assert.match(asset,/front is an inflated vertical silk face/);
 });
