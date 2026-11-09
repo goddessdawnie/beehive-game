@@ -24,6 +24,18 @@ test('creation retry returns one record; conflicting retry rolls back',async()=>
  assert.equal((await read('tasks')).filter(x=>x.title==='Retry test').length,1);
 });
 
+test('Both is a valid Possibility property, unassigned stays null, and invalid values fail',async()=>{
+ const both=(await command('possibility.create',{title:'Shared chores',property:'Both'})).result;
+ assert.equal(both.property,'Both');
+ await mutate('possibility.edit','possibilities',both.id,{patch:{property:'Florence'}});
+ assert.equal((await current('possibilities',both.id)).property,'Florence');
+ await mutate('possibility.edit','possibilities',both.id,{patch:{property:'Both'}});
+ assert.equal((await current('possibilities',both.id)).property,'Both');
+ const unspecified=(await command('possibility.create',{title:'Property undecided'})).result;
+ assert.equal(unspecified.property,null);
+ await assert.rejects(command('possibility.create',{title:'Wrong property',property:'Everywhere'}),/check constraint/);
+});
+
 test('possibility defaults survive instance resize, complete, undo and cancel',async()=>{
  const a=(await command('possibility.create',{title:'Dishes',notes:'Default notes',suggested_difficulty:'tiny'})).result;
  const t=(await command('possibility.activate',{activity_id:a.id})).result;
