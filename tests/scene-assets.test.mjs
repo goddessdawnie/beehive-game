@@ -67,6 +67,7 @@ test('violet repeatable Jewel has transparent SVG and a preview-only shelf slot,
  assert.match(html,/id:'shelf_jewel'/);
  assert.match(html,/preview\?\.renderer==='preview_image'/);
  assert.match(html,/jewelPreview\.classList\.toggle\('visible',showJewel\)/);
+ assert.match(html,/\.chamber-jewel-preview\{[^}]*z-index:2/,'Movable jewel sits below case glass in shared chamber stacking');
 });
 
 test('future display contents render below the SVG foreground without changing ownership flow',()=>{
