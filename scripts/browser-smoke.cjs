@@ -95,6 +95,13 @@ assert.deepEqual(await page.locator('#layout-artwork option').evaluateAll(nodes=
 assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),false,'No unowned jewel appears by default');
 await page.locator('#layout-artwork').selectOption('jewel_svg');
 assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),true,'Jewel is visible only for temporary preview');
+assert.equal(await page.locator('#chamber-jewel-preview').evaluate(node=>getComputedStyle(node).zIndex),'2','Jewel is below the glass case in the scene');
+assert.equal(await page.locator('.chamber-case').evaluate(node=>getComputedStyle(node).zIndex),'3','Glass case overlays jewel');
+assert.equal(await page.locator('.chamber-case').evaluate(node=>getComputedStyle(node,'::after').zIndex),'2','Case foreground renders above its clear interior');
+await page.locator('.chamber-case').evaluate(node=>node.classList.add('visible'));
+assert.equal(await page.locator('.chamber-case').isVisible(),true,'Glass case can appear in front of temporary jewel');
+assert.match(await page.locator('.chamber-case').evaluate(node=>getComputedStyle(node,'::after').backgroundImage),/wood-glass-display-case\.svg/);
+await page.locator('.chamber-case').evaluate(node=>node.classList.remove('visible'));
 assert.match(await page.locator('#chamber-jewel-preview').evaluate(el=>getComputedStyle(el).backgroundImage),/violet-jewel\.svg/);
 await page.locator('#layout-width').evaluate(el=>{el.value='12';el.dispatchEvent(new Event('input',{bubbles:true}));});
 assert.equal(await page.locator('#chamber-jewel-preview').evaluate(el=>el.style.width),'12%','Jewel placement uses real slot geometry');
