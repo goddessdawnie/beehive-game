@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "id": "plum_cushion",
+      "label": "Plum silk cushion",
+      "slots": [
+        "cushion"
+      ],
+      "renderer": "existing",
+      "treasure": "silk_pillow",
+      "source": "assets/silk-pillow.svg",
+      "fit": "fill"
+    },
+    {
+      "id": "kae_webp",
+      "label": "Kae · illustrated",
+      "slots": [
+        "kae"
+      ],
+      "renderer": "image",
+      "source": "assets/kae_cutout.webp",
+      "fit": "contain"
+    },
+    {
+      "id": "kae_svg",
+      "label": "Kae · simple SVG",
+      "slots": [
+        "kae"
+      ],
+      "renderer": "image",
+      "source": "assets/kae.svg",
+      "fit": "contain"
+    },
+    {
+      "id": "throne_css",
+      "label": "Imperial throne · placeholder",
+      "slots": [
+        "behind"
+      ],
+      "renderer": "existing",
+      "treasure": "imperial_throne"
+    },
+    {
+      "id": "table_css",
+      "label": "Oak table · placeholder",
+      "slots": [
+        "left_lower"
+      ],
+      "renderer": "existing",
+      "treasure": "unbudgeable_oak_table"
+    },
+    {
+      "id": "case_svg",
+      "label": "Wood-and-glass display case",
+      "slots": [
+        "right"
+      ],
+      "renderer": "existing",
+      "treasure": "display_case",
+      "source": "assets/room/right/wood-glass-display-case.svg",
+      "fit": "fill"
+    },
+    {
+      "id": "case_css",
+      "label": "Old display case · placeholder",
+      "slots": [
+        "right"
+      ],
+      "renderer": "legacy_case",
+      "treasure": "display_case"
+    }
+  ]
+}
