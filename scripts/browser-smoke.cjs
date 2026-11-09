@@ -53,6 +53,8 @@ assert.equal(await page.locator('.chamber-kae').evaluate(el=>el.style.left),'35%
 await page.locator('#layout-slot').selectOption('behind');
 assert.equal(await page.locator('.chamber-throne').isVisible(),false,'Unowned throne stays hidden');
 assert.equal(await page.locator('#layout-guide').isVisible(),true,'Invisible slots have guide outlines');
+assert.equal(await page.locator('#layout-guide').evaluate(el=>getComputedStyle(el,'::after').content),'none','Guide has no text label obscuring artwork');
+assert.equal(await page.locator('#layout-slot').inputValue(),'behind','Selected slot remains named in controls');
 await page.locator('#layout-artwork').selectOption('throne_css');
 assert.equal(await page.locator('.chamber-throne').isVisible(),true,'Previewing can reveal an unowned throne');
 await page.locator('#layout-slot').selectOption('right');
