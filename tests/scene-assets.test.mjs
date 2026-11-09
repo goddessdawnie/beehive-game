@@ -33,12 +33,14 @@ test('imperial throne uses layered SVG art behind Kae and keeps CSS only for opt
  const throne=manifest.assets.find(a=>a.id==='throne_svg');
  assert.ok(throne);
  assert.deepEqual(throne.slots,['behind']);
- assert.equal(throne.fit,'contain');
+ assert.equal(throne.fit,'fill');
  assert.equal(throne.renderer,'existing');
  assert.equal(throne.source,'assets/room/behind/imperial-throne.svg');
  assert.equal(manifest.assets.find(a=>a.id==='throne_css').renderer,'legacy_throne');
  const art=await read('assets/room/behind/imperial-throne.svg');
- assert.match(art,/viewBox="0 0 400 580"/);
+ assert.match(art,/viewBox="0 0 800 340"/);
+ assert.match(art,/preserveAspectRatio="none"/);
+ assert.match(art,/no chair seat or legs/);
  assert.match(art,/id="velvet"/);
  assert.match(art,/id="brass"/);
  assert.doesNotMatch(art,/<script\b|<image\b|href="https?:/i);
