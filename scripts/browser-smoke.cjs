@@ -14,8 +14,14 @@ window.taskRows=[
 {id:'deferred',title:'Deferred item',status:'deferred',created_at:'2026-11-03T10:00:00Z',updated_at:'2026-11-07T23:00:00Z',reward_coins:5},
 {id:'open',title:'Open task',status:'open',created_at:'2026-11-07T10:00:00Z',updated_at:'2026-11-07T10:00:00Z',reward_coins:5}
 ];
+window.catalogRows=[
+{id:'both',title:'Shared dishes',property:'Both',category:'cleaning',active:true,locations:[]},
+{id:'florence',title:'Florence stairs',property:'Florence',category:'cleaning',active:true,locations:[]},
+{id:'williamsburg',title:'Williamsburg porch',property:'Williamsburg',category:'cleaning',active:true,locations:[]},
+{id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
+];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
@@ -71,6 +77,26 @@ assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('l
 await page.reload();
 await page.locator('#game:not(.hidden)').waitFor();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'','Legacy value must not reappear after reset');
+// Property: Both belongs to either location, while Unassigned remains a separate value.
+await page.locator('[data-filter="possibilities"]').click();
+assert.deepEqual(await page.locator('#poss-new-property option').evaluateAll(nodes=>nodes.map(x=>x.value)),['','Florence','Williamsburg','Both']);
+assert.deepEqual(await page.locator('#poss-property option').evaluateAll(nodes=>nodes.map(x=>x.value)),['','Florence','Williamsburg','Both','Unassigned']);
+const titles=()=>page.locator('#poss-list .task strong').allTextContents();
+assert.equal((await titles()).length,4);
+await page.locator('#poss-property').selectOption('Florence');
+assert.deepEqual((await titles()).sort(),['Florence stairs','Shared dishes']);
+await page.locator('#poss-property').selectOption('Williamsburg');
+assert.deepEqual((await titles()).sort(),['Shared dishes','Williamsburg porch']);
+await page.locator('#poss-property').selectOption('Both');
+assert.deepEqual(await titles(),['Shared dishes']);
+await page.locator('#poss-property').selectOption('Unassigned');
+assert.deepEqual(await titles(),['Undecided chore']);
+await page.locator('#poss-property').selectOption('');
+const bothRow=page.locator('#poss-list .task').filter({hasText:'Shared dishes'});
+await bothRow.getByRole('button',{name:'Edit'}).click();
+assert.deepEqual(await bothRow.locator('form select').first().locator('option').evaluateAll(nodes=>nodes.map(x=>x.value)),['','Florence','Williamsburg','Both']);
+assert.equal(await bothRow.locator('form select').first().inputValue(),'Both');
+await bothRow.getByRole('button',{name:'Close'}).click();
 await page.locator('#tab-estate').click();
 await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===2);
 await page.evaluate(()=>{window.chatRequests=[];const oldFetch=window.fetch;window.fetch=async(url,opts)=>{if(String(url).includes('/functions/v1/kae-chat')){const request=JSON.parse(opts.body);window.chatRequests.push(request);window.chatRows.push({role:'user',content:request.message,created_at:'2026-11-07T08:02:00Z'});return {ok:true,json:async()=>({})}}return oldFetch(url,opts)}});
