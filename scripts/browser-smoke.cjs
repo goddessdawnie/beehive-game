@@ -59,7 +59,7 @@ await page.locator('#layout-artwork option[value="throne_svg"]').waitFor({state:
 assert.deepEqual(await page.locator('#layout-artwork option').evaluateAll(nodes=>nodes.map(node=>node.value)),['','throne_svg','throne_css']);
 await page.locator('#layout-artwork').selectOption('throne_svg');
 assert.equal(await page.locator('.chamber-throne').isVisible(),true,'Unowned imperial SVG throne previews safely');
-assert.match(await page.locator('.chamber-throne').evaluate(el=>getComputedStyle(el).backgroundImage),/imperial-throne\.svg/);
+assert.match(await page.locator('.chamber-throne').evaluate(el=>getComputedStyle(el).backgroundImage),/ornate-throne-back\.svg/);
 assert.equal(await page.locator('.chamber-throne').evaluate(el=>getComputedStyle(el).backgroundSize),'100% 100%','Decorative backrest stretches to the slot boundaries');
 assert.equal(await page.locator('.chamber-throne').evaluate(el=>getComputedStyle(el).boxSizing),'border-box');
 await page.locator('#layout-artwork').selectOption('throne_css');
