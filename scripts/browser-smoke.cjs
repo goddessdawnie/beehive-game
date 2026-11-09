@@ -38,7 +38,7 @@ assert.equal(await page.locator('#layout-tools').isVisible(),true);
 assert.equal(await page.locator('#layout-guide').isVisible(),true);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),true);
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
- 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case'
+ 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Shelf · Jewel preview'
 ]);
 assert.equal(await page.locator('#layout-width-value').textContent(),'47%');
 await page.locator('#layout-width').evaluate(el=>{el.value='48';el.dispatchEvent(new Event('input',{bubbles:true}));});
@@ -89,7 +89,18 @@ assert.equal(await page.locator('.chamber-case').evaluate(el=>getComputedStyle(e
 await page.locator('#layout-artwork').selectOption('');
 assert.equal(await page.locator('.chamber-case').isVisible(),false,'Normal room mode restores owned-only display');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.classList.contains('preview-legacy')),false,'Legacy preview styling is cleaned up');
+await page.locator('#layout-slot').selectOption('shelf_jewel');
+await page.locator('#layout-artwork option[value="jewel_svg"]').waitFor({state:'attached'});
+assert.deepEqual(await page.locator('#layout-artwork option').evaluateAll(nodes=>nodes.map(n=>n.value)),['','jewel_svg']);
+assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),false,'No unowned jewel appears by default');
+await page.locator('#layout-artwork').selectOption('jewel_svg');
+assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),true,'Jewel is visible only for temporary preview');
+assert.match(await page.locator('#chamber-jewel-preview').evaluate(el=>getComputedStyle(el).backgroundImage),/violet-jewel\.svg/);
+await page.locator('#layout-width').evaluate(el=>{el.value='12';el.dispatchEvent(new Event('input',{bubbles:true}));});
+assert.equal(await page.locator('#chamber-jewel-preview').evaluate(el=>el.style.width),'12%','Jewel placement uses real slot geometry');
+assert.equal(await page.evaluate(()=>window.rewardPurchaseCalls),0,'Jewel preview never purchases inventory');
 await page.locator('#layout-slot').selectOption('kae');
+assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),false,'Changing slots removes temporary jewel');
 await page.locator('#layout-artwork').selectOption('kae_svg');
 assert.match(await page.locator('.chamber-kae').getAttribute('src'),/assets\/kae\.svg/);
 await page.locator('#layout-slot').selectOption('cushion');
@@ -105,6 +116,8 @@ assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),
 assert.equal(await page.locator('.chamber-pillow').isVisible(),false,'Refresh removes temporary unowned art');
 assert.equal(await page.locator('.chamber-kae').evaluate(el=>el.style.left),'35%');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.left),'75%');
+assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),false,'Reload discards temporary jewel');
+assert.equal(await page.locator('#chamber-jewel-preview').evaluate(el=>el.style.width),'12%','Jewel geometry persists independently');
 await page.locator('#hive-settings').click();
 await page.locator('#open-layout').click();
 await page.locator('#layout-reset').click();
