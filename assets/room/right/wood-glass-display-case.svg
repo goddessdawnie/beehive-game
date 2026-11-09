@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 480" preserveAspectRatio="none" role="img" aria-label="Simple wooden display case with clear glass and a solid wooden plinth">
+<defs>
+  <linearGradient id="oak" x1="0" y1="0" x2="1" y2=".12"><stop stop-color="#402818"/><stop offset=".18" stop-color="#95663a"/><stop offset=".51" stop-color="#bf8a4d"/><stop offset=".85" stop-color="#86512d"/><stop offset="1" stop-color="#392618"/></linearGradient>
+  <linearGradient id="base" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c49455"/><stop offset=".12" stop-color="#9a6234"/><stop offset=".7" stop-color="#623b26"/><stop offset="1" stop-color="#31221b"/></linearGradient>
+  <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8f9ff" stop-opacity=".20"/><stop offset=".18" stop-color="#d8f9ff" stop-opacity=".015"/><stop offset=".72" stop-color="#d8f9ff" stop-opacity=".01"/><stop offset="1" stop-color="#d8f9ff" stop-opacity=".08"/></linearGradient>
+</defs>
+<!-- Open center: future jewels are separate elements UNDER this foreground SVG. -->
+<!-- Very low-opacity glass tint leaves gemstones visible. -->
+<rect x="22" y="22" width="276" height="344" rx="5" fill="url(#shine)" stroke="#bbdae0" stroke-opacity=".40" stroke-width="3"/>
+<path d="M43 41 L78 41 L42 211 L31 211Z" fill="#e8faff" opacity=".13"/>
+<path d="M271 53 L282 53 L282 320 L264 320Z" fill="#e8faff" opacity=".075"/>
+<path d="M42 316 Q160 324 278 316" fill="none" stroke="#e4f6fa" stroke-opacity=".18" stroke-width="3"/>
+<!-- Simple oak framing and cap. -->
+<path d="M12 22 Q12 10 25 10 H295 Q307 10 307 22 V35 H12Z" fill="url(#oak)" stroke="#2d1d17" stroke-width="4"/>
+<rect x="12" y="33" width="15" height="331" rx="3" fill="url(#oak)" stroke="#452d1f" stroke-width="2"/>
+<rect x="293" y="33" width="15" height="331" rx="3" fill="url(#oak)" stroke="#452d1f" stroke-width="2"/>
+<path d="M27 357 H293" stroke="#4a2e20" stroke-width="9"/>
+<!-- Opaque wood base hides the lower part of contents, like a real cabinet. -->
+<rect x="7" y="358" width="306" height="112" rx="7" fill="url(#base)" stroke="#3a2419" stroke-width="5"/>
+<path d="M18 373 H302" stroke="#e6b679" stroke-opacity=".62" stroke-width="4"/>
+<rect x="22" y="394" width="276" height="60" rx="4" fill="#4f3022" fill-opacity=".36" stroke="#cf965c" stroke-opacity=".56" stroke-width="3"/>
+<path d="M28 461 H291" stroke="#201610" stroke-opacity=".65" stroke-width="9"/>
+</svg>
