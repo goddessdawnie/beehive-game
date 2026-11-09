@@ -29,6 +29,24 @@ test('glass display case is scalable, has clear central region and opaque wooden
  assert.doesNotMatch(svg,/<script\b|<image\b|href="https?:/i);
 });
 
+test('imperial throne uses layered SVG art behind Kae and keeps CSS only for optional comparison',async()=>{
+ const throne=manifest.assets.find(a=>a.id==='throne_svg');
+ assert.ok(throne);
+ assert.deepEqual(throne.slots,['behind']);
+ assert.equal(throne.fit,'contain');
+ assert.equal(throne.renderer,'existing');
+ assert.equal(throne.source,'assets/room/behind/imperial-throne.svg');
+ assert.equal(manifest.assets.find(a=>a.id==='throne_css').renderer,'legacy_throne');
+ const art=await read('assets/room/behind/imperial-throne.svg');
+ assert.match(art,/viewBox="0 0 400 580"/);
+ assert.match(art,/id="velvet"/);
+ assert.match(art,/id="brass"/);
+ assert.doesNotMatch(art,/<script\b|<image\b|href="https?:/i);
+ assert.match(html,/\.chamber-throne\{[^}]*imperial-throne\.svg[^}]*z-index:1/);
+ assert.match(html,/\.chamber-kae\{[^}]*z-index:2/);
+ assert.match(html,/\.chamber-throne\.preview-legacy\{/);
+});
+
 test('future display contents render below the SVG foreground without changing ownership flow',()=>{
  assert.match(html,/class="chamber-case-contents" id="chamber-case-contents"/);
  assert.match(html,/\.chamber-case::after\{[^}]*z-index:2[^}]*wood-glass-display-case\.svg/);

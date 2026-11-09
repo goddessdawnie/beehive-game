@@ -33,12 +33,23 @@
       "fit": "contain"
     },
     {
-      "id": "throne_css",
-      "label": "Imperial throne · placeholder",
+      "id": "throne_svg",
+      "label": "Imperial throne · plum velvet and carved wood",
       "slots": [
         "behind"
       ],
       "renderer": "existing",
+      "treasure": "imperial_throne",
+      "source": "assets/room/behind/imperial-throne.svg",
+      "fit": "contain"
+    },
+    {
+      "id": "throne_css",
+      "label": "Old throne · CSS placeholder",
+      "slots": [
+        "behind"
+      ],
+      "renderer": "legacy_throne",
       "treasure": "imperial_throne"
     },
     {

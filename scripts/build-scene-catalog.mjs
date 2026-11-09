@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const source=JSON.parse(await readFile(resolve(root,'assets/room/scene-assets.json'),'utf8'));
 const slots=new Set(['cushion','kae','behind','left_lower','right']);
-const renderers=new Set(['image','existing','legacy_case']);
+const renderers=new Set(['image','existing','legacy_case','legacy_throne']);
 const seen=new Set();
 if(source.schemaVersion!==1||!Array.isArray(source.assets))throw Error('Invalid scene source catalog');
 for(const asset of source.assets){
