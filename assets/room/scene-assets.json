@@ -40,7 +40,7 @@
       ],
       "renderer": "existing",
       "treasure": "imperial_throne",
-      "source": "assets/room/behind/imperial-throne.svg",
+      "source": "assets/room/behind/ornate-throne-back.svg",
       "fit": "fill"
     },
     {
