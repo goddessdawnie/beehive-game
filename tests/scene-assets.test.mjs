@@ -50,6 +50,25 @@ test('imperial throne uses layered SVG art behind Kae and keeps CSS only for opt
  assert.match(html,/\.chamber-throne\.preview-legacy\{/);
 });
 
+test('violet repeatable Jewel has transparent SVG and a preview-only shelf slot, not a purchase',async()=>{
+ const jewel=manifest.assets.find(a=>a.id==='jewel_svg');
+ assert.ok(jewel);
+ assert.deepEqual(jewel.slots,['shelf_jewel']);
+ assert.equal(jewel.renderer,'preview_image');
+ assert.equal(jewel.fit,'contain');
+ assert.equal(jewel.source,'assets/room/shelf/violet-jewel.svg');
+ assert.equal(jewel.treasure,undefined);
+ const art=await read(jewel.source);
+ assert.match(art,/viewBox="0 0 128 144"/);
+ assert.match(art,/id="gem"/);
+ assert.match(art,/Transparent silhouette/);
+ assert.doesNotMatch(art,/<script\b|<image\b|href="https?:/i);
+ assert.match(html,/id="chamber-jewel-preview" class="chamber-jewel-preview" aria-hidden="true"/);
+ assert.match(html,/id:'shelf_jewel'/);
+ assert.match(html,/preview\?\.renderer==='preview_image'/);
+ assert.match(html,/jewelPreview\.classList\.toggle\('visible',showJewel\)/);
+});
+
 test('future display contents render below the SVG foreground without changing ownership flow',()=>{
  assert.match(html,/class="chamber-case-contents" id="chamber-case-contents"/);
  assert.match(html,/\.chamber-case::after\{[^}]*z-index:2[^}]*wood-glass-display-case\.svg/);

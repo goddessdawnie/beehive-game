@@ -3,8 +3,8 @@ import {resolve,dirname,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const source=JSON.parse(await readFile(resolve(root,'assets/room/scene-assets.json'),'utf8'));
-const slots=new Set(['cushion','kae','behind','left_lower','right']);
-const renderers=new Set(['image','existing','legacy_case','legacy_throne']);
+const slots=new Set(['cushion','kae','behind','left_lower','right','shelf_jewel']);
+const renderers=new Set(['image','existing','legacy_case','legacy_throne','preview_image']);
 const seen=new Set();
 if(source.schemaVersion!==1||!Array.isArray(source.assets))throw Error('Invalid scene source catalog');
 for(const asset of source.assets){
@@ -12,7 +12,7 @@ for(const asset of source.assets){
  seen.add(asset.id);
  if(!asset.label||!Array.isArray(asset.slots)||!asset.slots.length||!asset.slots.every(s=>slots.has(s)))throw Error('Invalid asset slots: '+asset.id);
  if(!renderers.has(asset.renderer))throw Error('Unsupported renderer: '+asset.id);
- if(asset.renderer==='image'&&!asset.source)throw Error('Image source required: '+asset.id);
+ if(['image','preview_image'].includes(asset.renderer)&&!asset.source)throw Error('Image source required: '+asset.id);
  if(asset.source){
   if(!/^assets\/[a-z0-9_./-]+\.(svg|webp|jpg|jpeg|png)$/.test(asset.source)||asset.source.includes('..'))throw Error('Unsafe source path: '+asset.id);
   const assetFile=resolve(root,asset.source);

@@ -80,6 +80,16 @@
       ],
       "renderer": "legacy_case",
       "treasure": "display_case"
+    },
+    {
+      "id": "jewel_svg",
+      "label": "Violet jewel · single gemstone (preview only)",
+      "slots": [
+        "shelf_jewel"
+      ],
+      "renderer": "preview_image",
+      "source": "assets/room/shelf/violet-jewel.svg",
+      "fit": "contain"
     }
   ]
 }
