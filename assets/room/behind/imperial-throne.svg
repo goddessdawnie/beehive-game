@@ -1,55 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 580" role="img" aria-label="Dark carved wooden imperial throne with plum upholstery and antique gold trim">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" preserveAspectRatio="none" role="img" aria-label="Wide, low ornate throne back with carved dark wood, plum velvet inset and gold trim; no chair seat or legs">
 <defs>
- <linearGradient id="mahogany" x1="0" y1="0" x2=".85" y2="1">
-  <stop stop-color="#21151b"/><stop offset=".35" stop-color="#5c3338"/><stop offset=".7" stop-color="#412329"/><stop offset="1" stop-color="#1c151c"/>
- </linearGradient>
- <linearGradient id="woodedge" x1="0" y1="0" x2="1" y2=".2">
-  <stop stop-color="#25181f"/><stop offset=".25" stop-color="#895346"/><stop offset=".52" stop-color="#49262c"/><stop offset=".79" stop-color="#734237"/><stop offset="1" stop-color="#21151b"/>
- </linearGradient>
- <linearGradient id="velvet" x1="0" y1="0" x2=".75" y2="1">
-  <stop stop-color="#a66eaf"/><stop offset=".23" stop-color="#784786"/><stop offset=".62" stop-color="#4c2a66"/><stop offset="1" stop-color="#2e1d49"/>
- </linearGradient>
- <linearGradient id="seat" x1="0" y1="0" x2="0" y2="1">
-  <stop stop-color="#b681bb"/><stop offset=".34" stop-color="#754688"/><stop offset="1" stop-color="#3c244f"/>
- </linearGradient>
- <linearGradient id="brass" x1="0" y1="0" x2=".9" y2="1">
-  <stop stop-color="#fff1b0"/><stop offset=".25" stop-color="#d8af62"/><stop offset=".6" stop-color="#916034"/><stop offset=".86" stop-color="#efd18b"/><stop offset="1" stop-color="#85542d"/>
- </linearGradient>
- <radialGradient id="velvetLight" cx=".28" cy=".16" r=".9">
-  <stop stop-color="#d9a6d5" stop-opacity=".32"/><stop offset="1" stop-color="#d9a6d5" stop-opacity="0"/>
- </radialGradient>
+ <linearGradient id="mahogany" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#3b2327"/><stop offset=".45" stop-color="#7a4b43"/><stop offset=".65" stop-color="#4a2a2b"/><stop offset="1" stop-color="#21171c"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2=".2"><stop stop-color="#21161c"/><stop offset=".18" stop-color="#8d5845"/><stop offset=".5" stop-color="#613739"/><stop offset=".82" stop-color="#8d5845"/><stop offset="1" stop-color="#21161c"/></linearGradient>
+ <linearGradient id="plum" x1="0" y1="0" x2=".1" y2="1"><stop stop-color="#aa78b3"/><stop offset=".28" stop-color="#81518f"/><stop offset=".75" stop-color="#573369"/><stop offset="1" stop-color="#342345"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#fff1b5"/><stop offset=".3" stop-color="#d7ae67"/><stop offset=".7" stop-color="#8b5e35"/><stop offset="1" stop-color="#e1c07c"/></linearGradient>
+ <radialGradient id="sheen" cx=".35" cy=".12" r="1"><stop stop-color="#e4b7df" stop-opacity=".28"/><stop offset="1" stop-color="#e4b7df" stop-opacity="0"/></radialGradient>
 </defs>
-<!-- Everything outside the throne is transparent, preserving the chamber wall. -->
-<!-- Splayed feet and supports; sculpted wood remains visible either side of Kae. -->
-<path d="M75 478 L111 480 L101 558 L57 569 Q48 560 61 549 L78 540Z M289 480 L325 478 L341 546 Q353 561 337 568 L297 556Z" fill="url(#woodedge)" stroke="#1a1119" stroke-width="6"/>
-<path d="M65 557 L100 546 M299 546 L338 557" stroke="url(#brass)" stroke-width="6" stroke-linecap="round"/>
-<!-- Carved outer back: elevated crest, tall gently tapered sides. -->
-<path d="M57 468 Q42 407 47 311 L45 168 Q44 104 91 79 Q127 58 152 64 L172 30 Q181 14 199 10 Q218 14 228 30 L250 64 Q286 55 318 83 Q357 115 354 176 L351 316 Q359 407 339 470 L307 489 L92 489Z" fill="url(#mahogany)" stroke="#1b1119" stroke-width="10" stroke-linejoin="round"/>
-<!-- Antique gold inlay traces the high arched silhouette. -->
-<path d="M66 422 L64 166 Q62 109 107 91 Q146 71 164 80 L181 49 Q190 30 200 28 Q210 30 219 49 L236 80 Q270 72 302 96 Q336 120 334 175 L332 422" fill="none" stroke="url(#brass)" stroke-width="8" stroke-linecap="round"/>
-<!-- Upholstered back, with rounded shoulders, a taper at the base, and raised perimeter piping. -->
-<path d="M99 442 Q87 367 88 200 Q89 139 121 124 Q147 112 166 114 Q180 86 200 86 Q220 86 234 114 Q269 108 289 128 Q313 151 312 202 Q314 371 302 442 Q206 472 99 442Z" fill="url(#velvet)" stroke="#291933" stroke-width="9"/>
-<path d="M99 442 Q87 367 88 200 Q89 139 121 124 Q147 112 166 114 Q180 86 200 86 Q220 86 234 114 Q269 108 289 128 Q313 151 312 202 Q314 371 302 442 Q206 472 99 442Z" fill="url(#velvetLight)"/>
-<path d="M107 422 Q99 334 100 197 Q101 144 130 135 Q158 124 175 128 Q189 100 201 101 Q214 101 228 129 Q270 122 287 154 Q302 187 300 222 L295 422" fill="none" stroke="#d7a7d5" stroke-opacity=".43" stroke-width="5"/>
-<!-- Subtle tufting keeps this regal, not gaudy. -->
-<g fill="#e4bf82" fill-opacity=".62">
- <circle cx="158" cy="211" r="3.4"/><circle cx="244" cy="211" r="3.4"/>
- <circle cx="200" cy="285" r="3.4"/><circle cx="158" cy="355" r="3.4"/><circle cx="242" cy="355" r="3.4"/>
+<!-- Only the broad decorative backrest. No chair seat, arms, platform or feet. -->
+<!-- Continuous arched wooden surround: gently peaked center, carved shoulders. -->
+<path d="M19 321 L22 135 Q24 91 66 75 Q103 65 134 80 Q170 49 210 57 Q265 70 303 54 Q338 42 365 24 Q385 9 400 8 Q415 9 435 24 Q462 42 497 54 Q535 70 590 57 Q630 49 666 80 Q697 65 734 75 Q776 91 778 135 L781 321 Q779 331 762 332 L38 332 Q21 331 19 321Z" fill="url(#edge)" stroke="#21161a" stroke-width="10" stroke-linejoin="round"/>
+<!-- Narrow inlaid gold tracery along the top and sides. -->
+<path d="M43 306 L44 142 Q44 107 78 97 Q107 87 136 105 Q175 76 214 83 Q270 95 314 74 Q356 60 382 38 Q391 31 400 30 Q409 31 418 38 Q444 60 486 74 Q530 95 586 83 Q625 76 664 105 Q693 87 722 97 Q756 107 756 142 L757 306" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+<!-- Plum upholstered field inside the frame, almost edge-to-edge for easy stretching. -->
+<path d="M69 309 L69 151 Q69 124 93 119 Q115 111 142 129 Q176 102 210 109 Q270 120 319 97 Q360 84 390 58 Q400 49 410 58 Q440 84 481 97 Q530 120 590 109 Q624 102 658 129 Q685 111 707 119 Q731 124 731 151 L731 309 Q401 322 69 309Z" fill="url(#plum)" stroke="#2c1c32" stroke-width="7"/>
+<path d="M69 309 L69 151 Q69 124 93 119 Q115 111 142 129 Q176 102 210 109 Q270 120 319 97 Q360 84 390 58 Q400 49 410 58 Q440 84 481 97 Q530 120 590 109 Q624 102 658 129 Q685 111 707 119 Q731 124 731 151 L731 309 Q401 322 69 309Z" fill="url(#sheen)"/>
+<!-- Fine seam follows the arch; horizontal quilting reads pleasantly even when stretched. -->
+<path d="M87 298 L87 159 Q88 139 111 139 Q132 135 147 150 Q177 121 212 130 Q270 141 326 116 Q368 102 400 78 Q432 102 474 116 Q530 141 588 130 Q623 121 653 150 Q668 135 689 139 Q712 139 713 159 L713 298" fill="none" stroke="#d8a7d4" opacity=".38" stroke-width="4"/>
+<g fill="none" stroke="#d9abd7" stroke-opacity=".20" stroke-width="2">
+ <path d="M162 173 Q281 215 400 176 Q520 215 638 173"/>
+ <path d="M162 267 Q281 232 400 268 Q520 232 638 267"/>
 </g>
-<g fill="none" stroke="#dca6d5" stroke-width="2" opacity=".22">
- <path d="M158 211 Q183 258 200 285 Q222 244 244 211"/>
- <path d="M158 355 Q180 320 200 285 Q222 321 242 355"/>
+<g fill="#ebcd88" opacity=".72">
+ <circle cx="160" cy="173" r="4"/><circle cx="400" cy="176" r="4"/><circle cx="640" cy="173" r="4"/>
+ <circle cx="160" cy="267" r="4"/><circle cx="400" cy="268" r="4"/><circle cx="640" cy="267" r="4"/>
 </g>
-<!-- A modest crest with carved curled tendrils, not an enormous crown. -->
-<path d="M167 68 Q179 51 200 55 Q221 51 233 68" fill="none" stroke="url(#brass)" stroke-width="6"/>
-<path d="M176 69 Q166 54 154 54 M224 69 Q234 54 246 54" fill="none" stroke="#ba884a" stroke-width="4" stroke-linecap="round"/>
-<path d="M188 61 L200 43 L212 61 L200 79Z" fill="#6e385c" stroke="url(#brass)" stroke-width="4"/>
-<path d="M181 94 Q200 105 219 94" fill="none" stroke="#ddbb74" stroke-opacity=".6" stroke-width="3"/>
-<!-- Seat cushion and raised, dark carved armrests. They stay behind Kae by chamber z-index. -->
-<path d="M83 440 Q195 419 319 440 L306 489 Q200 507 98 489Z" fill="url(#seat)" stroke="#291a2e" stroke-width="8"/>
-<path d="M96 481 Q201 497 304 481" fill="none" stroke="url(#brass)" stroke-width="5" opacity=".9"/>
-<path d="M49 380 Q64 347 88 360 Q115 371 121 418 L123 472 L95 487 L66 468 Q59 432 49 380Z" fill="url(#woodedge)" stroke="#24171c" stroke-width="7"/>
-<path d="M351 380 Q336 347 312 360 Q285 371 279 418 L277 472 L305 487 L334 468 Q341 432 351 380Z" fill="url(#woodedge)" stroke="#24171c" stroke-width="7"/>
-<path d="M64 380 Q83 367 103 400 M336 380 Q317 367 297 400" fill="none" stroke="url(#brass)" stroke-width="5" stroke-linecap="round"/>
-<path d="M69 470 L84 505 M331 470 L316 505" stroke="#a97645" stroke-width="5"/>
+<!-- Carved side scrolls enhance framing without protruding as chair arms. -->
+<g fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round">
+ <path d="M47 154 Q23 146 30 124 Q43 104 59 120 Q64 130 54 136"/>
+ <path d="M753 154 Q777 146 770 124 Q757 104 741 120 Q736 130 746 136"/>
+ <path d="M40 253 Q58 239 56 225 Q53 212 41 218"/>
+ <path d="M760 253 Q742 239 744 225 Q747 212 759 218"/>
+</g>
+<!-- Central engraved dragon-scale emblem, modest enough not to dominate Kae. -->
+<path d="M380 46 Q400 27 420 46 Q412 64 400 70 Q388 64 380 46Z" fill="#633654" stroke="url(#gold)" stroke-width="5"/>
+<path d="M390 45 L400 35 L410 45 L400 57Z" fill="#af81b2" stroke="#e4c98b" stroke-width="2"/>
+<!-- Solid wooden lower edge, designed to disappear naturally behind the existing pillow. -->
+<path d="M24 306 Q400 321 776 306 L776 326 Q400 339 24 326Z" fill="url(#mahogany)" stroke="#26181e" stroke-width="5"/>
+<path d="M36 307 Q400 325 764 307" fill="none" stroke="url(#gold)" stroke-width="5" opacity=".86"/>
 </svg>
