@@ -4,7 +4,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),assert=require(
 const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
-const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.registryError=false;window.timerRow=null;window.cancelDuringSend=false;
+const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.registryError=false;window.timerRow=null;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
 window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
@@ -21,7 +21,7 @@ window.catalogRows=[
 {id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
 ];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
@@ -53,16 +53,34 @@ assert.equal(await page.locator('.chamber-kae').evaluate(el=>el.style.left),'35%
 await page.locator('#layout-slot').selectOption('behind');
 assert.equal(await page.locator('.chamber-throne').isVisible(),false,'Unowned throne stays hidden');
 assert.equal(await page.locator('#layout-guide').isVisible(),true,'Invisible slots have guide outlines');
+await page.locator('#layout-artwork').selectOption('throne_css');
+assert.equal(await page.locator('.chamber-throne').isVisible(),true,'Previewing can reveal an unowned throne');
 await page.locator('#layout-slot').selectOption('right');
+assert.equal(await page.locator('.chamber-throne').isVisible(),false,'Changing slots restores unowned throne');
+assert.equal(await page.locator('#layout-artwork').inputValue(),'','Preview does not carry over to another slot');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.left),'','Default right-anchored case remains unchanged until edited');
 await page.locator('#layout-left').evaluate(el=>{el.value='75';el.dispatchEvent(new Event('input',{bubbles:true}));});
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.left),'75%');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.right),'auto');
+assert.equal(await page.locator('.chamber-case').isVisible(),false);
+await page.locator('#layout-artwork').selectOption('case_css');
+assert.equal(await page.locator('.chamber-case').isVisible(),true,'Right side previews unowned display case');
+await page.locator('#layout-artwork').selectOption('');
+assert.equal(await page.locator('.chamber-case').isVisible(),false,'Normal room mode restores owned-only display');
+await page.locator('#layout-slot').selectOption('kae');
+await page.locator('#layout-artwork').selectOption('kae_svg');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/assets\/kae\.svg/);
 await page.locator('#layout-slot').selectOption('cushion');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/assets\/kae_cutout\.webp/,'Slot switch restores Kae');
+assert.equal(await page.locator('.chamber-pillow').isVisible(),false);
+await page.locator('#layout-artwork').selectOption('plum_cushion');
+assert.equal(await page.locator('.chamber-pillow').isVisible(),true,'Unowned pillow previews safely');
+assert.equal(await page.evaluate(()=>window.rewardPurchaseCalls),0,'Preview does not buy inventory');
 assert.equal(await page.locator('#layout-width').inputValue(),'48','Switching slots preserves other geometry');
 await page.reload();
 await page.locator('#game:not(.hidden)').waitFor();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'48%');
+assert.equal(await page.locator('.chamber-pillow').isVisible(),false,'Refresh removes temporary unowned art');
 assert.equal(await page.locator('.chamber-kae').evaluate(el=>el.style.left),'35%');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.left),'75%');
 await page.locator('#hive-settings').click();
@@ -71,7 +89,11 @@ await page.locator('#layout-reset').click();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'','Restoring removes the override and uses CSS defaults');
 assert.equal(await page.locator('#layout-width-value').textContent(),'36%');
 assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('beehive:room-layout:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b')).cushion),null,'Explicit reset blocks old legacy calibration');
+await page.locator('#layout-artwork').selectOption('plum_cushion');
+assert.equal(await page.locator('.chamber-pillow').isVisible(),true);
 await page.locator('#layout-close').click();
+assert.equal(await page.locator('.chamber-pillow').isVisible(),false,'Close discards unowned art');
+assert.equal(await page.locator('#layout-artwork').inputValue(),'');
 assert.equal(await page.locator('#layout-guide').isVisible(),false);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),false);
 await page.reload();
