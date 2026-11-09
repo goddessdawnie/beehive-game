@@ -4,7 +4,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),assert=require(
 const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
-const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.registryError=false;window.timerRow=null;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
+const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRow=null;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
 window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
@@ -21,7 +21,7 @@ window.catalogRows=[
 {id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
 ];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
@@ -236,6 +236,31 @@ await page.evaluate(()=>window.cancelDuringSend=true);await page.locator('#timer
 await page.waitForFunction(()=>document.querySelector('#timer-status').textContent.includes('Delivery has started'));
 assert.equal(await page.locator('#timer-cancel').isDisabled(),true);
 await page.waitForTimeout(1100);assert.match(await page.locator('#timer-status').textContent(),/Delivery has started/);
+// Quantity tier artwork is derived from actual returned inventory data only; no purchase path is invoked.
+const originalBalance=await page.locator('#coins').textContent();
+const countsToCheck=[[1,'single'],[4,'single'],[5,'pile'],[12,'pile'],[13,'mound'],[25,'mound'],[26,'chest'],[44,'chest']];
+for(const [qty,tier] of countsToCheck){
+ await page.evaluate(q=>{
+  window.inventoryRows=[
+   {item_id:'coin-id',quantity:q,item:{name:'Gold coin',slug:'gold_coin'}},
+   {item_id:'whisker-id',quantity:q,item:{name:'Minnie whisker',slug:'minnie_whisker'}}
+  ];
+ },qty);
+ await page.locator('#refresh').click();
+ await page.waitForFunction(q=>document.querySelector('.chamber-gold')?.dataset.quantity===String(q)&&document.querySelector('.chamber-whisker')?.dataset.quantity===String(q),qty);
+ for(const [selector,stem] of [['.chamber-gold','coin'],['.chamber-whisker','whisker']]){
+  assert.equal(await page.locator(selector).isVisible(),true,'Owned '+stem+' must be displayed');
+  assert.equal(await page.locator(selector).evaluate(n=>n.classList.contains('tier-art')),true);
+  assert.match(await page.locator(selector).evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp(stem+'-'+tier+'\\.svg'));
+ }
+}
+await page.evaluate(()=>window.inventoryRows=[]);
+await page.locator('#refresh').click();
+await page.waitForFunction(()=>!document.querySelector('.chamber-gold')?.classList.contains('visible')&&!document.querySelector('.chamber-whisker')?.classList.contains('visible'));
+assert.equal(await page.locator('.chamber-gold').evaluate(n=>n.classList.contains('tier-art')),false,'No stale art after quantity reaches zero');
+assert.equal(await page.locator('.chamber-whisker').evaluate(n=>n.classList.contains('tier-art')),false);
+assert.equal(await page.locator('#coins').textContent(),originalBalance,'Visual switching never alters coin balance');
+assert.equal(await page.evaluate(()=>window.rewardPurchaseCalls),0,'Quantity display never makes purchases');
 assert.deepEqual(errors,[]);
 console.log('PASS mocked browser viewport '+viewport.width+'x'+viewport.height+': disable/enable, active panel, refresh error, timer cancellation race, completed ordering/undo/recompletion, Kae reply copy and multiline composer, no JS errors');await ctx.close();
 }
