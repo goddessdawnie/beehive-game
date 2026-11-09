@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "status": "artwork_only",
+  "notes": "Assets only. Do not treat this manifest as proof of ownership, purchasability or equipment. No automatic quantity selection is active yet. A later approved implementation can map owned quantities to these art tiers.",
+  "tiers": [
+    {
+      "id": "single",
+      "min": 1,
+      "max": 4
+    },
+    {
+      "id": "pile",
+      "min": 5,
+      "max": 12
+    },
+    {
+      "id": "mound",
+      "min": 13,
+      "max": 25
+    },
+    {
+      "id": "chest_or_bundle",
+      "min": 26,
+      "max": null
+    }
+  ],
+  "items": {
+    "coin": {
+      "label": "Gold coins",
+      "shopSlug": "gold_coin",
+      "variants": {
+        "single": {
+          "source": "assets/treasure-quantity/coin-single.svg",
+          "displayLabel": "single"
+        },
+        "pile": {
+          "source": "assets/treasure-quantity/coin-pile.svg",
+          "displayLabel": "pile"
+        },
+        "mound": {
+          "source": "assets/treasure-quantity/coin-mound.svg",
+          "displayLabel": "mound"
+        },
+        "chest_or_bundle": {
+          "source": "assets/treasure-quantity/coin-chest.svg",
+          "displayLabel": "Overflowing chest"
+        }
+      }
+    },
+    "jewel": {
+      "label": "Jewel (shop registration pending)",
+      "shopSlug": null,
+      "variants": {
+        "single": {
+          "source": "assets/treasure-quantity/jewel-single.svg",
+          "displayLabel": "single"
+        },
+        "pile": {
+          "source": "assets/treasure-quantity/jewel-pile.svg",
+          "displayLabel": "pile"
+        },
+        "mound": {
+          "source": "assets/treasure-quantity/jewel-mound.svg",
+          "displayLabel": "mound"
+        },
+        "chest_or_bundle": {
+          "source": "assets/treasure-quantity/jewel-chest.svg",
+          "displayLabel": "Overflowing chest"
+        }
+      }
+    },
+    "whisker": {
+      "label": "Minnie whiskers",
+      "shopSlug": "minnie_whisker",
+      "variants": {
+        "single": {
+          "source": "assets/treasure-quantity/whisker-single.svg",
+          "displayLabel": "single"
+        },
+        "pile": {
+          "source": "assets/treasure-quantity/whisker-pile.svg",
+          "displayLabel": "pile"
+        },
+        "mound": {
+          "source": "assets/treasure-quantity/whisker-mound.svg",
+          "displayLabel": "mound"
+        },
+        "chest_or_bundle": {
+          "source": "assets/treasure-quantity/whisker-chest.svg",
+          "displayLabel": "Tied bundle"
+        }
+      }
+    }
+  }
+}
