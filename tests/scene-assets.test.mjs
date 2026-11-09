@@ -36,6 +36,7 @@ test('imperial throne uses layered SVG art behind Kae and keeps CSS only for opt
  assert.equal(throne.fit,'fill');
  assert.equal(throne.renderer,'existing');
  assert.equal(throne.source,'assets/room/behind/ornate-throne-back.svg');
+ assert.doesNotMatch(html,/assets\/room\/behind\/imperial-throne\.svg/,'Revised throne must use a distinct URL from the cached old chair');
  assert.equal(manifest.assets.find(a=>a.id==='throne_css').renderer,'legacy_throne');
  const art=await read('assets/room/behind/ornate-throne-back.svg');
  assert.match(art,/viewBox="0 0 800 340"/);
