@@ -34,14 +34,14 @@
     },
     {
       "id": "throne_svg",
-      "label": "Imperial throne · plum velvet and carved wood",
+      "label": "Imperial throne back · carved wood and plum velvet",
       "slots": [
         "behind"
       ],
       "renderer": "existing",
       "treasure": "imperial_throne",
       "source": "assets/room/behind/imperial-throne.svg",
-      "fit": "contain"
+      "fit": "fill"
     },
     {
       "id": "throne_css",
