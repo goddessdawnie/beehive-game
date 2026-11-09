@@ -41,10 +41,10 @@ test('imperial throne uses layered SVG art behind Kae and keeps CSS only for opt
  assert.match(art,/viewBox="0 0 400 580"/);
  assert.match(art,/id="velvet"/);
  assert.match(art,/id="brass"/);
- assert.doesNotMatch(art,/<script\\b|<image\\b|href="https?:/i);
- assert.match(html,/\\.chamber-throne\\{[^}]*imperial-throne\\.svg[^}]*z-index:1/);
- assert.match(html,/\\.chamber-kae\\{[^}]*z-index:2/);
- assert.match(html,/\\.chamber-throne\\.preview-legacy\\{/);
+ assert.doesNotMatch(art,/<script\b|<image\b|href="https?:/i);
+ assert.match(html,/\.chamber-throne\{[^}]*imperial-throne\.svg[^}]*z-index:1/);
+ assert.match(html,/\.chamber-kae\{[^}]*z-index:2/);
+ assert.match(html,/\.chamber-throne\.preview-legacy\{/);
 });
 
 test('future display contents render below the SVG foreground without changing ownership flow',()=>{
