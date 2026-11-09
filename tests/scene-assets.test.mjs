@@ -41,8 +41,8 @@ test('imperial throne uses layered SVG art behind Kae and keeps CSS only for opt
  assert.match(art,/viewBox="0 0 800 340"/);
  assert.match(art,/preserveAspectRatio="none"/);
  assert.match(art,/no chair seat or legs/);
- assert.match(art,/id="velvet"/);
- assert.match(art,/id="brass"/);
+ assert.match(art,/id="plum"/);
+ assert.match(art,/id="gold"/);
  assert.doesNotMatch(art,/<script\b|<image\b|href="https?:/i);
  assert.match(html,/\.chamber-throne\{[^}]*imperial-throne\.svg[^}]*z-index:1/);
  assert.match(html,/\.chamber-kae\{[^}]*z-index:2/);
