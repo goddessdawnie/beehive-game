@@ -237,6 +237,7 @@ await page.waitForFunction(()=>document.querySelector('#timer-status').textConte
 assert.equal(await page.locator('#timer-cancel').isDisabled(),true);
 await page.waitForTimeout(1100);assert.match(await page.locator('#timer-status').textContent(),/Delivery has started/);
 // Quantity tier artwork is derived from actual returned inventory data only; no purchase path is invoked.
+await page.locator('#tab-tasks').click();
 const originalBalance=await page.locator('#coins').textContent();
 const countsToCheck=[[1,'single'],[4,'single'],[5,'pile'],[12,'pile'],[13,'mound'],[25,'mound'],[26,'chest'],[44,'chest']];
 for(const [qty,tier] of countsToCheck){
