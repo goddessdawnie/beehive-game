@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" preserveAspectRatio="none" role="img" aria-label="Wide, low ornate throne back with carved dark wood, plum velvet inset and gold trim; no chair seat or legs">
+<defs>
+ <linearGradient id="mahogany" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#3b2327"/><stop offset=".45" stop-color="#7a4b43"/><stop offset=".65" stop-color="#4a2a2b"/><stop offset="1" stop-color="#21171c"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2=".2"><stop stop-color="#21161c"/><stop offset=".18" stop-color="#8d5845"/><stop offset=".5" stop-color="#613739"/><stop offset=".82" stop-color="#8d5845"/><stop offset="1" stop-color="#21161c"/></linearGradient>
+ <linearGradient id="plum" x1="0" y1="0" x2=".1" y2="1"><stop stop-color="#aa78b3"/><stop offset=".28" stop-color="#81518f"/><stop offset=".75" stop-color="#573369"/><stop offset="1" stop-color="#342345"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#fff1b5"/><stop offset=".3" stop-color="#d7ae67"/><stop offset=".7" stop-color="#8b5e35"/><stop offset="1" stop-color="#e1c07c"/></linearGradient>
+ <radialGradient id="sheen" cx=".35" cy=".12" r="1"><stop stop-color="#e4b7df" stop-opacity=".28"/><stop offset="1" stop-color="#e4b7df" stop-opacity="0"/></radialGradient>
+</defs>
+<!-- Only the broad decorative backrest. No chair seat, arms, platform or feet. -->
+<!-- Continuous arched wooden surround: gently peaked center, carved shoulders. -->
+<path d="M19 321 L22 135 Q24 91 66 75 Q103 65 134 80 Q170 49 210 57 Q265 70 303 54 Q338 42 365 24 Q385 9 400 8 Q415 9 435 24 Q462 42 497 54 Q535 70 590 57 Q630 49 666 80 Q697 65 734 75 Q776 91 778 135 L781 321 Q779 331 762 332 L38 332 Q21 331 19 321Z" fill="url(#edge)" stroke="#21161a" stroke-width="10" stroke-linejoin="round"/>
+<!-- Narrow inlaid gold tracery along the top and sides. -->
+<path d="M43 306 L44 142 Q44 107 78 97 Q107 87 136 105 Q175 76 214 83 Q270 95 314 74 Q356 60 382 38 Q391 31 400 30 Q409 31 418 38 Q444 60 486 74 Q530 95 586 83 Q625 76 664 105 Q693 87 722 97 Q756 107 756 142 L757 306" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+<!-- Plum upholstered field inside the frame, almost edge-to-edge for easy stretching. -->
+<path d="M69 309 L69 151 Q69 124 93 119 Q115 111 142 129 Q176 102 210 109 Q270 120 319 97 Q360 84 390 58 Q400 49 410 58 Q440 84 481 97 Q530 120 590 109 Q624 102 658 129 Q685 111 707 119 Q731 124 731 151 L731 309 Q401 322 69 309Z" fill="url(#plum)" stroke="#2c1c32" stroke-width="7"/>
+<path d="M69 309 L69 151 Q69 124 93 119 Q115 111 142 129 Q176 102 210 109 Q270 120 319 97 Q360 84 390 58 Q400 49 410 58 Q440 84 481 97 Q530 120 590 109 Q624 102 658 129 Q685 111 707 119 Q731 124 731 151 L731 309 Q401 322 69 309Z" fill="url(#sheen)"/>
+<!-- Fine seam follows the arch; horizontal quilting reads pleasantly even when stretched. -->
+<path d="M87 298 L87 159 Q88 139 111 139 Q132 135 147 150 Q177 121 212 130 Q270 141 326 116 Q368 102 400 78 Q432 102 474 116 Q530 141 588 130 Q623 121 653 150 Q668 135 689 139 Q712 139 713 159 L713 298" fill="none" stroke="#d8a7d4" opacity=".38" stroke-width="4"/>
+<g fill="none" stroke="#d9abd7" stroke-opacity=".20" stroke-width="2">
+ <path d="M162 173 Q281 215 400 176 Q520 215 638 173"/>
+ <path d="M162 267 Q281 232 400 268 Q520 232 638 267"/>
+</g>
+<g fill="#ebcd88" opacity=".72">
+ <circle cx="160" cy="173" r="4"/><circle cx="400" cy="176" r="4"/><circle cx="640" cy="173" r="4"/>
+ <circle cx="160" cy="267" r="4"/><circle cx="400" cy="268" r="4"/><circle cx="640" cy="267" r="4"/>
+</g>
+<!-- Carved side scrolls enhance framing without protruding as chair arms. -->
+<g fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round">
+ <path d="M47 154 Q23 146 30 124 Q43 104 59 120 Q64 130 54 136"/>
+ <path d="M753 154 Q777 146 770 124 Q757 104 741 120 Q736 130 746 136"/>
+ <path d="M40 253 Q58 239 56 225 Q53 212 41 218"/>
+ <path d="M760 253 Q742 239 744 225 Q747 212 759 218"/>
+</g>
+<!-- Central engraved dragon-scale emblem, modest enough not to dominate Kae. -->
+<path d="M380 46 Q400 27 420 46 Q412 64 400 70 Q388 64 380 46Z" fill="#633654" stroke="url(#gold)" stroke-width="5"/>
+<path d="M390 45 L400 35 L410 45 L400 57Z" fill="#af81b2" stroke="#e4c98b" stroke-width="2"/>
+<!-- Solid wooden lower edge, designed to disappear naturally behind the existing pillow. -->
+<path d="M24 306 Q400 321 776 306 L776 326 Q400 339 24 326Z" fill="url(#mahogany)" stroke="#26181e" stroke-width="5"/>
+<path d="M36 307 Q400 325 764 307" fill="none" stroke="url(#gold)" stroke-width="5" opacity=".86"/>
+</svg>
