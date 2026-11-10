@@ -27,8 +27,20 @@ const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
 await page.addInitScript(()=>localStorage.setItem('beehive:cushion-layout:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b',JSON.stringify({left:29,bottom:11,width:47,height:15})));
 await page.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.request().url().includes('supabase.min.js')?route.fulfill({contentType:'application/javascript',body:mock}):route.abort());
+page.on('pageerror',err=>console.error('PAGE SCRIPT ERROR:',err.message));
 await page.goto(origin);
 await page.locator('#game:not(.hidden)').waitFor();
+await page.locator('#add-task-details summary').click();
+assert.deepEqual(await page.locator('#repeat option').evaluateAll(options=>options.map(o=>o.value)),['','daily','weekly','monthly','interval'],'Recurring options available');
+await page.locator('#repeat').selectOption('interval');
+assert.equal(await page.locator('#repeat-interval-label').isVisible(),true,'Interval controls appear');
+await page.locator('#repeat-interval').fill('3');
+await page.locator('#repeat-unit').selectOption('weeks');
+assert.equal(await page.locator('#repeat-unit').inputValue(),'weeks');
+await page.locator('#repeat').selectOption('monthly');
+assert.equal(await page.locator('#repeat-interval-label').isVisible(),false,'Monthly uses due-date anchor');
+await page.locator('#add-task-details summary').click();
+
 assert.equal(await page.locator('#maintenance-menu').isVisible(),false);
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'47%','Legacy cushion calibration carries forward');
 await page.locator('#hive-settings').click();
