@@ -282,6 +282,18 @@ for(const [qty,tier] of countsToCheck){
   assert.match(await page.locator(selector).evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp(stem+'-'+tier+'\\.svg'));
  }
 }
+// Unillustrated inventory is represented by one independent room object per item.
+await page.evaluate(()=>window.inventoryRows=[{item_id:'unique-ornament',quantity:2,item:{name:'Dragon ornament',slug:'dragon_ornament'}}]);
+await page.locator('#refresh').click();
+await page.waitForFunction(()=>document.querySelector('#treasure-item-unique-ornament')?.textContent.includes('×2'));
+assert.equal(await page.locator('#treasure-item-unique-ornament').evaluate(el=>el.parentElement.id),'kae-chamber');
+await page.locator('#layout-slot').selectOption('item:unique-ornament');
+await page.locator('#layout-width').evaluate(el=>{el.value='35';el.dispatchEvent(new Event('input',{bubbles:true}));});
+assert.equal(await page.locator('#treasure-item-unique-ornament').evaluate(el=>el.style.width),'35%');
+await page.locator('#layout-visible').uncheck();
+assert.equal(await page.locator('#treasure-item-unique-ornament').evaluate(el=>el.classList.contains('room-layout-hidden')),true);
+await page.locator('#layout-reset').click();
+assert.equal(await page.locator('#treasure-item-unique-ornament').evaluate(el=>el.classList.contains('room-layout-hidden')),false);
 await page.evaluate(()=>window.inventoryRows=[]);
 await page.locator('#refresh').click();
 await page.waitForFunction(()=>!document.querySelector('.chamber-gold')?.classList.contains('visible')&&!document.querySelector('.chamber-whisker')?.classList.contains('visible'));
