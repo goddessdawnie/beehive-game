@@ -285,8 +285,9 @@ for(const [qty,tier] of countsToCheck){
 // Unillustrated inventory is represented by one independent room object per item.
 await page.evaluate(()=>window.inventoryRows=[{item_id:'unique-ornament',quantity:2,item:{name:'Dragon ornament',slug:'dragon_ornament'}}]);
 await page.locator('#refresh').click();
-await page.waitForFunction(()=>document.querySelector('#treasure-item-unique-ornament')?.textContent.includes('×2'));
+await page.waitForFunction(()=>document.querySelector('#treasure-item-unique-ornament')?.textContent==='Dragon ornament');
 assert.equal(await page.locator('#treasure-item-unique-ornament').evaluate(el=>el.parentElement.id),'kae-chamber');
+assert.equal(await page.locator('#treasure-item-unique-ornament').textContent(),'Dragon ornament','Quantity stays in inventory, not room label');
 await page.locator('#hive-settings').click();
 await page.locator('#open-layout').click();
 await page.locator('#layout-slot').selectOption('item:unique-ornament');
