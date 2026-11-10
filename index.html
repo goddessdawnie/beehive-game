@@ -221,6 +221,22 @@ function initRoomLayouts(ownerId){
     for(const slot of layoutSlots)if(Object.prototype.hasOwnProperty.call(stored,slot.id))
      savedSlotLayouts[slot.id]=stored[slot.id]===null?null:normalizeLayout(slot,stored[slot.id]);
   }catch{}
+  // Convert coordinates saved by the previous nested shelf layout into room percentages once.
+  const migrationKey=layoutStorageKey(ownerId)+':independent-treasures-v1';
+  try{
+   if(localStorage.getItem(migrationKey)!=='done'){
+    const shelf=savedSlotLayouts.treasure_shelf||layoutSlotById.get('treasure_shelf').defaults;
+    for(const id of ['gold','whisker']){
+     const old=savedSlotLayouts[id];
+     if(old){
+      const next={left:shelf.left+shelf.width*old.left/100,bottom:shelf.bottom+shelf.height*old.bottom/100,width:shelf.width*old.width/100,height:shelf.height*old.height/100,visible:old.visible!==false};
+      savedSlotLayouts[id]=normalizeLayout(layoutSlotById.get(id),next);
+     }
+    }
+    localStorage.setItem(layoutStorageKey(ownerId),JSON.stringify(savedSlotLayouts));
+    localStorage.setItem(migrationKey,'done');
+   }
+  }catch{}
   // Preserve the accepted cushion settings from the original one-slot editor.
   if(!Object.prototype.hasOwnProperty.call(savedSlotLayouts,'cushion'))try{
    const previous=JSON.parse(localStorage.getItem(legacyCushionKey(ownerId))||'null');
