@@ -74,6 +74,7 @@ await page.locator('#open-wordle').click();
 for(let i=1;i<=4;i++){
  await page.locator('#wordle-claim').click();
  await page.waitForFunction(target=>window.playClaimCount===target,i);
+ await page.waitForFunction(target=>document.querySelector('#play-claim-budget').textContent.includes(target+'/5 claims used today'),i);
  await page.locator('#wordle-claim').waitFor({state:'visible'});
  if(i<5)await page.waitForFunction(()=>!document.querySelector('#wordle-claim').disabled);
  assert.match(await page.locator('#play-claim-budget').textContent(),new RegExp(i+'/5 claims used today'));
@@ -82,6 +83,7 @@ await page.locator('#back-wordle').click();
 await page.locator('#open-wumpus').click();
 await page.locator('#wumpus-claim').click();
 await page.waitForFunction(()=>window.playClaimCount===5);
+await page.waitForFunction(()=>document.querySelector('#play-claim-budget').textContent.includes('5/5 claims used today'));
 await page.waitForFunction(()=>document.querySelector('#wumpus-claim').disabled===true);
 assert.match(await page.locator('#play-claim-budget').textContent(),/5\/5 claims used today/);
 await page.locator('#back-wumpus').click();
