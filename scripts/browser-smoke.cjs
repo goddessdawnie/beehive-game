@@ -38,7 +38,7 @@ assert.equal(await page.locator('#layout-tools').isVisible(),true);
 assert.equal(await page.locator('#layout-guide').isVisible(),true);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),true);
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
- 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Shelf · Jewel preview'
+ 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasures · Shelf contents','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar'
 ]);
 assert.equal(await page.locator('#layout-width-value').textContent(),'47%');
 await page.locator('#layout-width').evaluate(el=>{el.value='48';el.dispatchEvent(new Event('input',{bubbles:true}));});
