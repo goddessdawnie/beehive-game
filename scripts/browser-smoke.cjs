@@ -40,6 +40,15 @@ assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('l
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
  'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasures · Shelf contents','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar'
 ]);
+// Coins and whiskers are direct children of the room, with independently editable geometry.
+for(const [slot,selector] of [['gold','.chamber-gold'],['whisker','.chamber-whisker']]){
+ assert.equal(await page.locator(selector).evaluate(el=>el.parentElement?.id),'kae-chamber');
+ await page.locator('#layout-slot').selectOption(slot);
+ await page.locator('#layout-width').evaluate(el=>{el.value='30';el.dispatchEvent(new Event('input',{bubbles:true}));});
+ assert.equal(await page.locator(selector).evaluate(el=>el.style.width),'30%');
+ assert.equal(await page.locator('#chamber-generic-treasures').evaluate(el=>el.style.width),'','Treasure size must not resize shelf container');
+ await page.locator('#layout-reset').click();
+}
 // Universal room controls target independent actual scene nodes, not inventory or purchases.
 await page.locator('#layout-slot').selectOption('wall_shelf');
 await page.locator('#layout-bottom').evaluate(el=>{el.value='55';el.dispatchEvent(new Event('input',{bubbles:true}));});
