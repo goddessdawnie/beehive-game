@@ -106,7 +106,7 @@ function updateOwnedJewelArtwork(){
  if(!node)return;
  const tier=ownedJewelQuantity>0&&quantityArtwork?quantityTier(quantityArtwork.tiers,ownedJewelQuantity):null;
  const source=tier&&quantityArtwork?.rawJewel?.variants?.[tier.id]?.source;
- const safe=typeof source==='string'&&/^assets\\/treasure-quantity\\/jewel-[a-z-]+\\.svg$/.test(source);
+ const safe=typeof source==='string'&&source.startsWith('assets/treasure-quantity/jewel-')&&source.endsWith('.svg')&&/^[a-z-]+$/.test(source.slice('assets/treasure-quantity/'.length,-4));
  node.classList.toggle('visible',ownedJewelQuantity>0);
  node.style.backgroundImage=safe?'url('+JSON.stringify(source)+')':'';
  node.textContent=ownedJewelQuantity>0&&!safe?'💎':'';
