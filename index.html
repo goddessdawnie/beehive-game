@@ -541,7 +541,6 @@ function renderTreasury(shop,inventory,requests,balance){
  applyArtworkPreview(); // If Maintenance is open, its temporary visual override remains in effect during refresh.
  // Render inventory-backed markers for possessions without dedicated artwork.
  const illustratedSlugs=new Set([...document.querySelectorAll('[data-treasure]')].map(node=>node.dataset.treasure));
- const unillustrated=ownedItems.filter(item=>!illustratedSlugs.has(item.slug)&&item!==jewel);
  const jewel=ownedItems.find(item=>/jewel/i.test(item.slug)&&item.slug!=='jeweled_collar')||ownedItems.find(item=>/jewel/i.test(item.name)&&item.slug!=='jeweled_collar');
  const jewelNode=el('chamber-jewel-owned');
  const jewelTiers=quantityArtwork?.tiers;
@@ -550,6 +549,7 @@ function renderTreasury(shop,inventory,requests,balance){
  const jewelSrc=jewelTier&&jewelArt?.variants?.[jewelTier.id]?.source;
  jewelNode.classList.toggle('visible',Boolean(jewel));
  jewelNode.style.backgroundImage=jewelSrc&&/^assets\/treasure-quantity\/jewel-[a-z-]+\.svg$/.test(jewelSrc)?'url('+JSON.stringify(jewelSrc)+')':'';
+ const unillustrated=ownedItems.filter(item=>!illustratedSlugs.has(item.slug)&&item!==jewel);
  const chamberTreasures=el('chamber-shelf-extras');chamberTreasures.replaceChildren();
  for(const item of unillustrated.slice(0,3)){
   const marker=document.createElement('span');marker.className='chamber-generic-treasure';
