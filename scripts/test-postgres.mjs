@@ -150,33 +150,52 @@ try{
  console.log('PASS ordered and time-stamped Kae history, including timestamp ties and owner separation');
 
 
- // Daily claims: server-controlled catalog, existing Wumpus key, once/day,
- // fixed two-coin ledger award, and future catalog-only registration.
- // The recorded fixture omits the claims PK; restore that invariant in
- // this disposable test database before exercising ON CONFLICT.
- await a.query('alter table public.daily_game_claims add primary key (owner_id,game_key,play_date)');
+ // The existing ledger is the entire shared Play reward budget: no per-game
+ // tracking writes. Existing historical entries count if they occurred today.
  assert.equal((await a.query("select count(*)::int n from public.daily_reward_games where game_key in ('wordle','sudoku','2048','wumpus')")).rows[0].n,4);
  assert.equal((await a.query("select has_table_privilege('authenticated','public.daily_reward_games','INSERT') allowed")).rows[0].allowed,false);
- assert.equal((await a.query("select has_table_privilege('authenticated','public.daily_reward_games','UPDATE') allowed")).rows[0].allowed,false);
- await a.query("insert into public.daily_reward_games(game_key) values('future_game')");
  await a.query('begin');
  await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
  await a.query('set local role authenticated');
- assert.equal((await a.query("select public.claim_daily_game('wumpus') claimed")).rows[0].claimed,true);
- assert.equal((await a.query("select public.claim_daily_game('wumpus') claimed")).rows[0].claimed,false);
- assert.equal((await a.query("select public.claim_daily_game('future_game') claimed")).rows[0].claimed,true);
- // The fixture lacks production's authenticated claims read policy;
- // inspect side effects as the disposable cluster's postgres verifier.
- await a.query('set local role postgres');
- assert.equal((await a.query("select count(*)::int n from public.daily_game_claims where owner_id=$1 and game_key='wumpus'",[owner])).rows[0].n,1);
- assert.equal((await a.query("select count(*)::int n from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[owner])).rows[0].n,2);
- assert.equal((await a.query("select sum(coins_delta)::int total from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[owner])).rows[0].total,4);
- await a.query('set local role authenticated');
- await a.query('savepoint unknown_game');
+ assert.equal((await a.query('select public.play_claims_today() n')).rows[0].n,0);
+ // Simulates a claim from the old per-game system without changing any old rows.
+ await a.query("insert into public.reward_ledger(owner_id,coins_delta,reason) values ($1,2,'game_daily:wordle:legacy')",[owner]);
+ assert.equal((await a.query('select public.play_claims_today() n')).rows[0].n,1);
+ for(const game of ['wordle','wordle','wordle','wumpus']){
+  assert.equal((await a.query('select public.claim_daily_game($1) claimed',[game])).rows[0].claimed,true);
+ }
+ assert.equal((await a.query('select public.play_claims_today() n')).rows[0].n,5);
+ assert.equal((await a.query("select public.claim_daily_game('sudoku') claimed")).rows[0].claimed,false,'Sixth cross-game claim is blocked');
+ assert.equal((await a.query("select public.claim_daily_game('wordle') claimed")).rows[0].claimed,false,'Same-game sixth claim is blocked');
+ assert.equal((await a.query("select count(*)::int n from public.daily_game_claims")).rows[0].n,0,'Old per-game table is not written');
+ assert.equal((await a.query("select count(*)::int n,sum(coins_delta)::int coins from public.reward_ledger where reason like 'game_daily:%'")).rows[0].n,5);
+ assert.equal((await a.query("select sum(coins_delta)::int coins from public.reward_ledger where reason like 'game_daily:%'")).rows[0].coins,10);
+ await a.query('savepoint invalid_game');
  await assert.rejects(a.query("select public.claim_daily_game('not_registered')"),/Unknown game/);
- await a.query('rollback to savepoint unknown_game');
+ await a.query('rollback to savepoint invalid_game');
  await a.query('rollback');
- console.log('PASS Wumpus claim, duplicate protection, catalog extension and ledger rewards');
+ console.log('PASS five pooled claims, repeat same game, existing ledger, no old writes, capped at ten coins');
+
+ // A transaction-held advisory lock must serialize two simultaneous game claims
+ // even when they come from different game buttons.
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[other]);
+ await a.query('set local role authenticated');
+ assert.equal((await a.query("select public.claim_daily_game('wordle') claimed")).rows[0].claimed,true);
+ await b.query('begin');
+ await b.query("select set_config('request.jwt.claim.sub',$1,true)",[other]);
+ await b.query('set local role authenticated');
+ const concurrent=b.query("select public.claim_daily_game('wordle') claimed");concurrent.catch(()=>{});
+ await blocked(observer,b,a);await a.query('commit');
+ assert.equal((await concurrent).rows[0].claimed,true);await b.query('commit');
+ assert.equal((await observer.query("select count(*)::int n from public.reward_ledger where owner_id=$1 and reason like 'game_daily:%'",[other])).rows[0].n,2);
+ console.log('PASS simultaneous same-game claims serialize without exceeding shared budget');
+
+ // Eastern calendar days have 23/25 hours at DST changes, not UTC 24-hour windows.
+ const dst=(await observer.query("select (('2027-03-15'::date::timestamp at time zone 'America/New_York') - ('2027-03-14'::date::timestamp at time zone 'America/New_York')) spring, (('2027-11-08'::date::timestamp at time zone 'America/New_York') - ('2027-11-07'::date::timestamp at time zone 'America/New_York')) fall")).rows[0];
+ assert.equal(dst.spring.hours,23);
+ assert.equal(dst.fall.hours,25);
+ console.log('PASS Eastern daily reset respects daylight-saving boundaries');
 
 
  // Exact retries must wait for the first transaction and return its original ID.
