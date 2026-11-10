@@ -88,7 +88,7 @@ await page.waitForFunction(()=>document.querySelector('#wumpus-claim').disabled=
 assert.match(await page.locator('#play-claim-budget').textContent(),/5\/5 claims used today/);
 await page.locator('#back-wumpus').click();
 await page.locator('#open-2048').click();
-assert.equal(await page.locator('#2048-claim').isDisabled(),true,'All game buttons obey shared five-claim budget');
+assert.equal(await page.locator('[id="2048-claim"]').isDisabled(),true,'All game buttons obey shared five-claim budget');
 assert.equal(await page.evaluate(()=>window.playClaimCalls),5,'Exactly five RPC claims, including four on Wordle');
 await page.locator('#tab-tasks').click();
 
