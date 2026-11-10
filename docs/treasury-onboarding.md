@@ -19,9 +19,9 @@ This is a developer reference for **approved** additions to Kae's treasury, not 
 5. If a new owned-treasure renderer or quantity-tier mapping is necessary, implement and test that separately against actual ownership and current quantity boundaries. Do not infer ownership from the catalog, fabricate inventory, or change existing reward ledger rows.
 6. Merge only after required checks pass and the implementation is reviewed. Confirm the merge and relevant deployment. Record real Android acceptance separately; CI or mocked browser tests are not proof of Dawn's phone experience.
 
-## Explicitly unresolved design choices
+## Approved art and quantity-tier decisions (November 10, 2026)
 
-See the active [Beehive roadmap](https://app.notion.com/p/40edfa4a1fd081f3a906dfff4c6ae223), especially BUILD-02 and BUILD-03, for whether new art may be deployed without Dawn's aesthetic review and what to show when a quantity-tier illustration is absent. Until resolved, nonvisual onboarding work may proceed, but do not silently change the appearance of existing treasures or invent a new fallback.
+Dawn explicitly approved BUILD-02 and BUILD-03 in the [active Beehive roadmap](https://app.notion.com/p/40edfa4a1fd081f3a906dfff4c6ae223). The builder may generate and deploy matching artwork and quantity-tier variants for already-approved collectibles without routine predeployment aesthetic approval. Generate missing tier illustrations rather than treating single-item artwork as a permanent solution; preserve current tier thresholds, existing owned inventory, user-set room positions and the established art direction. A temporary single-item fallback during rollout is acceptable. Ask before substantially replacing a distinctive existing illustration or adopting a new aesthetic. Do not invent new gifts, pricing, purchases or ownership. For visible creative changes, tell Dawn what was deployed and give a working way to view or test it; subsequent revisions are welcome.
 
 ## Acceptance for a future generalized pipeline
 
