@@ -22,6 +22,16 @@ export async function initializeFixture(db,owner,other,{createRoles=true}={}){
   const cols=fixture.schema.filter(x=>x.table_name===table).map(x=>`${x.column_name} ${x.data_type==='ARRAY'?'text[]':x.data_type}${x.column_default?' default '+x.column_default:''}${x.is_nullable==='NO'?' not null':''}`);
   await db.exec(`create table public.${table} (${cols.join(',')});`);
  }
+ // This legacy contract snapshot predates Three Things. Supply only its
+ // owner-scoped history table for additive migration tests, never user data.
+ if(!tables.includes('three_things')){
+  await db.exec("create table public.three_things (id uuid primary key default gen_random_uuid(),owner_id uuid not null default auth.uid(),title text not null,detail text not null default '',category text not null default 'curiosity',difficulty text not null default 'tiny',status text not null default 'suggested',completion_notes text,created_at timestamptz not null default now(),completed_at timestamptz,task_id uuid)");
+  await db.exec("alter table public.three_things enable row level security");
+  await db.exec("grant select,insert,update on public.three_things to authenticated");
+  await db.exec("create policy three_feedback_owner_select on public.three_things for select to authenticated using (owner_id=(select auth.uid()))");
+  await db.exec("create policy three_feedback_owner_insert on public.three_things for insert to authenticated with check (owner_id=(select auth.uid()))");
+  await db.exec("create policy three_feedback_owner_update on public.three_things for update to authenticated using (owner_id=(select auth.uid())) with check (owner_id=(select auth.uid()))");
+ }
  // Exact constraints and trigger/function definitions captured from production; no user rows.
  for(const c of fixture.constraints.filter(x=>!x.definition.startsWith('FOREIGN KEY'))) await db.exec(`alter table public.${c.relname} add constraint ${c.conname} ${c.definition};`);
  for(const c of fixture.constraints.filter(x=>x.definition.startsWith('FOREIGN KEY'))) await db.exec(`alter table public.${c.relname} add constraint ${c.conname} ${c.definition};`);
