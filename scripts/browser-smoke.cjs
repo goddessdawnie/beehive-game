@@ -14,6 +14,7 @@ window.taskRows=[
 {id:'deferred',title:'Deferred item',status:'deferred',created_at:'2026-11-03T10:00:00Z',updated_at:'2026-11-07T23:00:00Z',reward_coins:5},
 {id:'open',title:'Open task',status:'open',created_at:'2026-11-07T10:00:00Z',updated_at:'2026-11-07T10:00:00Z',reward_coins:5}
 ];
+window.threeRows=[{id:'three-test-1',title:'Inspect an interesting fossil',detail:'A tiny optional exploration',category:'curiosity',difficulty:'tiny',status:'suggested',feedback:null,created_at:'2026-11-09T12:00:00Z'}];
 window.catalogRows=[
 {id:'both',title:'Shared dishes',property:'Both',category:'cleaning',active:true,locations:[]},
 {id:'florence',title:'Florence stairs',property:'Florence',category:'cleaning',active:true,locations:[]},
@@ -21,7 +22,20 @@ window.catalogRows=[
 {id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
 ];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
+if(table==='three_things'){
+ let one=false,patch=null,filters=[];
+ const q=new Proxy({}, {get(_,key){
+  if(key==='then')return resolve=>{
+   const rows=window.threeRows.filter(x=>filters.every(([name,value])=>x[name]===value));
+   if(patch)for(const row of rows)Object.assign(row,patch);
+   resolve({data:one?(rows[0]||null):rows,error:null});
+  };
+  return (...args)=>{if(key==='update')patch=args[0];if(key==='eq')filters.push(args);if(key==='maybeSingle'||key==='single')one=true;return q;};
+ }});
+ return q;
+}
+let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRow:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
@@ -30,6 +44,32 @@ await page.route('**/*',route=>route.request().url().startsWith(origin)?route.co
 page.on('pageerror',err=>console.error('PAGE SCRIPT ERROR:',err.message));
 await page.goto(origin);
 await page.locator('#game:not(.hidden)').waitFor();
+
+// A choice records reaction without removing the suggestion or completion notes.
+await page.locator('#tab-play').click();
+await page.locator('#open-three').click();
+await page.locator('#three-list .three-card').first().waitFor();
+const title='Inspect an interesting fossil';
+const positive=page.getByRole('button',{name:'Positive reaction for '+title});
+const neutral=page.getByRole('button',{name:'Neutral reaction for '+title});
+const negative=page.getByRole('button',{name:'Negative reaction for '+title});
+assert.equal(await positive.getAttribute('aria-pressed'),'false','No implicit positive');
+assert.equal(await neutral.getAttribute('aria-pressed'),'false','Unset is not neutral');
+await page.getByRole('textbox',{name:'Completion notes for '+title}).fill('Keep these notes while saving');
+await positive.click();
+await page.waitForFunction(()=>window.threeRows[0].feedback==='positive');
+assert.equal(await positive.getAttribute('aria-pressed'),'true');
+assert.equal(await page.getByRole('textbox',{name:'Completion notes for '+title}).inputValue(),'Keep these notes while saving');
+await neutral.click();
+await page.waitForFunction(()=>window.threeRows[0].feedback==='neutral');
+assert.equal(await neutral.getAttribute('aria-pressed'),'true');
+assert.equal(await positive.getAttribute('aria-pressed'),'false');
+await negative.click();
+await page.waitForFunction(()=>window.threeRows[0].feedback==='negative');
+assert.equal(await negative.getAttribute('aria-pressed'),'true');
+assert.equal(await page.evaluate(()=>window.threeRows[0].status),'suggested','Reaction does not complete or clear a suggestion');
+await page.locator('#back-to-games').click();
+await page.locator('#tab-tasks').click();
 
 // The existing Timer tab now exposes scheduled one-shot and repeatable dings.
 await page.locator('#tab-timer').click();

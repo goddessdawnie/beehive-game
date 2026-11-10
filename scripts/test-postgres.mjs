@@ -93,6 +93,50 @@ try{
  await a.query('rollback');
  console.log('PASS scheduled bells: calendar, DST, RLS isolation, one dispatch, skip stale, pause');
 
+
+ // A Three Things reaction is explicit, independently editable, and part of
+ // the same owner-scoped history row as the original action/status.
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
+ await a.query('set local role authenticated');
+ const suggestion=(await a.query(
+  "insert into public.three_things(title,detail,category,difficulty) values('Inspect the tiny bureaucracy','Optional little experiment','curiosity','tiny') returning id,feedback,status"
+ )).rows[0];
+ assert.equal(suggestion.feedback,null,'No click is not the same as neutral');
+ assert.equal(suggestion.status,'suggested');
+ const pickId=suggestion.id;
+ for(const reaction of ['positive','neutral','negative','positive']){
+  const changed=(await a.query(
+   "update public.three_things set feedback=$1 where id=$2 and status='suggested' returning id,feedback,status",
+   [reaction,pickId]
+  )).rows[0];
+  assert.equal(changed.feedback,reaction);
+  assert.equal(changed.status,'suggested','Reaction must not alter the action');
+ }
+ await a.query('savepoint invalid_feedback');
+ await assert.rejects(a.query("update public.three_things set feedback='maybe' where id=$1",[pickId]),/three_things_feedback_check/);
+ await a.query('rollback to savepoint invalid_feedback');
+ await a.query('commit');
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[other]);
+ await a.query('set local role authenticated');
+ assert.equal((await a.query("select id from public.three_things where id=$1",[pickId])).rowCount,0,'Other owner cannot see reaction');
+ assert.equal((await a.query("update public.three_things set feedback='negative' where id=$1 returning id",[pickId])).rowCount,0,'Other owner cannot change reaction');
+ await a.query('rollback');
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
+ await a.query('set local role authenticated');
+ const history=(await a.query("select feedback,status from public.three_things where id=$1",[pickId])).rows[0];
+ assert.equal(history.feedback,'positive','Reaction persists across requests');
+ assert.equal(history.status,'suggested');
+ // Existing action RPC only changes status; model that status transition here.
+ await a.query("update public.three_things set status='cleared' where id=$1",[pickId]);
+ const cleared=(await a.query("select feedback,status from public.three_things where id=$1",[pickId])).rows[0];
+ assert.equal(cleared.status,'cleared');
+ assert.equal(cleared.feedback,'positive','Clearing/regenerating preserves feedback history');
+ await a.query('rollback');
+ console.log('PASS Three Things reactions: explicit neutral, choices, RLS, history preservation');
+
  // A user message and Kae's reply share a transaction timestamp.
  // Insert the reply first to prove the snapshot supplies human-before-dragon order.
  await a.query('begin');
