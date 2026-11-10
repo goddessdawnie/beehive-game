@@ -159,7 +159,9 @@ try{
  await a.query('set local role authenticated');
  assert.equal((await a.query('select public.play_claims_today() n')).rows[0].n,0);
  // Simulates a claim from the old per-game system without changing any old rows.
+ await a.query('set local role postgres');
  await a.query("insert into public.reward_ledger(owner_id,coins_delta,reason) values ($1,2,'game_daily:wordle:legacy')",[owner]);
+ await a.query('set local role authenticated');
  assert.equal((await a.query('select public.play_claims_today() n')).rows[0].n,1);
  for(const game of ['wordle','wordle','wordle','wumpus']){
   assert.equal((await a.query('select public.claim_daily_game($1) claimed',[game])).rows[0].claimed,true);
