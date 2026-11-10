@@ -30,6 +30,23 @@ await page.route('**/*',route=>route.request().url().startsWith(origin)?route.co
 page.on('pageerror',err=>console.error('PAGE SCRIPT ERROR:',err.message));
 await page.goto(origin);
 await page.locator('#game:not(.hidden)').waitFor();
+
+// The existing Timer tab now exposes scheduled one-shot and repeatable dings.
+await page.locator('#tab-timer').click();
+await page.locator('#bell-schedule-details summary').click();
+await page.locator('#bell-kind').selectOption('weekly');
+assert.equal(await page.locator('#bell-weekly-wrap').isVisible(),true);
+assert.equal(await page.locator('#bell-once-wrap').isVisible(),false);
+await page.locator('#bell-weekdays').click();
+assert.equal(await page.locator('[data-bell-day]:checked').count(),5,'Workdays selection covers weekdays only');
+await page.locator('#bell-local-time').fill('01:30');
+await page.locator('#bell-kind').selectOption('monthly');
+assert.equal(await page.locator('#bell-monthly-wrap').isVisible(),true);
+await page.locator('#bell-month-day').fill('31');
+await page.locator('#bell-kind').selectOption('once');
+assert.equal(await page.locator('#bell-once-wrap').isVisible(),true);
+await page.locator('#tab-tasks').click();
+
 await page.locator('#add-task-details summary').click();
 assert.deepEqual(await page.locator('#repeat option').evaluateAll(options=>options.map(o=>o.value)),['','daily','weekly','monthly','interval'],'Recurring options available');
 await page.locator('#repeat').selectOption('interval');

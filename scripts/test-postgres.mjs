@@ -50,6 +50,49 @@ try{
  const [a,b,observer]=clients;
  await initializeFixture({exec:s=>a.query(s),query:(s,p)=>a.query(s,p)},owner,other,{createRoles:false});
 
+ // Scheduled dings reuse the bell worker without touching tasks, coins or Kae.
+ const jan31='2027-01-31T17:00:00Z',monthDay=31;
+ const feb=(await a.query("select public.beehive_next_scheduled_bell('monthly',null,'12:00',array[]::int[],31,$1) v",[jan31])).rows[0].v;
+ assert.equal(feb.toISOString(),'2027-02-28T17:00:00.000Z');
+ const mar=(await a.query("select public.beehive_next_scheduled_bell('monthly',null,'12:00',array[]::int[],31,$1) v",[feb])).rows[0].v;
+ assert.equal(mar.toISOString(),'2027-03-31T16:00:00.000Z');
+ const dst=(await a.query("select public.beehive_next_scheduled_bell('weekly',null,'09:00',array[7],null,'2027-03-07T15:00:00Z') v")).rows[0].v;
+ assert.equal(dst.toISOString(),'2027-03-14T13:00:00.000Z','DST retains Eastern wall time');
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
+ await a.query('set local role authenticated');
+ const schedule=(await a.query("insert into public.beehive_bell_schedules(title,body,kind,local_time,weekdays) values('Start break','Step away for a bit','weekly','14:30',array[1,2,3,4,5]) returning *")).rows[0];
+ assert.equal(schedule.owner_id,owner);
+ assert.ok(schedule.next_due_at);
+ await a.query('commit');
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[other]);
+ await a.query('set local role authenticated');
+ assert.equal((await a.query('select id from public.beehive_bell_schedules where id=$1',[schedule.id])).rowCount,0,'Other owner cannot read');
+ assert.equal((await a.query("update public.beehive_bell_schedules set title='Stolen' where id=$1 returning id",[schedule.id])).rowCount,0,'Other owner cannot edit');
+ await a.query('rollback');
+ await a.query("update public.beehive_bell_schedules set next_due_at=now()-interval '15 seconds' where id=$1",[schedule.id]);
+ const claimed=(await a.query("select id,source,scheduled_for from public.beehive_claim_due_bells(20)")).rows;
+ assert.equal(claimed.length,1);
+ assert.equal(claimed[0].source,'system');
+ assert.ok(claimed[0].scheduled_for);
+ assert.equal((await a.query('select count(*)::int n from public.beehive_bell_outbox where schedule_id=$1',[schedule.id])).rows[0].n,1);
+ assert.ok((await a.query('select next_due_at>now() future from public.beehive_bell_schedules where id=$1',[schedule.id])).rows[0].future);
+ assert.equal((await a.query("select count(*)::int n from public.beehive_bell_outbox where schedule_id=$1",[schedule.id])).rows[0].n,1,'No duplicate from worker retry');
+ await a.query("update public.beehive_bell_outbox set status='sent' where schedule_id=$1",[schedule.id]);
+ // More than 5 minutes late means skip, do not dump old break-start dings.
+ await a.query("update public.beehive_bell_schedules set next_due_at=now()-interval '6 minutes' where id=$1",[schedule.id]);
+ await a.query('select * from public.beehive_claim_due_bells(20)');
+ assert.equal((await a.query('select count(*)::int n from public.beehive_bell_outbox where schedule_id=$1',[schedule.id])).rows[0].n,1);
+ assert.ok((await a.query('select next_due_at>now() future from public.beehive_bell_schedules where id=$1',[schedule.id])).rows[0].future);
+ await a.query('begin');
+ await a.query("select set_config('request.jwt.claim.sub',$1,true)",[owner]);
+ await a.query('set local role authenticated');
+ await a.query('update public.beehive_bell_schedules set active=false where id=$1',[schedule.id]);
+ assert.equal((await a.query('select next_due_at from public.beehive_bell_schedules where id=$1',[schedule.id])).rows[0].next_due_at,null);
+ await a.query('rollback');
+ console.log('PASS scheduled bells: calendar, DST, RLS isolation, one dispatch, skip stale, pause');
+
  // A user message and Kae's reply share a transaction timestamp.
  // Insert the reply first to prove the snapshot supplies human-before-dragon order.
  await a.query('begin');

@@ -9,7 +9,7 @@ self.addEventListener('push', event => {
   event.waitUntil(self.registration.showNotification(title,{
     body,icon:'./icons/beehive-192.png',badge:'./icons/beehive-192.png',
     tag:typeof payload.tag==='string'?payload.tag.slice(0,120):'beehive-notification',
-    silent:false,renotify:true,vibrate:[250,100,250]
+    silent:false,renotify:payload.gentle!==true,vibrate:payload.gentle===true?[80]:[250,100,250]
   }));
 });
 self.addEventListener('notificationclick', event => {
