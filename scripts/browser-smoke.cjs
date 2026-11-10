@@ -40,6 +40,24 @@ assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('l
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
  'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasures · Shelf contents','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar'
 ]);
+// Universal room controls target independent actual scene nodes, not inventory or purchases.
+await page.locator('#layout-slot').selectOption('wall_shelf');
+await page.locator('#layout-bottom').evaluate(el=>{el.value='55';el.dispatchEvent(new Event('input',{bubbles:true}));});
+assert.equal(await page.locator('#chamber-wall-shelf').evaluate(el=>el.style.bottom),'55%');
+assert.equal(await page.locator('#chamber-generic-treasures').evaluate(el=>el.style.bottom),'','Moving the wall shelf does not move the treasure container');
+await page.locator('#layout-visible').uncheck();
+assert.equal(await page.locator('#chamber-wall-shelf').evaluate(el=>el.classList.contains('room-layout-hidden')),true);
+await page.locator('#layout-reset').click();
+assert.equal(await page.locator('#chamber-wall-shelf').evaluate(el=>el.classList.contains('room-layout-hidden')),false);
+assert.equal(await page.locator('#chamber-wall-shelf').evaluate(el=>el.style.bottom),'');
+await page.locator('#layout-slot').selectOption('case_shelf');
+await page.locator('#layout-width').evaluate(el=>{el.value='9';el.dispatchEvent(new Event('input',{bubbles:true}));});
+assert.equal(await page.locator('#chamber-case-shelf').evaluate(el=>el.style.width),'9%');
+assert.equal(await page.locator('#chamber-wall-shelf').evaluate(el=>el.style.width),'','Case shelf has independent dimensions');
+await page.locator('#layout-slot').selectOption('shelf_jewel');
+await page.locator('#layout-left').evaluate(el=>{el.value='50';el.dispatchEvent(new Event('input',{bubbles:true}));});
+assert.equal(await page.locator('#chamber-jewel-owned').evaluate(el=>el.style.left),'50%','Owned jewel follows actual layout slot');
+await page.locator('#layout-slot').selectOption('cushion');
 assert.equal(await page.locator('#layout-width-value').textContent(),'47%');
 await page.locator('#layout-width').evaluate(el=>{el.value='48';el.dispatchEvent(new Event('input',{bubbles:true}));});
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'48%');
