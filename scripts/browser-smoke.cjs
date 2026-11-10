@@ -4,7 +4,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),assert=require(
 const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
-const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRow=null;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
+const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRow=null;window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
 window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
@@ -22,7 +22,7 @@ window.catalogRows=[
 {id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
 ];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='play_claims_today')return {data:window.playClaimCount,error:null};if(name==='claim_daily_game'){window.playClaimCalls++;if(window.playClaimCount>=5)return {data:false,error:null};window.playClaimCount++;return {data:true,error:null};}if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRow.status='sending';window.timerRow.attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
 if(table==='three_things'){
  let one=false,patch=null,filters=[];
  const q=new Proxy({}, {get(_,key){
@@ -69,6 +69,25 @@ await page.waitForFunction(()=>window.threeRows[0].feedback==='negative');
 assert.equal(await negative.getAttribute('aria-pressed'),'true');
 assert.equal(await page.evaluate(()=>window.threeRows[0].status),'suggested','Reaction does not complete or clear a suggestion');
 await page.locator('#back-to-games').click();
+assert.match(await page.locator('#play-claim-budget').textContent(),/0\/5 claims used today/);
+await page.locator('#open-wordle').click();
+for(let i=1;i<=4;i++){
+ await page.locator('#wordle-claim').click();
+ await page.waitForFunction(target=>window.playClaimCount===target,i);
+ await page.locator('#wordle-claim').waitFor({state:'visible'});
+ if(i<5)await page.waitForFunction(()=>!document.querySelector('#wordle-claim').disabled);
+ assert.match(await page.locator('#play-claim-budget').textContent(),new RegExp(i+'/5 claims used today'));
+}
+await page.locator('#back-wordle').click();
+await page.locator('#open-wumpus').click();
+await page.locator('#wumpus-claim').click();
+await page.waitForFunction(()=>window.playClaimCount===5);
+await page.waitForFunction(()=>document.querySelector('#wumpus-claim').disabled===true);
+assert.match(await page.locator('#play-claim-budget').textContent(),/5\/5 claims used today/);
+await page.locator('#back-wumpus').click();
+await page.locator('#open-2048').click();
+assert.equal(await page.locator('#2048-claim').isDisabled(),true,'All game buttons obey shared five-claim budget');
+assert.equal(await page.evaluate(()=>window.playClaimCalls),5,'Exactly five RPC claims, including four on Wordle');
 await page.locator('#tab-tasks').click();
 
 // The existing Timer tab now exposes scheduled one-shot and repeatable dings.
