@@ -100,6 +100,17 @@ function renderQuantityArtwork(){
   node.style.backgroundImage=safe?'url('+JSON.stringify(source)+')':'';
  }
 }
+let ownedJewelQuantity=0;
+function updateOwnedJewelArtwork(){
+ const node=el('chamber-jewel-owned');
+ if(!node)return;
+ const tier=ownedJewelQuantity>0&&quantityArtwork?quantityTier(quantityArtwork.tiers,ownedJewelQuantity):null;
+ const source=tier&&quantityArtwork?.rawJewel?.variants?.[tier.id]?.source;
+ const safe=typeof source==='string'&&/^assets\\/treasure-quantity\\/jewel-[a-z-]+\\.svg$/.test(source);
+ node.classList.toggle('visible',ownedJewelQuantity>0);
+ node.style.backgroundImage=safe?'url('+JSON.stringify(source)+')':'';
+ node.textContent=ownedJewelQuantity>0&&!safe?'💎':'';
+}
 async function loadQuantityArtwork(){
  try{
   const response=await fetch('./assets/treasure-quantity/manifest.json',{cache:'no-cache'});
@@ -110,6 +121,7 @@ async function loadQuantityArtwork(){
   for(const entry of Object.values(data.items))if(entry?.shopSlug&&entry?.variants)bySlug[entry.shopSlug]=entry;
   quantityArtwork={tiers:data.tiers,items:bySlug,rawJewel:data.items.jewel};
   renderQuantityArtwork();
+  updateOwnedJewelArtwork();
  }catch(error){console.warn('Treasure tier artwork unavailable; existing markers retained',error);}
 }
 void loadQuantityArtwork();
@@ -543,14 +555,8 @@ function renderTreasury(shop,inventory,requests,balance){
  // Render inventory-backed markers for possessions without dedicated artwork.
  const illustratedSlugs=new Set([...document.querySelectorAll('[data-treasure]')].map(node=>node.dataset.treasure));
  const jewel=ownedItems.find(item=>/jewel/i.test(item.slug)&&item.slug!=='jeweled_collar')||ownedItems.find(item=>/jewel/i.test(item.name)&&item.slug!=='jeweled_collar');
- const jewelNode=el('chamber-jewel-owned');
- const jewelTiers=quantityArtwork?.tiers;
- const jewelArt=quantityArtwork?.rawJewel;
- const jewelTier=jewel&&jewelTiers?quantityTier(jewelTiers,Number(jewel.quantity)):null;
- const jewelSrc=jewelTier&&jewelArt?.variants?.[jewelTier.id]?.source;
- jewelNode.classList.toggle('visible',Boolean(jewel));
- jewelNode.textContent=jewel&&!jewelSrc?'💎':'';
- jewelNode.style.backgroundImage=jewelSrc&&/^assets\/treasure-quantity\/jewel-[a-z-]+\.svg$/.test(jewelSrc)?'url('+JSON.stringify(jewelSrc)+')':'';
+ ownedJewelQuantity=jewel?Number(jewel.quantity):0;
+ updateOwnedJewelArtwork();
  const unillustrated=ownedItems.filter(item=>!illustratedSlugs.has(item.slug)&&item!==jewel);
  const chamberTreasures=el('chamber-shelf-extras');chamberTreasures.replaceChildren();
  for(const item of unillustrated.slice(0,3)){
