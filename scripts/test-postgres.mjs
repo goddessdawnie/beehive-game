@@ -192,9 +192,9 @@ try{
  console.log('PASS simultaneous same-game claims serialize without exceeding shared budget');
 
  // Eastern calendar days have 23/25 hours at DST changes, not UTC 24-hour windows.
- const dst=(await observer.query("select (('2027-03-15'::date::timestamp at time zone 'America/New_York') - ('2027-03-14'::date::timestamp at time zone 'America/New_York')) spring, (('2027-11-08'::date::timestamp at time zone 'America/New_York') - ('2027-11-07'::date::timestamp at time zone 'America/New_York')) fall")).rows[0];
- assert.equal(dst.spring.hours,23);
- assert.equal(dst.fall.hours,25);
+ const rewardDst=(await observer.query("select (('2027-03-15'::date::timestamp at time zone 'America/New_York') - ('2027-03-14'::date::timestamp at time zone 'America/New_York')) spring, (('2027-11-08'::date::timestamp at time zone 'America/New_York') - ('2027-11-07'::date::timestamp at time zone 'America/New_York')) fall")).rows[0];
+ assert.equal(rewardDst.spring.hours,23);
+ assert.equal(rewardDst.fall.hours,25);
  console.log('PASS Eastern daily reset respects daylight-saving boundaries');
 
 
