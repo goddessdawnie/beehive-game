@@ -29,6 +29,7 @@ await page.addInitScript(()=>localStorage.setItem('beehive:cushion-layout:v1:2ba
 await page.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.request().url().includes('supabase.min.js')?route.fulfill({contentType:'application/javascript',body:mock}):route.abort());
 await page.goto(origin);
 await page.locator('#game:not(.hidden)').waitFor();
+await page.locator('#add-task-details summary').click();
 assert.deepEqual(await page.locator('#repeat option').evaluateAll(options=>options.map(o=>o.value)),['','daily','weekly','monthly','interval'],'Recurring options available');
 await page.locator('#repeat').selectOption('interval');
 assert.equal(await page.locator('#repeat-interval-label').isVisible(),true,'Interval controls appear');
@@ -37,6 +38,7 @@ await page.locator('#repeat-unit').selectOption('weeks');
 assert.equal(await page.locator('#repeat-unit').inputValue(),'weeks');
 await page.locator('#repeat').selectOption('monthly');
 assert.equal(await page.locator('#repeat-interval-label').isVisible(),false,'Monthly uses due-date anchor');
+await page.locator('#add-task-details summary').click();
 
 assert.equal(await page.locator('#maintenance-menu').isVisible(),false);
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'47%','Legacy cushion calibration carries forward');
