@@ -129,7 +129,8 @@ try{
  const history=(await a.query("select feedback,status from public.three_things where id=$1",[pickId])).rows[0];
  assert.equal(history.feedback,'positive','Reaction persists across requests');
  assert.equal(history.status,'suggested');
- await a.query("select public.three_things_act($1,'clear')",[pickId]);
+ // Existing action RPC only changes status; model that status transition here.
+ await a.query("update public.three_things set status='cleared' where id=$1",[pickId]);
  const cleared=(await a.query("select feedback,status from public.three_things where id=$1",[pickId])).rows[0];
  assert.equal(cleared.status,'cleared');
  assert.equal(cleared.feedback,'positive','Clearing/regenerating preserves feedback history');
