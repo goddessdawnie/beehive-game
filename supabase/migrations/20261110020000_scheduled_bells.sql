@@ -116,6 +116,11 @@ BEGIN
    UPDATE public.beehive_bell_schedules SET next_due_at=advanced WHERE id=s.id;
   END IF;
  END LOOP;
+ -- A queued scheduled ding cannot remain eligible for retries after its useful window.
+ UPDATE public.beehive_bell_outbox SET status='cancelled',lease_until=NULL,retry_after=NULL,
+  updated_at=now(),last_error='Scheduled ding expired before delivery'
+ WHERE schedule_id IS NOT NULL AND scheduled_for < now()-interval '5 minutes'
+   AND (status='pending' OR (status='sending' AND lease_until<now()));
  -- Original claim/retry/lease behavior is kept intact.
  UPDATE public.beehive_bell_outbox SET status='failed',lease_until=NULL,updated_at=now(),
   last_error='Delivery status unknown after final worker lease expired'
