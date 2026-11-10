@@ -15,6 +15,7 @@ body{font:16px system-ui,sans-serif;background:#fff8eb;color:#392c23;max-width:7
 .chamber-throne.preview-legacy{background:linear-gradient(#d6a755,#744672);border:8px ridge #cda450;border-radius:35% 35% 15% 15%}.chamber-table{left:5%;bottom:7%;width:30%;height:27%;z-index:3;filter:drop-shadow(0 4px 3px #18101b99)}.chamber-table::before{content:"";position:absolute;left:0;top:5%;width:100%;height:29%;border:3px solid #624026;box-sizing:border-box;border-radius:50% / 40%;background:linear-gradient(90deg,#a87a48,#d0a16b 45%,#87552f)}.chamber-table::after{content:"";position:absolute;left:15%;top:29%;width:70%;height:67%;border-left:clamp(5px,1.5vw,12px) solid #76502f;border-right:clamp(5px,1.5vw,12px) solid #76502f;box-sizing:border-box}.chamber-chest{right:5%;bottom:8%;width:23%;height:22%;z-index:4;border:3px solid #6e4529;border-radius:32% 32% 7px 7px / 40% 40% 7px 7px;background:linear-gradient(90deg,#86522f,#c48c50 35%,#a36b38 70%,#704024);box-shadow:inset 0 0 0 3px #b88c43;box-sizing:border-box}.chamber.chest-on-table .chamber-chest{left:8%;right:auto;bottom:29%;width:22%;height:21%;z-index:4}.chamber.chest-on-table .chamber-table{z-index:3}
 .chamber-chest::before{content:"";position:absolute;left:0;right:0;top:40%;border-top:4px solid #513522}.chamber-chest::after{content:"";position:absolute;left:45%;top:37%;width:10%;height:24%;border-radius:2px;background:#e7c36b;box-shadow:0 0 0 1px #67491e}
 .chamber-caption{text-align:center;font-size:.85rem;color:#74695b}.chamber-tap{display:block;width:100%;max-width:650px;margin:0 auto;padding:0;border:0;background:transparent;border-radius:16px;cursor:pointer}.chamber-generic-treasures{position:absolute;left:34%;top:23%;width:35%;min-height:12%;z-index:5;display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-start;align-content:flex-end;flex-wrap:wrap;gap:3px 5px;padding:0 5px 10px;box-sizing:border-box;pointer-events:none}.chamber-wall-shelf,.chamber-case-shelf{position:absolute;box-sizing:border-box;background:linear-gradient(#59402f,#38261e 55%,#241914);box-shadow:0 3px 5px #21171099;border-radius:2px;pointer-events:none;z-index:1}.chamber-wall-shelf{left:32%;bottom:65%;width:39%;height:2%}.chamber-case-shelf{left:80%;bottom:40%;width:14%;height:1.5%;display:none}.chamber-case-shelf.visible{display:block}.chamber-case{z-index:3!important}.chamber-jewel-owned{position:absolute;left:46%;bottom:65%;width:8%;height:10%;z-index:2;display:none;pointer-events:none;background-position:center;background-size:contain;background-repeat:no-repeat}.chamber-jewel-owned.visible{display:block}.room-layout-hidden{visibility:hidden!important}.chamber-generic-treasures{z-index:2!important;top:auto!important}.chamber-generic-treasures>.chamber-whisker,.chamber-generic-treasures>.chamber-gold{position:absolute!important;min-width:0!important;flex:none!important;left:0;bottom:0}.chamber-generic-treasures>.chamber-whisker{left:25%}.chamber-generic-treasures>.chamber-whisker.tier-art,.chamber-generic-treasures>.chamber-gold.tier-art{height:30%;aspect-ratio:auto}.chamber-case-shelf{z-index:2}.chamber-wall-shelf{z-index:1}/* The Jewel is an independent room slot, but its art belongs behind the case's transparent foreground (case z-index:3). */
+.chamber-independent-treasure{position:absolute;box-sizing:border-box;z-index:2;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow-wrap:anywhere;pointer-events:none;text-align:center;font-size:clamp(10px,1.8vw,15px)}
 /* Individually positioned owned treasures use room coordinates, not shelf-container coordinates. */
 #kae-chamber>.chamber-gold,#kae-chamber>.chamber-whisker{position:absolute;left:36%;bottom:67%;width:12%;height:12%;min-width:0;z-index:2;box-sizing:border-box;pointer-events:none;background-position:center;background-repeat:no-repeat;background-size:contain;display:none;align-items:center;justify-content:center;font-size:clamp(15px,3vw,30px)}
 #kae-chamber>.chamber-gold{left:36%}#kae-chamber>.chamber-whisker{left:54%}
@@ -34,7 +35,7 @@ body{font:16px system-ui,sans-serif;background:#fff8eb;color:#392c23;max-width:7
 <section id="maintenance-menu" class="maintenance-menu hidden" aria-label="Beehive maintenance"><h2>Maintenance</h2><p class="muted">Occasional tools for the estate. The ordinary game stays uncluttered.</p><button id="open-layout" type="button">Adjust room layout</button></section>
 
 <section id="auth"><h2>Enter the hive</h2><input type="email" id="email" placeholder="Email"><input type="password" id="password" placeholder="Password"><p><button id="signin">Sign in</button><button id="signup">Create account</button></p><p class="muted">New accounts may need email confirmation.</p></section>
-<main id="game" class="hidden"><section><h2 id="petname" style="text-align:center">Kae</h2><button id="kaetap" type="button" class="chamber-tap" aria-label="Tap Kae in his chamber to hear what he has to say" title="Tap Kae to hear what he has to say"><div class="chamber" id="kae-chamber" role="img" aria-label="Kae in his chamber, decorated with treasures he owns"><div class="chamber-generic-treasures" id="chamber-generic-treasures"><div id="chamber-shelf-extras" class="chamber-shelf-extras"></div></div><div class="chamber-item chamber-gold" data-treasure="gold_coin">🪙</div><div class="chamber-item chamber-whisker" data-treasure="minnie_whisker">〰️</div><div id="chamber-wall-shelf" class="chamber-wall-shelf"></div><div id="chamber-case-shelf" class="chamber-case-shelf"></div><div id="chamber-jewel-owned" class="chamber-jewel-owned"></div><div id="chamber-jewel-preview" class="chamber-jewel-preview" aria-hidden="true"></div><div class="chamber-item chamber-throne" data-treasure="imperial_throne"></div><div class="chamber-item chamber-table" data-treasure="unbudgeable_oak_table"></div><div class="chamber-item chamber-chest" data-treasure="close_kept_treasure_chest"></div><div class="chamber-item chamber-pillow" data-treasure="silk_pillow"></div><img class="chamber-kae" src="assets/kae_cutout.webp?v=2" onerror="this.onerror=null;this.src='assets/kae.svg'" alt="Kae, a purple-black dragon with amber eyes"><div class="chamber-item chamber-case" data-treasure="display_case"><div class="chamber-case-contents" id="chamber-case-contents" aria-hidden="true"></div></div><div class="chamber-item chamber-collar" data-treasure="jeweled_collar">💎</div><div id="layout-guide" class="layout-guide hidden" aria-hidden="true"></div><span class="chamber-quantity" id="hoard-count"></span></div></button><div id="layout-tools" class="layout-tools hidden" aria-label="Room layout adjustment">
+<main id="game" class="hidden"><section><h2 id="petname" style="text-align:center">Kae</h2><button id="kaetap" type="button" class="chamber-tap" aria-label="Tap Kae in his chamber to hear what he has to say" title="Tap Kae to hear what he has to say"><div class="chamber" id="kae-chamber" role="img" aria-label="Kae in his chamber, decorated with treasures he owns"><div class="chamber-item chamber-gold" data-treasure="gold_coin">🪙</div><div class="chamber-item chamber-whisker" data-treasure="minnie_whisker">〰️</div><div id="chamber-wall-shelf" class="chamber-wall-shelf"></div><div id="chamber-case-shelf" class="chamber-case-shelf"></div><div id="chamber-jewel-owned" class="chamber-jewel-owned"></div><div id="chamber-jewel-preview" class="chamber-jewel-preview" aria-hidden="true"></div><div class="chamber-item chamber-throne" data-treasure="imperial_throne"></div><div class="chamber-item chamber-table" data-treasure="unbudgeable_oak_table"></div><div class="chamber-item chamber-chest" data-treasure="close_kept_treasure_chest"></div><div class="chamber-item chamber-pillow" data-treasure="silk_pillow"></div><img class="chamber-kae" src="assets/kae_cutout.webp?v=2" onerror="this.onerror=null;this.src='assets/kae.svg'" alt="Kae, a purple-black dragon with amber eyes"><div class="chamber-item chamber-case" data-treasure="display_case"><div class="chamber-case-contents" id="chamber-case-contents" aria-hidden="true"></div></div><div class="chamber-item chamber-collar" data-treasure="jeweled_collar">💎</div><div id="layout-guide" class="layout-guide hidden" aria-hidden="true"></div><span class="chamber-quantity" id="hoard-count"></span></div></button><div id="layout-tools" class="layout-tools hidden" aria-label="Room layout adjustment">
 <h3>Room layout</h3><p class="muted">Choose a part of the room, then move its four sliders. The outlined area shows where the selected slot belongs, even if its furnishing is not owned.</p><label class="layout-slot-label" for="layout-slot">Adjust slot <select id="layout-slot" aria-label="Room slot"></select></label><label class="layout-slot-label" for="layout-artwork">Artwork preview <select id="layout-artwork" aria-label="Temporary artwork preview"></select></label>
 <div class="layout-grid">
 <label for="layout-left">Left <output class="layout-values" id="layout-left-value">33%</output><input id="layout-left" type="range" min="0" max="70" step="1" value="33"></label>
@@ -60,7 +61,6 @@ const layoutSlots=[
  {id:'shelf_jewel',label:'Jewel · Owned treasure',selector:'.chamber-jewel-owned',defaults:{left:46,bottom:65,width:8,height:10},limits:{left:[0,95],bottom:[0,95],width:[3,50],height:[3,50]}},
  {id:'wall_shelf',label:'Wall shelf',selector:'.chamber-wall-shelf',defaults:{left:32,bottom:65,width:39,height:2},limits:{left:[0,95],bottom:[0,95],width:[2,95],height:[1,30]}},
  {id:'case_shelf',label:'Display case · Interior shelf',selector:'.chamber-case-shelf',defaults:{left:80,bottom:40,width:14,height:2},limits:{left:[0,95],bottom:[0,95],width:[2,95],height:[1,30]}},
- {id:'treasure_shelf',label:'Treasures · Shelf contents',selector:'.chamber-generic-treasures',defaults:{left:34,bottom:65,width:35,height:12},limits:{left:[0,95],bottom:[0,95],width:[5,95],height:[2,60]}},
  {id:'chest',label:'Treasure chest',selector:'.chamber-chest',defaults:{left:8,bottom:29,width:22,height:21},limits:{left:[0,95],bottom:[0,95],width:[5,95],height:[5,95]}},
  {id:'gold',label:'Gold coins',selector:'.chamber-gold',defaults:{left:36,bottom:67,width:12,height:12},limits:{left:[0,95],bottom:[0,95],width:[3,95],height:[3,95]}},
  {id:'whisker',label:'Minnie whiskers',selector:'.chamber-whisker',defaults:{left:54,bottom:67,width:12,height:12},limits:{left:[0,95],bottom:[0,95],width:[3,95],height:[3,95]}},
@@ -151,6 +151,38 @@ function applyArtworkPreview(){
  }
 }
 const layoutSlotById=new Map(layoutSlots.map(slot=>[slot.id,slot]));
+// Every inventory object has its own room slot. Static illustrated objects use
+// their existing nodes; unillustrated objects receive a keyed node and slot.
+const dynamicTreasureSlots=new Map();
+function syncDynamicTreasureSlots(items){
+ const room=el('kae-chamber'),keep=new Set(items.map(item=>String(item.id)));
+ for(const [id,slot] of dynamicTreasureSlots){
+  if(keep.has(id))continue;
+  document.getElementById('treasure-item-'+id)?.remove();
+  layoutSlotById.delete(slot.id);
+  const option=[...el('layout-slot').options].find(x=>x.value===slot.id);
+  option?.remove();dynamicTreasureSlots.delete(id);
+ }
+ items.forEach((item,index)=>{
+  const id=String(item.id);
+  let slot=dynamicTreasureSlots.get(id);
+  if(!slot){
+   const node=document.createElement('div');node.id='treasure-item-'+id;
+   node.className='chamber-generic-treasure chamber-independent-treasure';
+   room.append(node);
+   slot={id:'item:'+id,label:item.name,selector:'#'+node.id,
+    defaults:{left:32+(index%4)*13,bottom:67+Math.floor(index/4)*12,width:12,height:12},
+    limits:{left:[0,95],bottom:[0,95],width:[3,95],height:[3,95]}};
+   dynamicTreasureSlots.set(id,slot);layoutSlotById.set(slot.id,slot);
+   el('layout-slot').add(new Option(slot.label,slot.id));
+  }
+  const node=document.getElementById('treasure-item-'+id);
+  node.textContent=item.name+(Number(item.quantity)>1?' ×'+item.quantity:'');
+  applySlotGeometry(slot);
+ });
+ if(!layoutSlotById.has(selectedLayoutSlot))changeLayoutSlot('cushion');
+}
+
 const layoutKeys=['left','bottom','width','height'];
 const slotVisible=slot=>savedSlotLayouts[slot.id]?.visible!==false;
 const layoutStorageKey=id=>'beehive:room-layout:v1:'+id;
@@ -218,14 +250,16 @@ function initRoomLayouts(ownerId){
   try{
    const stored=JSON.parse(localStorage.getItem(layoutStorageKey(ownerId))||'null');
    if(stored&&typeof stored==='object'&&!Array.isArray(stored))
-    for(const slot of layoutSlots)if(Object.prototype.hasOwnProperty.call(stored,slot.id))
-     savedSlotLayouts[slot.id]=stored[slot.id]===null?null:normalizeLayout(slot,stored[slot.id]);
+    for(const [id,values] of Object.entries(stored)){
+     const slot=layoutSlotById.get(id);
+     savedSlotLayouts[id]=slot&&values!==null?normalizeLayout(slot,values):values;
+    }
   }catch{}
   // Convert coordinates saved by the previous nested shelf layout into room percentages once.
   const migrationKey=layoutStorageKey(ownerId)+':independent-treasures-v1';
   try{
    if(localStorage.getItem(migrationKey)!=='done'){
-    const shelf=savedSlotLayouts.treasure_shelf||layoutSlotById.get('treasure_shelf').defaults;
+    const shelf=savedSlotLayouts.treasure_shelf||{left:34,bottom:65,width:35,height:12};
     for(const id of ['gold','whisker']){
      const old=savedSlotLayouts[id];
      if(old){
@@ -580,15 +614,7 @@ function renderTreasury(shop,inventory,requests,balance){
  ownedJewelQuantity=jewel?Number(jewel.quantity):0;
  updateOwnedJewelArtwork();
  const unillustrated=ownedItems.filter(item=>!illustratedSlugs.has(item.slug)&&item!==jewel);
- const chamberTreasures=el('chamber-shelf-extras');chamberTreasures.replaceChildren();
- for(const item of unillustrated.slice(0,3)){
-  const marker=document.createElement('span');marker.className='chamber-generic-treasure';
-  marker.textContent=item.name+(item.quantity>1?' ×'+item.quantity:'');chamberTreasures.append(marker);
- }
- if(unillustrated.length>3){
-  const more=document.createElement('span');more.className='chamber-generic-treasure';
-  more.textContent='+'+(unillustrated.length-3)+' more treasures';chamberTreasures.append(more);
- }
+ syncDynamicTreasureSlots(unillustrated);
  const chamber=el('kae-chamber'),hour=new Date().getHours(),daytime=hour>=7&&hour<19;
  chamber.classList.toggle('daytime',daytime);
  chamber.classList.toggle('chest-on-table',ownedSlugs.has('close_kept_treasure_chest')&&ownedSlugs.has('unbudgeable_oak_table'));
