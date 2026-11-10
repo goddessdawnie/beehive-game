@@ -206,8 +206,9 @@ function applySlotGeometry(slot){
  for(const key of [...layoutKeys,'right'])node.style.removeProperty(key);
  const custom=savedSlotLayouts[slot.id];
  node.classList.toggle('room-layout-hidden',!slotVisible(slot));
- if(custom){
-  for(const key of layoutKeys)node.style[key]=boundedLayout(slot,key,custom[key])+'%';
+ if(custom||slot.id.startsWith('item:')){
+  const values=custom||slot.defaults;
+  for(const key of layoutKeys)node.style[key]=boundedLayout(slot,key,values[key])+'%';
   // The existing case is anchored by right:3%; horizontal edits use left instead.
   if(slot.id==='right'||slot.id==='chest')node.style.right='auto';
  }
