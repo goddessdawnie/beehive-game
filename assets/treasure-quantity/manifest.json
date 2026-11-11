@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "artwork_only",
-  "notes": "Assets only. Do not treat this manifest as proof of ownership, purchasability or equipment. No automatic quantity selection is active yet. A later approved implementation can map owned quantities to these art tiers.",
+  "status": "quantity_art_active",
+  "notes": "Artwork mapping only; live UI selects tiers from actual owned inventory quantities. This manifest does not grant ownership, purchasability or equipment.",
   "tiers": [
     {
       "id": "single",
@@ -48,8 +48,8 @@
       }
     },
     "jewel": {
-      "label": "Jewel (shop registration pending)",
-      "shopSlug": null,
+      "label": "Loose jewel",
+      "shopSlug": "loose_jewel",
       "variants": {
         "single": {
           "source": "assets/treasure-quantity/jewel-single.svg",

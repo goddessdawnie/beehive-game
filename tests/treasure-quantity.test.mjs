@@ -11,7 +11,7 @@ test('treasure artwork thresholds cover positive integer quantities without gaps
  }
 });
 test('coin and whisker owned slugs map to four existing transparent SVG assets',async()=>{
- for(const [type,slug] of [['coin','gold_coin'],['whisker','minnie_whisker']]){
+ for(const [type,slug] of [['coin','gold_coin'],['whisker','minnie_whisker'],['jewel','loose_jewel']]){
   const item=manifest.items[type];assert.equal(item.shopSlug,slug);
   for(const tier of manifest.tiers){
    const source=item.variants[tier.id].source;
@@ -24,7 +24,10 @@ test('coin and whisker owned slugs map to four existing transparent SVG assets',
   }
  }
 });
-test('Jewel artwork is present but remains disconnected from an active shop slug',()=>{
- assert.equal(manifest.items.jewel.shopSlug,null);
- assert.equal(manifest.status,'artwork_only');
+test('quantity art binds only approved inventory slugs, not collar or similarly named items',()=>{
+ assert.equal(manifest.status,'quantity_art_active');
+ const slugs=Object.values(manifest.items).map(item=>item.shopSlug);
+ assert.deepEqual(slugs.sort(),['gold_coin','loose_jewel','minnie_whisker'].sort());
+ assert.ok(!slugs.includes('jeweled_collar'));
+ assert.ok(!slugs.includes('mystery_jewel'));
 });
