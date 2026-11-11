@@ -101,7 +101,7 @@ function quantityArtworkSource(slug,qty,allowedPrefix='assets/treasure-quantity/
  const source=tier&&item?.variants?.[tier.id]?.source;
  if(typeof source!=='string'||!source.startsWith(allowedPrefix))return null;
  const filename=source.slice('assets/treasure-quantity/'.length);
- return /^[a-z-]+\\.svg$/.test(filename)?source:null;
+ return /^[a-z-]+\.svg$/.test(filename)?source:null;
 }
 function renderQuantityArtwork(){
  for(const [slug,node] of Object.entries(quantityVisualNodes)){
