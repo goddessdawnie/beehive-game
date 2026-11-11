@@ -95,27 +95,29 @@ const quantityVisualNodes={gold_coin:document.querySelector('.chamber-gold'),min
 function quantityTier(tiers,qty){
  return tiers.find(t=>Number(qty)>=t.min&&(t.max===null||Number(qty)<=t.max));
 }
+function quantityArtworkSource(slug,qty,allowedPrefix='assets/treasure-quantity/'){
+ const tier=Number(qty)>0&&quantityArtwork?quantityTier(quantityArtwork.tiers,qty):null;
+ const item=quantityArtwork?.items?.[slug]||(slug==='loose_jewel'?quantityArtwork?.rawJewel:null);
+ const source=tier&&item?.variants?.[tier.id]?.source;
+ if(typeof source!=='string'||!source.startsWith(allowedPrefix))return null;
+ const filename=source.slice('assets/treasure-quantity/'.length);
+ return /^[a-z-]+\.svg$/.test(filename)?source:null;
+}
 function renderQuantityArtwork(){
  for(const [slug,node] of Object.entries(quantityVisualNodes)){
-  const qty=ownedTreasureQuantities.get(slug)||0;
-  const item=quantityArtwork?.items?.[slug];
-  const tier=qty>0&&quantityArtwork?quantityTier(quantityArtwork.tiers,qty):null;
-  const source=tier&&item?.variants?.[tier.id]?.source;
-  const safe=typeof source==='string'&&source.startsWith('assets/treasure-quantity/')&&/^[a-z-]+\.svg$/.test(source.slice('assets/treasure-quantity/'.length));
-  node.classList.toggle('tier-art',Boolean(safe));
-  node.style.backgroundImage=safe?'url('+JSON.stringify(source)+')':'';
+  const source=quantityArtworkSource(slug,ownedTreasureQuantities.get(slug)||0);
+  node.classList.toggle('tier-art',Boolean(source));
+  node.style.backgroundImage=source?'url('+JSON.stringify(source)+')':'';
  }
 }
 let ownedJewelQuantity=0;
 function updateOwnedJewelArtwork(){
  const node=el('chamber-jewel-owned');
  if(!node)return;
- const tier=ownedJewelQuantity>0&&quantityArtwork?quantityTier(quantityArtwork.tiers,ownedJewelQuantity):null;
- const source=tier&&(quantityArtwork?.items?.loose_jewel||quantityArtwork?.rawJewel)?.variants?.[tier.id]?.source;
- const safe=typeof source==='string'&&source.startsWith('assets/treasure-quantity/jewel-')&&source.endsWith('.svg')&&/^[a-z-]+$/.test(source.slice('assets/treasure-quantity/'.length,-4));
+ const source=quantityArtworkSource('loose_jewel',ownedJewelQuantity,'assets/treasure-quantity/jewel-');
  node.classList.toggle('visible',ownedJewelQuantity>0);
- node.style.backgroundImage=safe?'url('+JSON.stringify(source)+')':'';
- node.textContent=ownedJewelQuantity>0&&!safe?'💎':'';
+ node.style.backgroundImage=source?'url('+JSON.stringify(source)+')':'';
+ node.textContent=ownedJewelQuantity>0&&!source?'💎':'';
 }
 async function loadQuantityArtwork(){
  try{
