@@ -111,7 +111,7 @@ function updateOwnedJewelArtwork(){
  const node=el('chamber-jewel-owned');
  if(!node)return;
  const tier=ownedJewelQuantity>0&&quantityArtwork?quantityTier(quantityArtwork.tiers,ownedJewelQuantity):null;
- const source=tier&&quantityArtwork?.rawJewel?.variants?.[tier.id]?.source;
+ const source=tier&&(quantityArtwork?.items?.loose_jewel||quantityArtwork?.rawJewel)?.variants?.[tier.id]?.source;
  const safe=typeof source==='string'&&source.startsWith('assets/treasure-quantity/jewel-')&&source.endsWith('.svg')&&/^[a-z-]+$/.test(source.slice('assets/treasure-quantity/'.length,-4));
  node.classList.toggle('visible',ownedJewelQuantity>0);
  node.style.backgroundImage=safe?'url('+JSON.stringify(source)+')':'';
@@ -776,7 +776,7 @@ function renderTreasury(shop,inventory,requests,balance){
  applyArtworkPreview(); // If Maintenance is open, its temporary visual override remains in effect during refresh.
  // Render inventory-backed markers for possessions without dedicated artwork.
  const illustratedSlugs=new Set([...document.querySelectorAll('[data-treasure]')].map(node=>node.dataset.treasure));
- const jewel=ownedItems.find(item=>/jewel/i.test(item.slug)&&item.slug!=='jeweled_collar')||ownedItems.find(item=>/jewel/i.test(item.name)&&item.slug!=='jeweled_collar');
+ const jewel=ownedItems.find(item=>item.slug==='loose_jewel');
  ownedJewelQuantity=jewel?Number(jewel.quantity):0;
  updateOwnedJewelArtwork();
  const unillustrated=ownedItems.filter(item=>!illustratedSlugs.has(item.slug)&&item!==jewel);
