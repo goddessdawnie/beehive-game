@@ -14,7 +14,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17
@@ -42,5 +42,5 @@ jobs:
           BEE_ALLOW_DISPOSABLE_CLUSTER: 'yes'
           BEE_TEST_REST: 'yes'
           BEE_TEST_CLUSTER_URL: postgresql://postgres:bee-disposable-test@127.0.0.1:5432/postgres
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install chromium
       - run: npm run test:browser
