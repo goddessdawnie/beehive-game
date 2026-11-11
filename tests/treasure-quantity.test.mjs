@@ -56,3 +56,28 @@ test('shared artwork source resolver preserves tier boundaries and safe fallback
  const unsafe={...ctx,quantityArtwork:{...ctx.quantityArtwork,items:{gold_coin:{variants:{[manifest.tiers[0].id]:{source:'assets/treasure-quantity/../bad.svg'}}}}}};
  assert.equal(runInNewContext(code+';quantityArtworkSource("gold_coin",1)',unsafe),null);
 });
+
+test('quantity artwork manifest supports repeatable safe onboarding for each approved item',async()=>{
+ const slugs=new Set();
+ const tierIds=manifest.tiers.map(t=>t.id);
+ assert.ok(tierIds.length>0);
+ assert.equal(new Set(tierIds).size,tierIds.length,'tier IDs must be unique');
+ for(const [key,item] of Object.entries(manifest.items)){
+  assert.match(key,/^[a-z][a-z0-9_]*$/);
+  assert.match(item.shopSlug,/^[a-z][a-z0-9_]*$/,'each item must have an explicit inventory slug');
+  assert.ok(!slugs.has(item.shopSlug),'duplicate inventory slug: '+item.shopSlug);
+  slugs.add(item.shopSlug);
+  assert.deepEqual(Object.keys(item.variants).sort(),[...tierIds].sort(),'complete tiers for '+key);
+  for(const tierId of tierIds){
+   const source=item.variants[tierId]?.source;
+   assert.equal(typeof source,'string','missing artwork for '+key+'/'+tierId);
+   assert.match(source,/^assets\/treasure-quantity\/[a-z0-9_-]+\.svg$/,'safe local SVG source');
+   const file=new URL(source.replace('assets/treasure-quantity/',''),base);
+   assert.ok((await stat(file)).isFile(),'missing artwork '+source);
+   const svg=await readFile(file,'utf8');
+   assert.match(svg,/<svg\b/);
+   assert.match(svg,/<\/svg>/);
+   assert.doesNotMatch(svg,/<script\b|<image\b[^>]*href=["']https?:/i,'unsafe SVG '+source);
+  }
+ }
+});
