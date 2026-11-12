@@ -91,6 +91,18 @@ test('timers retry once, adjust safely, and reject sending or previously attempt
  assert.equal((await current('timers',clean.id)).status,'cancelled');
 });
 
+test('multiple countdowns coexist and cancellation is independent',async()=>{
+ const first=(await command('timer.create',{seconds:900,label:'15-minute timer'})).result;
+ const second=(await command('timer.create',{seconds:1800,label:'30-minute timer'})).result;
+ assert.notEqual(first.id,second.id);
+ const active=await q("select id from beehive_timers where owner_id=$1 and id=any($2::uuid[]) and status='pending'",[owner,[first.id,second.id]]);
+ assert.equal(active.length,2);
+ await mutate('timer.cancel','timers',first.id);
+ assert.equal((await current('timers',first.id)).status,'cancelled');
+ assert.equal((await current('timers',second.id)).status,'pending');
+ await mutate('timer.cancel','timers',second.id);
+});
+
 test('reminders schedule, reschedule, cancel; bell retry never queues twice',async()=>{
  const b=(await command('reminder.create',{title:'Reminder',body:'Do the thing',due_at:'2030-01-01T12:00:00Z'})).result;
  await mutate('reminder.edit','reminders',b.id,{due_at:'2030-01-02T12:00:00Z'});
