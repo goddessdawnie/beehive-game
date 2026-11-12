@@ -314,9 +314,9 @@ await page.evaluate(()=>{window.lastCopiedText=null;Object.defineProperty(naviga
 await page.getByRole('button',{name:'Copy your message'}).first().click();
 assert.equal(await page.evaluate(()=>window.lastCopiedText),'Can you read this?','Copy preserves user message');
 assert.match(await page.getByRole('button',{name:'Copy your message'}).first().innerText(),/Copied/);
-await page.getByRole('button',{name:'Copy Kae message'}).click();
+await page.getByRole('button',{name:'Copy Kae message'}).first().click();
 assert.equal(await page.evaluate(()=>window.lastCopiedText),'Dragon decree:\nNo more paperwork. 🐉 *I insist.*','Copy preserves entire raw response');
-assert.match(await page.getByRole('button',{name:'Copy Kae message'}).innerText(),/Copied/);
+assert.match(await page.getByRole('button',{name:'Copy Kae message'}).first().innerText(),/Copied/);
 assert.match(await page.locator('#chatlog .chat-line').filter({hasText:'No more paperwork'}).innerText(),/No more paperwork/);
 
 const kaeLine=page.locator('#chatlog .chat-line').filter({hasText:'No more paperwork'});
