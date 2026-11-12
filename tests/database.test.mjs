@@ -241,3 +241,29 @@ test('request recovery can inspect a receipt without replaying or leaking anothe
  assert.equal((await q("select bee.read($1,'request','',$2) r",[owner,randomUUID()]))[0].r,null);
  assert.equal((await q('select count(*)::integer n from tasks where id=$1',[t.id]))[0].n,1);
 });
+
+
+test('Bee scheduled bells: once, weekly, monthly, replay, owner isolation and cancellation',async()=>{
+ const onceAt=new Date(Date.now()+86400000).toISOString();
+ const payload={title:'Bee once',kind:'once',one_time_at:onceAt};
+ const req=randomUUID();
+ const a=await command('schedule.create',payload,req);
+ assert.equal(a.result.kind,'once');
+ assert.ok(a.result.next_due_at);
+ assert.equal((await command('schedule.create',payload,req)).replayed,true);
+ assert.equal((await read('schedules',a.result.id)).length,1);
+ assert.equal((await read('schedules',a.result.id,other)).length,0);
+ const weekly=await command('schedule.create',{title:'Monday ping',kind:'weekly',local_time:'08:00:00',weekdays:[1]});
+ assert.equal(weekly.result.kind,'weekly');
+ assert.ok(weekly.result.next_due_at);
+ const monthly=await command('schedule.create',{title:'Monthly ping',kind:'monthly',local_time:'09:00:00',month_day:31});
+ assert.ok(monthly.result.next_due_at);
+ const before=a.result.next_due_at;
+ const edited=await command('schedule.edit',{id:a.result.id,expected_updated_at:a.result.updated_at,title:'Renamed once'});
+ assert.equal(edited.result.next_due_at,before);
+ await assert.rejects(command('schedule.edit',{id:a.result.id,expected_updated_at:a.result.updated_at,title:'Stale'}));
+ const cancelled=await command('schedule.cancel',{id:a.result.id,expected_updated_at:edited.result.updated_at});
+ assert.equal(cancelled.result.active,false);
+ assert.equal(cancelled.result.next_due_at,null);
+ await assert.rejects(command('schedule.create',{title:'Bad',kind:'weekly',local_time:'08:00:00',weekdays:[8]}));
+});
