@@ -279,7 +279,7 @@ assert.deepEqual(await bothRow.locator('form select').first().locator('option').
 assert.equal(await bothRow.locator('form select').first().inputValue(),'Both');
 await bothRow.getByRole('button',{name:'Close'}).click();
 await page.locator('#tab-estate').click();
-await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===2);
+await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===3);
 await page.evaluate(()=>{window.chatRequests=[];const oldFetch=window.fetch;window.fetch=async(url,opts)=>{if(String(url).includes('/functions/v1/kae-chat')){const request=JSON.parse(opts.body);window.chatRequests.push(request);window.chatRows.push({role:'user',content:request.message,created_at:'2026-11-07T08:02:00Z'});return {ok:true,json:async()=>({})}}return oldFetch(url,opts)}});
 const composer=page.locator('#chattext');
 assert.equal(await composer.evaluate(el=>el.tagName),'TEXTAREA');
@@ -307,9 +307,9 @@ await page.waitForFunction(()=>window.chatRequests.length===2);
 assert.equal(await page.evaluate(()=>window.chatRequests[1].message),'Keyboard shortcut works');
 assert.equal(await composer.inputValue(),'');
 
-assert.equal(await page.locator('#chatlog .chat-copy').count(),4,'All existing and newly sent messages have copy controls');
+assert.equal(await page.locator('#chatlog .chat-copy').count(),5,'All existing and newly sent messages have copy controls');
 assert.equal(await page.getByRole('button',{name:'Copy your message'}).count(),3);
-assert.equal(await page.getByRole('button',{name:'Copy Kae message'}).count(),1);
+assert.equal(await page.getByRole('button',{name:'Copy Kae message'}).count(),2);
 await page.evaluate(()=>{window.lastCopiedText=null;Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.lastCopiedText=text}}});});
 await page.getByRole('button',{name:'Copy your message'}).first().click();
 assert.equal(await page.evaluate(()=>window.lastCopiedText),'Can you read this?','Copy preserves user message');
