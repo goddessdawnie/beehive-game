@@ -5,7 +5,7 @@ const root=process.cwd();const server=http.createServer((req,res)=>{const p=path
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
 const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
-window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'}];
+window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'},{role:'mochi',content:'*italic* **bold** ***both*** ~~strike~~ \\\\*literal\\\\* <script>bad()</script> `code`',created_at:'2026-11-07T08:02:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
 {id:'recent',title:'Recently finished',status:'completed',created_at:'2026-09-01T10:00:00Z',completed_at:'2026-11-06T18:00:00Z',updated_at:'2026-11-06T18:00:00Z',due_at:'2026-12-25T12:00:00Z',reward_coins:5},
@@ -322,20 +322,15 @@ assert.match(await page.locator('#chatlog .chat-line').filter({hasText:'No more 
 const kaeLine=page.locator('#chatlog .chat-line').filter({hasText:'No more paperwork'});
 assert.equal(await kaeLine.locator('em').count(),1,'Historical Kae italics render');
 assert.equal(await kaeLine.locator('em').innerText(),'I insist.');
-const markdownResult=await page.evaluate(()=>{
- const sample='*italic* **bold** ***both*** ~~strike~~ \\*literal\\* <script>bad()</script> `code`';
- const host=document.createElement('div');host.append(renderChatMarkdown(sample));
- return {html:host.innerHTML,text:host.textContent,script:host.querySelectorAll('script').length,
-  em:host.querySelectorAll('em').length,strong:host.querySelectorAll('strong').length,
-  strike:host.querySelectorAll('s').length,code:host.querySelectorAll('code').length};
-});
-assert.equal(markdownResult.script,0,'Chat markup must never create executable HTML');
-assert.equal(markdownResult.em,2);
-assert.equal(markdownResult.strong,2);
-assert.equal(markdownResult.strike,1);
-assert.equal(markdownResult.code,1);
-assert.ok(markdownResult.text.includes('*literal*'),'Escaped stars remain literal');
-assert.ok(markdownResult.text.includes('<script>bad()</script>'),'Angle brackets stay text');
+const markdownLine=page.locator('#chatlog .chat-line').filter({hasText:'bad()'});
+assert.equal(await markdownLine.locator('script').count(),0,'Chat markup must never create executable HTML');
+assert.equal(await markdownLine.locator('em').count(),2);
+assert.equal(await markdownLine.locator('strong').count(),3,'Includes speaker label and two formatted strong nodes');
+assert.equal(await markdownLine.locator('s').count(),1);
+assert.equal(await markdownLine.locator('code').count(),1);
+const markdownText=await markdownLine.innerText();
+assert.ok(markdownText.includes('*literal*'),'Escaped stars remain literal');
+assert.ok(markdownText.includes('<script>bad()</script>'),'Angle brackets stay text');
 
 await page.locator('#tab-tasks').click();
 await page.locator('[data-filter="completed"]').click();
