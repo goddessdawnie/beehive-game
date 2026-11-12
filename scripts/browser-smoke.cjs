@@ -318,6 +318,25 @@ await page.getByRole('button',{name:'Copy Kae message'}).click();
 assert.equal(await page.evaluate(()=>window.lastCopiedText),'Dragon decree:\nNo more paperwork. 🐉 *I insist.*','Copy preserves entire raw response');
 assert.match(await page.getByRole('button',{name:'Copy Kae message'}).innerText(),/Copied/);
 assert.match(await page.locator('#chatlog .chat-line').filter({hasText:'No more paperwork'}).innerText(),/No more paperwork/);
+
+const kaeLine=page.locator('#chatlog .chat-line').filter({hasText:'No more paperwork'});
+assert.equal(await kaeLine.locator('em').count(),1,'Historical Kae italics render');
+assert.equal(await kaeLine.locator('em').innerText(),'I insist.');
+const markdownResult=await page.evaluate(()=>{
+ const sample='*italic* **bold** ***both*** ~~strike~~ \\*literal\\* <script>bad()</script> `code`';
+ const host=document.createElement('div');host.append(renderChatMarkdown(sample));
+ return {html:host.innerHTML,text:host.textContent,script:host.querySelectorAll('script').length,
+  em:host.querySelectorAll('em').length,strong:host.querySelectorAll('strong').length,
+  strike:host.querySelectorAll('s').length,code:host.querySelectorAll('code').length};
+});
+assert.equal(markdownResult.script,0,'Chat markup must never create executable HTML');
+assert.equal(markdownResult.em,2);
+assert.equal(markdownResult.strong,2);
+assert.equal(markdownResult.strike,1);
+assert.equal(markdownResult.code,1);
+assert.ok(markdownResult.text.includes('*literal*'),'Escaped stars remain literal');
+assert.ok(markdownResult.text.includes('<script>bad()</script>'),'Angle brackets stay text');
+
 await page.locator('#tab-tasks').click();
 await page.locator('[data-filter="completed"]').click();
 await page.waitForFunction(()=>document.querySelectorAll('#tasks .task').length===5);
