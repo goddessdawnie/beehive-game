@@ -806,7 +806,7 @@ function renderTreasury(shop,inventory,requests,balance){
   info.append(title,detail);const qty=counts.get(item.id)||0;
   const btn=document.createElement('button');btn.type='button';btn.textContent=qty&&!item.repeatable?'Owned':'Give to Kae';
   btn.disabled=treasuryBusy||balance<item.price||(!item.repeatable&&qty>0);
-  btn.onclick=async()=>{if(treasuryBusy||chatBusy){notice('Kae is already speaking. Let him finish before presenting another gift.');return}treasuryBusy=true;btn.disabled=true;const res=await db.rpc('purchase_kae_reward',{p_item_id:item.id});treasuryBusy=false;if(res.error){notice(res.error.message);await load();return}notice('Kae has received '+item.name+'. His Lordship is responding…');await load();await kaeInitiate('gift',item.id)};
+  btn.onclick=async()=>{if(treasuryBusy||chatBusy){notice('Kae is already speaking. Let him finish before presenting another gift.');return}treasuryBusy=true;btn.disabled=true;const res=await db.rpc('purchase_kae_reward',{p_item_id:item.id});treasuryBusy=false;if(res.error){notice(res.error.message);await load();return}notice('Kae has received '+item.name+(item.repeatable?'.':'. His Lordship is responding…'));await load();if(!item.repeatable)await kaeInitiate('gift',item.id)};
   row.append(info,btn);list.append(row)
  }
  owned.replaceChildren();if(!inventory.data?.length)owned.textContent='His Lordship owns nothing from this shop. A constitutional outrage.';
