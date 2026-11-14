@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');
 const http=require('http'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
 (async()=>{
-const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
+const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':p.endsWith('.svg')?'image/svg+xml':p.endsWith('.png')?'image/png':p.endsWith('.webp')?'image/webp':p.endsWith('.jpg')?'image/jpeg':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
 const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
@@ -128,7 +128,7 @@ assert.equal(await page.locator('#layout-tools').isVisible(),true);
 assert.equal(await page.locator('#layout-guide').isVisible(),true);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),true);
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
- 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar'
+ 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar','Platinum crown'
 ]);
 // Coins and whiskers are direct children of the room, with independently editable geometry.
 for(const [slot,selector] of [['gold','.chamber-gold'],['whisker','.chamber-whisker']]){
@@ -388,6 +388,44 @@ for(const [qty,tier] of countsToCheck){
   assert.match(await page.locator(selector).evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp(stem+'-'+tier+'\\.svg'));
  }
 }
+// Crown stays distinct from collar, appears only with ownership (or explicit preview),
+// and uses the existing placement/visibility persistence beneath display-case glass.
+assert.equal(await page.locator('.chamber-crown').isVisible(),false);
+await page.evaluate(()=>window.inventoryRows=[
+ {item_id:'crown-test',quantity:1,item:{name:'Platinum Crown',slug:'platinum_crown'}},
+ {item_id:'collar-test',quantity:1,item:{name:'Jeweled Collar',slug:'jeweled_collar'}},
+ {item_id:'case-test',quantity:1,item:{name:'Glass Display Case',slug:'display_case'}}
+]);
+await page.locator('#refresh').click();
+await page.locator('.chamber-crown.visible').waitFor();
+assert.equal(await page.locator('.chamber-collar').isVisible(),true);
+assert.equal(await page.locator('#treasure-item-crown-test').count(),0,'No duplicate generic crown');
+assert.match(await page.locator('.chamber-crown').evaluate(n=>getComputedStyle(n).backgroundImage),/platinum-crown\.svg/);
+assert.ok(await page.evaluate(()=>Number(getComputedStyle(document.querySelector('.chamber-crown')).zIndex)<Number(getComputedStyle(document.querySelector('.chamber-case')).zIndex)));
+await page.locator('#hive-settings').click();
+await page.locator('#open-layout').click();
+await page.locator('#layout-slot').selectOption('crown');
+await page.locator('#layout-left').evaluate(n=>{n.value='80';n.dispatchEvent(new Event('input',{bubbles:true}));});
+await page.locator('#layout-bottom').evaluate(n=>{n.value='43';n.dispatchEvent(new Event('input',{bubbles:true}));});
+await page.locator('#layout-width').evaluate(n=>{n.value='14';n.dispatchEvent(new Event('input',{bubbles:true}));});
+await page.locator('#layout-visible').uncheck();
+assert.equal(await page.locator('.chamber-crown').isVisible(),false);
+await page.locator('#layout-visible').check();
+await page.locator('#hive-settings').click();
+await page.reload();
+await page.locator('#game:not(.hidden)').waitFor();
+await page.evaluate(()=>window.inventoryRows=[{item_id:'crown-test',quantity:1,item:{name:'Platinum Crown',slug:'platinum_crown'}},{item_id:'case-test',quantity:1,item:{name:'Glass Display Case',slug:'display_case'}}]);
+await page.locator('#refresh').click();
+await page.locator('.chamber-crown.visible').waitFor();
+assert.equal(await page.locator('.chamber-crown').evaluate(n=>n.style.left),'80%','Placement survives reload');
+assert.equal(await page.locator('.chamber-crown').evaluate(n=>n.style.width),'14%');
+assert.equal(await page.locator('.chamber-collar').isVisible(),false,'Crown does not grant collar');
+await page.evaluate(async()=>{for(const selector of ['.chamber-crown','.chamber-case']){const node=document.querySelector(selector);const value=getComputedStyle(node,selector==='.chamber-case'?'::after':null).backgroundImage;const src=value.match(/url\(["']?(.*?)["']?\)/)?.[1];if(!src)throw Error('Missing art '+selector);const img=new Image();img.src=src;await img.decode();}});
+if(process.env.BEE_SCREENSHOT_DIR){fs.mkdirSync(process.env.BEE_SCREENSHOT_DIR,{recursive:true});await page.locator('#kae-chamber').screenshot({path:path.join(process.env.BEE_SCREENSHOT_DIR,'crown-'+viewport.width+'.png')});}
+await page.evaluate(()=>window.inventoryRows=[]);
+await page.locator('#refresh').click();
+await page.waitForFunction(()=>!document.querySelector('.chamber-crown').classList.contains('visible'));
+assert.equal(await page.locator('.chamber-crown').isVisible(),false,'No stale crown without ownership');
 // Unillustrated inventory is represented by one independent room object per item.
 await page.evaluate(()=>window.inventoryRows=[{item_id:'unique-ornament',quantity:2,item:{name:'Dragon ornament',slug:'dragon_ornament'}}]);
 await page.locator('#refresh').click();
