@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-labelledby="title desc">
+<title id="title">Kae’s platinum crown</title>
+<desc id="desc">A softly gleaming platinum circlet with five purple jewels, a modestly larger central amethyst, and low swept points.</desc>
+<defs>
+ <linearGradient id="platinum" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#737887"/><stop offset=".22" stop-color="#e5e8ef"/><stop offset=".4" stop-color="#fffaf1"/><stop offset=".58" stop-color="#a0a6b5"/><stop offset=".78" stop-color="#eff0f5"/><stop offset="1" stop-color="#707585"/></linearGradient>
+ <linearGradient id="band" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f6f3f0"/><stop offset=".35" stop-color="#bfc4d1"/><stop offset=".72" stop-color="#8c91a2"/><stop offset="1" stop-color="#e7e5ed"/></linearGradient>
+ <linearGradient id="amethyst" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e0b6f3"/><stop offset=".3" stop-color="#a463cc"/><stop offset=".65" stop-color="#66308f"/><stop offset="1" stop-color="#351a57"/></linearGradient>
+</defs>
+<!-- Open rear rim and dark inner metal give the crown depth without a solid background. -->
+<ellipse cx="240" cy="173" rx="177" ry="49" fill="#514459" stroke="#8a8b9b" stroke-width="6"/>
+<path d="M67 175 48 93 123 137 157 73 207 132 240 58 275 132 325 73 359 137 432 93 413 175 397 223 Q240 275 83 223Z" fill="url(#platinum)" stroke="#555365" stroke-width="7" stroke-linejoin="round"/>
+<path d="m64 109 62 42 32-57 50 52 32-67 34 67 50-52 33 57 60-42" fill="none" stroke="#fffaf3" stroke-opacity=".8" stroke-width="4" stroke-linejoin="round"/>
+<path d="M73 178 Q240 231 407 178 L397 225 Q240 278 83 225Z" fill="url(#band)" stroke="#595568" stroke-width="5"/>
+<path d="M80 184 Q240 238 400 184 M86 220 Q240 269 394 220" fill="none" stroke="#f3eef3" stroke-width="5"/>
+<!-- Each stone has a silver bezel and separate facets; center is only modestly larger. -->
+<g stroke="#eee9f1" stroke-width="5" fill="url(#amethyst)">
+ <path d="m239 133 24 25v36l-24 25-24-25v-36Z"/>
+ <path d="m151 153 18 20v28l-18 18-18-22v-27Z"/>
+ <path d="m329 153 18 17v27l-18 22-18-18v-28Z"/>
+ <path d="m91 143 13 18 5 24-12 13-13-22-4-22Z"/>
+ <path d="m389 143 11 11-4 22-13 22-12-13 5-24Z"/>
+</g>
+<g fill="#dfbbf2" opacity=".7"><path d="m239 140 0 35-18-15Z"/><path d="m151 160 0 27-12-16Z"/><path d="m329 160 0 27-12-13Z"/></g>
+<g fill="none" stroke="#503063" stroke-width="2" opacity=".7"><path d="m239 175 19 17-19 20-18-20Z"/><path d="m151 187 13 12-13 13-13-14Z"/><path d="m329 187 13 11-13 14-13-13Z"/></g>
+<g fill="#f5edf6" stroke="#858092" stroke-width="2"><circle cx="48" cy="92" r="7"/><circle cx="157" cy="73" r="7"/><circle cx="240" cy="58" r="8"/><circle cx="325" cy="73" r="7"/><circle cx="432" cy="92" r="7"/></g>
+<g fill="#676172"><circle cx="188" cy="222" r="3"/><circle cx="290" cy="222" r="3"/><circle cx="115" cy="205" r="3"/><circle cx="364" cy="205" r="3"/></g>
+</svg>

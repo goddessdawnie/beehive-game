@@ -90,6 +90,17 @@
       "renderer": "preview_image",
       "source": "assets/room/shelf/violet-jewel.svg",
       "fit": "contain"
+    },
+    {
+      "id": "platinum_crown",
+      "label": "Platinum crown · amethyst jewels",
+      "slots": [
+        "crown"
+      ],
+      "renderer": "existing",
+      "treasure": "platinum_crown",
+      "source": "assets/platinum-crown.svg",
+      "fit": "contain"
     }
   ]
 }

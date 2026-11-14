@@ -44,3 +44,11 @@ jobs:
           BEE_TEST_CLUSTER_URL: postgresql://postgres:bee-disposable-test@127.0.0.1:5432/postgres
       - run: npx playwright install chromium
       - run: npm run test:browser
+        env:
+          BEE_SCREENSHOT_DIR: test-results/scene
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scene-browser-previews
+          path: test-results/scene
+          if-no-files-found: ignore
