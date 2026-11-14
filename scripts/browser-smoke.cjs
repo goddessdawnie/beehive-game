@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');
 const http=require('http'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
 (async()=>{
-const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
+const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':p.endsWith('.svg')?'image/svg+xml':p.endsWith('.png')?'image/png':p.endsWith('.webp')?'image/webp':p.endsWith('.jpg')?'image/jpeg':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
 const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
@@ -420,6 +420,7 @@ await page.locator('.chamber-crown.visible').waitFor();
 assert.equal(await page.locator('.chamber-crown').evaluate(n=>n.style.left),'80%','Placement survives reload');
 assert.equal(await page.locator('.chamber-crown').evaluate(n=>n.style.width),'14%');
 assert.equal(await page.locator('.chamber-collar').isVisible(),false,'Crown does not grant collar');
+await page.evaluate(async()=>{for(const selector of ['.chamber-crown','.chamber-case']){const node=document.querySelector(selector);const value=getComputedStyle(node,selector==='.chamber-case'?'::after':null).backgroundImage;const src=value.match(/url\(["']?(.*?)["']?\)/)?.[1];if(!src)throw Error('Missing art '+selector);const img=new Image();img.src=src;await img.decode();}});
 if(process.env.BEE_SCREENSHOT_DIR){fs.mkdirSync(process.env.BEE_SCREENSHOT_DIR,{recursive:true});await page.locator('#kae-chamber').screenshot({path:path.join(process.env.BEE_SCREENSHOT_DIR,'crown-'+viewport.width+'.png')});}
 await page.evaluate(()=>window.inventoryRows=[]);
 await page.locator('#refresh').click();
