@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" role="img" aria-label="Jeweled dragon collar">
+<defs><linearGradient id="leather" x2="0" y2="1"><stop stop-color="#5b304b"/><stop offset=".5" stop-color="#2b182b"/><stop offset="1" stop-color="#140f20"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff1b0"/><stop offset=".4" stop-color="#bd8640"/><stop offset="1" stop-color="#674321"/></linearGradient><radialGradient id="gem"><stop stop-color="#f2d7ff"/><stop offset=".32" stop-color="#a66ee9"/><stop offset=".8" stop-color="#6231a0"/><stop offset="1" stop-color="#32154f"/></radialGradient></defs>
+<ellipse cx="120" cy="84" rx="100" ry="47" fill="none" stroke="#130c17" stroke-width="24"/>
+<ellipse cx="120" cy="84" rx="100" ry="47" fill="none" stroke="url(#gold)" stroke-width="19"/>
+<ellipse cx="120" cy="84" rx="100" ry="47" fill="none" stroke="url(#leather)" stroke-width="12"/>
+<path d="M23 84 Q120 153 217 84" fill="none" stroke="#e2b979" stroke-width="2" opacity=".85"/>
+<g fill="url(#gold)" stroke="#57341f" stroke-width="2"><circle cx="35" cy="109" r="7"/><circle cx="67" cy="128" r="7"/><circle cx="173" cy="128" r="7"/><circle cx="205" cy="109" r="7"/></g>
+<g stroke="#e9c88c" stroke-width="4" fill="url(#gem)"><path d="M120 104 138 123 120 149 102 123Z"/><path d="M76 111 86 122 76 135 66 122Z"/><path d="M164 111 174 122 164 135 154 122Z"/></g>
+<path d="M120 108 120 143M105 123H135" stroke="#fff1ff" stroke-width="1.5" opacity=".5"/>
+</svg>
