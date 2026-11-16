@@ -101,6 +101,17 @@
       "treasure": "platinum_crown",
       "source": "assets/platinum-crown.svg",
       "fit": "contain"
+    },
+    {
+      "id": "scale_oil_vial",
+      "label": "Scale Oil · Amethyst apothecary vial",
+      "slots": [
+        "scale_oil"
+      ],
+      "renderer": "existing",
+      "treasure": "scale_oil",
+      "source": "assets/room/shelf/scale-oil-vial.svg",
+      "fit": "contain"
     }
   ]
 }
