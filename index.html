@@ -559,7 +559,7 @@ async function generateThree(count=3){
 }
 el('three-generate').onclick=()=>{if(!threeBusy&&threeItems.length===0)void generateThree(3);else if(threeItems.length)threeFeedback('Clear and regenerate to start a new set.');};
 el('three-clear').onclick=async()=>{if(threeBusy)return;threeBusy=true;threeFeedback('Clearing suggestions…');try{for(const item of threeItems){const r=await db.rpc('three_things_act',{p_id:item.id,p_action:'clear'});if(r.error)throw r.error;}threeItems=[];threeBusy=false;renderThree();await generateThree(3);}catch(e){threeFeedback(e.message||'Could not clear all');threeBusy=false;renderThree();}};
-async function restoreThree(){const r=await db.from('three_things').select('id,title,detail,category,difficulty,status,feedback').eq('status','suggested').order('created_at',{ascending:false}).limit(3);if(!r.error){threeItems=(r.data||[]).reverse();renderThree();}}
+async function restoreThree(){const r=await db.from('three_things').select('id,title,detail,category,difficulty,status,feedback,feedback_note').eq('status','suggested').order('created_at',{ascending:false}).limit(3);if(!r.error){threeItems=(r.data||[]).reverse();renderThree();}}
 
 
 const beehiveVapidPublicKey='BNZoSYQs84y_lTR7xrdsPXGP1CxQwXGrVqZi7DwHpDmVTpAzqIWvN_9hg1xYThhNh62xjYY5Hf9-83Cw-RJW7tc';
