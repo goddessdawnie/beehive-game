@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" role="img" aria-label="Amethyst scale oil in a carved glass apothecary vial">
+<defs>
+ <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9f3f6" stop-opacity=".8"/><stop offset=".35" stop-color="#a7b9c5" stop-opacity=".25"/><stop offset=".8" stop-color="#d4c5e7" stop-opacity=".5"/><stop offset="1" stop-color="#eff4ff" stop-opacity=".85"/></linearGradient>
+ <linearGradient id="oil" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b58ce1"/><stop offset=".5" stop-color="#663c96"/><stop offset="1" stop-color="#2c194c"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3db9c"/><stop offset=".5" stop-color="#9a6832"/><stop offset="1" stop-color="#e9c77d"/></linearGradient>
+</defs>
+<ellipse cx="120" cy="300" rx="80" ry="10" fill="#150e24" opacity=".23"/>
+<path d="M91 55h58v47c31 14 47 40 47 72v84c0 22-18 40-40 40H84c-22 0-40-18-40-40v-84c0-32 16-58 47-72Z" fill="url(#glass)" stroke="#aeb6c6" stroke-width="6"/>
+<path d="M58 186q62 14 124 0v69q0 29-28 29H86q-28 0-28-29Z" fill="url(#oil)" opacity=".93"/>
+<path d="M91 101h58" stroke="#fff7e5" stroke-width="5" opacity=".55"/>
+<path d="M99 29h42v43H99z" rx="6" fill="#553b32" stroke="#b99158" stroke-width="5"/>
+<path d="M93 24h54v15H93z" fill="url(#gold)" stroke="#684626" stroke-width="3"/>
+<path d="M72 176q-11 29-10 75" fill="none" stroke="#f8f8ff" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+<path d="M165 171q16 30 9 80" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".25"/>
+<path d="M72 169h96v80H72z" fill="#382440" stroke="url(#gold)" stroke-width="5"/>
+<path d="M120 179l22 29-22 31-22-31z" fill="#9b79c6" stroke="#e5cb90" stroke-width="3"/>
+<path d="M120 185l12 23-12 22-12-22z" fill="#d2b4ef" opacity=".8"/>
+<path d="M85 209h15m40 0h15" stroke="#d9ba7a" stroke-width="3"/>
+<circle cx="120" cy="208" r="3" fill="#f6e8b7"/>
+</svg>
