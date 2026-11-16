@@ -17,11 +17,11 @@ Deno.serve(async(req:Request)=>{
  const [catalog,tasks,history]=await Promise.all([
  db.from("activity_catalog").select("title,category,property,locations,work_compatible,suggested_difficulty,notes").eq("active",true).limit(120),
  db.from("tasks").select("title,status,due_at,completed_at").order("updated_at",{ascending:false}).limit(45),
- db.from("three_things").select("title,status,feedback,created_at").order("created_at",{ascending:false}).limit(30)
+ db.from("three_things").select("title,status,feedback,feedback_note,created_at").order("created_at",{ascending:false}).limit(30)
  ]);
  if(catalog.error||tasks.error||history.error)return reply({error:"Could not load suggestions context"},503);
  const now=new Date();
- const context={local_time:new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",dateStyle:"full",timeStyle:"short"}).format(now),possibilities:(catalog.data||[]).map(x=>({title:x.title,category:x.category,property:x.property,locations:x.locations,work_compatible:x.work_compatible,difficulty:x.suggested_difficulty,notes:(x.notes||"").slice(0,120)})),tasks:(tasks.data||[]).map(x=>({title:x.title,status:x.status,due_at:x.due_at,completed_at:x.completed_at})),recent_suggestions:history.data||[],avoid:Array.isArray(payload?.avoid)?payload.avoid.filter((x:unknown)=>typeof x==="string").slice(0,15):[]};
+ const context={local_time:new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",dateStyle:"full",timeStyle:"short"}).format(now),possibilities:(catalog.data||[]).map(x=>({title:x.title,category:x.category,property:x.property,locations:x.locations,work_compatible:x.work_compatible,difficulty:x.suggested_difficulty,notes:(x.notes||"").slice(0,120)})),tasks:(tasks.data||[]).map(x=>({title:x.title,status:x.status,due_at:x.due_at,completed_at:x.completed_at})),recent_suggestions:(history.data||[]).map(x=>({title:x.title,status:x.status,feedback:x.feedback,feedback_note:typeof x.feedback_note==="string"?x.feedback_note.slice(0,500):null,created_at:x.created_at})),avoid:Array.isArray(payload?.avoid)?payload.avoid.filter((x:unknown)=>typeof x==="string").slice(0,15):[]};
  const activeTitles=new Set((tasks.data||[]).filter(x=>x.status==="open").map(x=>x.title.toLowerCase().trim()));
  const recentTitles=new Set((history.data||[]).map(x=>x.title.toLowerCase().trim()));
  const available=(catalog.data||[]).filter(x=>!activeTitles.has(x.title.toLowerCase().trim())&&!recentTitles.has(x.title.toLowerCase().trim())&&!(context.avoid||[]).some((a:string)=>a.toLowerCase().trim()===x.title.toLowerCase().trim()));
