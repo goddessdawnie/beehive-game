@@ -495,6 +495,7 @@ function renderThree(){
      if(error)throw error;
      if(!data||data.id!==item.id)throw Error('Suggestion is no longer active; refresh Three Things.');
      item.feedback=data.feedback;
+     feedbackNotePanel.hidden=false;
      reactionButtons.forEach((b,i)=>b.setAttribute('aria-pressed',String(item.feedback===['positive','neutral','negative'][i])));
      threeFeedback('Reaction saved.');
     }catch(err){threeFeedback('Could not save reaction: '+(err.message||err))}
@@ -505,6 +506,24 @@ function renderThree(){
    };
    reactionButtons.push(button);reactions.append(button);
   }
+  const feedbackNotePanel=document.createElement('div');feedbackNotePanel.hidden=!item.feedback;
+  const feedbackNoteInput=document.createElement('textarea');feedbackNoteInput.placeholder='Why this reaction? (optional)';feedbackNoteInput.maxLength=500;
+  feedbackNoteInput.value=item.feedback_note||'';feedbackNoteInput.setAttribute('aria-label','Optional feedback for '+item.title);
+  const saveFeedbackNote=document.createElement('button');saveFeedbackNote.type='button';saveFeedbackNote.textContent='Save feedback note';
+  saveFeedbackNote.onclick=async()=>{
+   if(threeBusy||threeFeedbackSaving.has(item.id))return;
+   threeFeedbackSaving.add(item.id);saveFeedbackNote.disabled=true;
+   try{
+    const note=feedbackNoteInput.value.trim();
+    const {data,error}=await db.from('three_things').update({feedback_note:note||null})
+     .eq('id',item.id).eq('status','suggested').select('id,feedback_note').maybeSingle();
+    if(error)throw error;
+    if(!data)throw Error('Suggestion is no longer active; refresh Three Things.');
+    item.feedback_note=data.feedback_note;threeFeedback('Feedback note saved for future suggestions.');
+   }catch(err){threeFeedback('Could not save feedback note: '+(err.message||err))}
+   finally{threeFeedbackSaving.delete(item.id);saveFeedbackNote.disabled=threeBusy;}
+  };
+  feedbackNotePanel.append(feedbackNoteInput,saveFeedbackNote);
   const notes=document.createElement('textarea');notes.placeholder='Completion notes (optional, for the Bees to notice)';notes.maxLength=3000;notes.setAttribute('aria-label','Completion notes for '+item.title);
   const actions=document.createElement('div');actions.style.display='flex';actions.style.flexWrap='wrap';actions.style.gap='8px';
   for(const [label,action] of [['Complete','complete'],['Add to today','add'],['Replace','replace']]){
@@ -524,7 +543,7 @@ function renderThree(){
     finally{threeBusy=false;renderThree();}
    };actions.append(button);
   }
-  card.append(heading,detail,meta,reactions,notes,actions);host.append(card);
+  card.append(heading,detail,meta,reactions,feedbackNotePanel,notes,actions);host.append(card);
  }
 }
 async function generateThree(count=3){
