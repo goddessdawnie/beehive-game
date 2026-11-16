@@ -128,8 +128,9 @@ assert.equal(await page.locator('#layout-tools').isVisible(),true);
 assert.equal(await page.locator('#layout-guide').isVisible(),true);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),true);
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
- 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar','Platinum crown'
+ 'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar','Platinum crown','Scale Oil · Apothecary vial'
 ]);
+assert.equal(await page.locator('.chamber-scale-oil').count(),1,'Scale Oil has one independent room node');
 // Coins and whiskers are direct children of the room, with independently editable geometry.
 for(const [slot,selector] of [['gold','.chamber-gold'],['whisker','.chamber-whisker']]){
  assert.equal(await page.locator(selector).evaluate(el=>el.parentElement?.id),'kae-chamber');
