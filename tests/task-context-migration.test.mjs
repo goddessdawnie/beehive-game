@@ -27,7 +27,7 @@ test('task context migration preserves real due dates, recurrence and legacy ori
   assert.ok(after.every(row=>row.task_location===null && row.task_category===null && row.planned_on===null));
   await db.exec("update public.tasks set planned_on='2026-11-16',task_location='Williamsburg',task_category='House' where id=1");
   const chosen=(await db.query('select due_at,planned_on,recurrence_rule,task_origin from public.tasks where id=1')).rows[0];
-  assert.equal(chosen.planned_on,'2026-11-16');
+  assert.equal(new Date(chosen.planned_on).toISOString().slice(0,10),'2026-11-16');
   assert.equal(chosen.due_at.toISOString(),'2026-12-03T15:00:00.000Z');
   assert.equal(chosen.recurrence_rule,'weekly');
   assert.equal(chosen.task_origin,'user');
