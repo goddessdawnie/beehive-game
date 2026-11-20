@@ -526,7 +526,7 @@ function renderThree(){
   feedbackNotePanel.append(feedbackNoteInput,saveFeedbackNote);
   const notes=document.createElement('textarea');notes.placeholder='Completion notes (optional, for the Bees to notice)';notes.maxLength=3000;notes.setAttribute('aria-label','Completion notes for '+item.title);
   const actions=document.createElement('div');actions.style.display='flex';actions.style.flexWrap='wrap';actions.style.gap='8px';
-  for(const [label,action] of [['Complete','complete'],['Add to today','add'],['Replace','replace']]){
+  for(const [label,action] of [['Complete','complete'],['Add to today','add'],['Keep for later','keep'],['Replace','replace']]){
    const button=document.createElement('button');button.type='button';button.textContent=label;button.disabled=threeBusy;
    button.onclick=async()=>{if(threeBusy||threeFeedbackSaving.has(item.id))return;const savedNotes=notes.value;threeBusy=true;threeFeedback('Working…');
     try{
@@ -537,7 +537,7 @@ function renderThree(){
      const result=await db.rpc('three_things_act',{p_id:item.id,p_action:action,p_notes:action==='complete'?savedNotes:''});
      if(result.error)throw result.error;
      threeItems=threeItems.filter(x=>x.id!==item.id);
-     threeFeedback(action==='complete'?'Completed and recorded for the Bees.':'Added to today’s tasks.');
+     threeFeedback(action==='complete'?'Completed and recorded for the Bees.':action==='keep'?'Kept as an undated Kae task. Find it with the Kae origin filter.':'Added to today’s working list without a deadline.');
      await load();
     }catch(err){threeFeedback(err.message||'Something went wrong.')}
     finally{threeBusy=false;renderThree();}
