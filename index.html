@@ -814,7 +814,7 @@ async function loadSleep(){
  if(![7,14,30].includes(days))return;
  sleepLoading=true;
  const status=el('sleep-status'),chart=el('sleep-chart'),list=el('sleep-days');
- status.textContent='Loading sleep…';chart.replaceChildren();list.replaceChildren();
+ status.textContent='Loading sleep…';chart.replaceChildren();list.replaceChildren();el('sleep-legend')?.remove();
  try{
   const {data,error}=await db.rpc('bee_sleep_recent',{p_days:days});
   if(error)throw error;
@@ -832,7 +832,7 @@ async function loadSleep(){
   if(!groups.length){status.textContent='No imported sleep sessions in this range.';return}
   const sum=groups.reduce((a,g)=>a+g.total,0);
   status.textContent=groups.length+' day(s) · '+(data||[]).length+' session(s) · '+sleepMinutes(sum)+' asleep';
-  const legend=document.createElement('p');legend.className='sleep-legend';legend.textContent='Purple: total asleep · dark purple: deep sleep';chart.before(legend);
+  const legend=document.createElement('p');legend.className='sleep-legend';legend.id='sleep-legend';legend.textContent='Purple: total asleep · dark purple: deep sleep';chart.before(legend);
   const max=Math.max(...groups.map(g=>g.total),1);
   for(const g of groups){
    const wrap=document.createElement('div');wrap.className='sleep-bar-wrap';
