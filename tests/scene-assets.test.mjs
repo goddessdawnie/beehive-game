@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 const html=await read('index.html');
+const css=await read('css/beehive.css');
 const manifest=JSON.parse(await read('assets/scene-catalog.json'));
 const svg=await read('assets/room/right/wood-glass-display-case.svg');
 
@@ -45,9 +46,9 @@ test('imperial throne uses layered SVG art behind Kae and keeps CSS only for opt
  assert.match(art,/id="plum"/);
  assert.match(art,/id="gold"/);
  assert.doesNotMatch(art,/<script\b|<image\b|href="https?:/i);
- assert.match(html,/\.chamber-throne\{[^}]*ornate-throne-back\.svg[^}]*z-index:1/);
- assert.match(html,/\.chamber-kae\{[^}]*z-index:2/);
- assert.match(html,/\.chamber-throne\.preview-legacy\{/);
+ assert.match(css,/\.chamber-throne\{[^}]*ornate-throne-back\.svg[^}]*z-index:1/);
+ assert.match(css,/\.chamber-kae\{[^}]*z-index:2/);
+ assert.match(css,/\.chamber-throne\.preview-legacy\{/);
 });
 
 test('violet repeatable Jewel has transparent SVG and a preview-only shelf slot, not a purchase',async()=>{
@@ -67,12 +68,12 @@ test('violet repeatable Jewel has transparent SVG and a preview-only shelf slot,
  assert.match(html,/id:'shelf_jewel'/);
  assert.match(html,/preview\?\.renderer==='preview_image'/);
  assert.match(html,/jewelPreview\.classList\.toggle\('visible',showJewel\)/);
- assert.match(html,/\.chamber-jewel-preview\{[^}]*z-index:2/,'Movable jewel sits below case glass in shared chamber stacking');
+ assert.match(css,/\.chamber-jewel-preview\{[^}]*z-index:2/,'Movable jewel sits below case glass in shared chamber stacking');
 });
 
 test('future display contents render below the SVG foreground without changing ownership flow',()=>{
  assert.match(html,/class="chamber-case-contents" id="chamber-case-contents"/);
- assert.match(html,/\.chamber-case::after\{[^}]*z-index:2[^}]*wood-glass-display-case\.svg/);
- assert.match(html,/\.chamber-case-contents\{[^}]*z-index:1/);
+ assert.match(css,/\.chamber-case::after\{[^}]*z-index:2[^}]*wood-glass-display-case\.svg/);
+ assert.match(css,/\.chamber-case-contents\{[^}]*z-index:1/);
  assert.match(html,/node\.classList\.toggle\('visible',sceneOwnedSlugs\.has\(node\.dataset\.treasure\)/);
 });

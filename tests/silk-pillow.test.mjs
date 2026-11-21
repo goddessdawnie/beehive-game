@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 const asset=await readFile(new URL('../assets/silk-pillow.svg',import.meta.url),'utf8');
+const css=await readFile(new URL('../css/beehive.css',import.meta.url),'utf8');
 const page=await readFile(new URL('../index.html',import.meta.url),'utf8');
 
 test('silk pillow has independent transparent SVG asset with no external image dependency',()=>{
@@ -12,13 +13,13 @@ test('silk pillow has independent transparent SVG asset with no external image d
 });
 test('pillow remains inventory-backed and beneath dragon without changing purchase rules',()=>{
  assert.match(page,/chamber-pillow" data-treasure="silk_pillow"/);
- assert.match(page, /\.chamber-pillow\{[^}]*silk-pillow\.svg[^}]*z-index:1/);
- assert.match(page, /\.chamber-kae\{[^}]*z-index:2/);
+ assert.match(css, /\.chamber-pillow\{[^}]*silk-pillow\.svg[^}]*z-index:1/);
+ assert.match(css, /\.chamber-kae\{[^}]*z-index:2/);
  assert.match(page,/node\.classList\.toggle\('visible',Boolean\(owned\)\)/);
 });
 
 test('cushion is tucked under Kae and has a visibly deeper front profile',()=>{
- const style=page.match(/\.chamber-pillow\{([^}]+)\}/)?.[1]||'';
+ const style=css.match(/\.chamber-pillow\{([^}]+)\}/)?.[1]||'';
  assert.match(style,/left:33%;bottom:11%;width:36%;height:12%/);
  assert.ok(style.includes('silk-pillow.svg?v=4'));
  assert.doesNotMatch(style,/radial-gradient|box-shadow|border-radius/);
