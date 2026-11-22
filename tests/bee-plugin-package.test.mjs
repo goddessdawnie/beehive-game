@@ -27,3 +27,14 @@ test('Bee plugin source matches the installed 0.2.4 contract and has complete lo
  assert.match(load('skills/beehive/references/sleep.md'),/America\/New_York/);
  assert.match(load('skills/beehive/references/operations.md'),/bee\.command/);
 });
+
+test('Bee operations reference documents deployed schedule API without implying plugin release',()=>{
+ const operations=load('skills/beehive/references/operations.md');
+ assert.match(operations,/`schedules` read returns an owner-scoped JSON array/);
+ for(const operation of ['schedule.create','schedule.edit','schedule.cancel']){
+  assert.match(operations,new RegExp('`'+operation.replace('.','\\.')+'`'));
+ }
+ assert.match(operations,/expected_updated_at/);
+ assert.match(operations,/active=false/);
+ assert.match(operations,/does \*\*not\*\* update the installed private plugin release/);
+});
