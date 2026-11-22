@@ -25,6 +25,14 @@ Production migration history contained **65 entries** at the audit, whereas `sup
 
 The installed private @Bee plugin is a **SQL connector interface**, not a `bee-api` Edge Function. Its documented calls use `bee.read` and `bee.command` in the `bee` schema; see `plugins/bee/skills/beehive/SKILL.md` and `references/operations.md`. The installed plugin was reported as release **0.2.4** at the audit; the repository text was synchronized in PR #60 and schedule operations documented in PR #61, but these source changes **do not redeploy the installed plugin**.
 
+## Sleep helper migration-body provenance (2026-11-22)
+
+A subsequent **read-only** comparison examined the single stored SQL statement for production migration `20261120181730` (`bee_sleep_read_private_20261120`) against the deployed definition of `bee.read_sleep_20261120(uuid,text,integer,integer)` from `pg_get_functiondef`. The recorded statement contains the helper's `CREATE OR REPLACE FUNCTION` plus separate `REVOKE`/`GRANT` commands, and the live definition uses different header formatting. Therefore the full statement MD5 (`38db3fc950d02ad70472f957dee9895a`) does **not** match the deployed normalized definition MD5 (`e9806a418455cec3cf6802117e05843f`); this mismatch alone is **not** evidence of behavior drift.
+
+Extracting only the PL/pgSQL bodies between their dollar-quote delimiters and normalizing **whitespace and letter case only** yielded **5,062 characters on each side**, with the same compact body MD5: `405723683147ecfa5afcb6c63c207d7d`. This supports **body-level provenance** of the deployed helper to the recorded migration. It does **not** establish full SQL statement equivalence, grant parity, independent semantic correctness, or completeness of production migration history. The source body, private configured owner identity and executable migration statement are deliberately **not reproduced here**.
+
+The related migrations `20261120181808` (`bee_sleep_read_route_20261120`) and `20261120182140` (`bee_sleep_explicit_window_20261120`) replace the `bee.read` wrapper, not the private sleep helper; the latter migration's recorded statement MD5 matched the deployed wrapper definition MD5 (`7ee2e2fd73791657dcba0cfad76c9db6`) in the read-only audit. The production-versus-repository migration gap (65 versus 13 at capture) and installed private plugin release parity remain **unresolved**. Do not execute stored statements or interpret this provenance note as approval for a database migration.
+
 ## Maintainer reconciliation procedure
 
 1. Read the live Notion runbook and current roadmap; check exclusive lease and existing PRs.
