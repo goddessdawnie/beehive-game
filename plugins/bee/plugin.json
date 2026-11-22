@@ -1,29 +1,31 @@
 {
-  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bee",
-  "version": "0.2.1",
-  "description": "Private Beehive task, possibility, timer and bell operations for Dawn's Bees.",
+  "version": "0.2.4",
+  "description": "Private Beehive task, possibility, timer, bell, dragon conversation, and read-only sleep operations for Dawn's Bees.",
   "author": {
-    "name": "Dawn"
+    "name": "Dawn McClure",
+    "email": "goddessdawnie@gmail.com"
   },
+  "skills": "./skills",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "extensions": {
     "com.openai": {
+      "apps": "./.app.json",
       "interface": {
-        "displayName": "Bee",
-        "shortDescription": "Manage your Beehive",
-        "longDescription": "Operate the existing Beehive task, possibility, timer, reminder, notification, and pet activity data via connected Supabase without creating a duplicate store.",
-        "developerName": "Dawn",
-        "category": "Productivity",
         "capabilities": [
           "Interactive"
         ],
+        "category": "Productivity",
         "defaultPrompt": [
           "Find my Beehive tasks.",
           "Set a Beehive timer.",
-          "Add a task possibility."
-        ]
-      },
-      "apps": "./.app.json"
+          "Read my recent sleep."
+        ],
+        "developerName": "Dawn McClure",
+        "displayName": "Bee",
+        "longDescription": "Operate existing Beehive task, possibility, timer, reminder, notification, pet activity, read-only dragon conversation and imported sleep data via connected Supabase without creating a duplicate store.",
+        "shortDescription": "Manage your Beehive"
+      }
     }
   }
 }
