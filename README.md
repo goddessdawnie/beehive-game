@@ -4,7 +4,7 @@ Private, mobile-friendly task-and-companion game featuring Kae, a fictional drag
 
 ## Source of truth
 
-- **GitHub Pages:** `index.html` is the complete browser interface. No build system or framework.
+- **GitHub Pages:** `index.html` contains the browser markup and much of the application logic; styles are in `css/beehive.css`, with the game registry in `js/game-registry.js`. No build system or framework. See [AGENTS.md](AGENTS.md) for the maintainer map.
 - **Supabase:** persistent user/game state, authenticated database RPCs and DeepSeek-backed Edge Functions.
 - **Notion:** operating instructions for the existing scheduled Chat Bee and Work Bee passes. Notion is *not* a second task database.
 - **DeepSeek:** generates dialogue and optional Three Things suggestions. The LLM has no direct database write tools; server code decides what is read or saved.
@@ -15,7 +15,7 @@ Private, mobile-friendly task-and-companion game featuring Kae, a fictional drag
 - Catalog: `activity_catalog`, `activity_log`; Three Things catalog matches retain `activity_id` on the resulting task.
 - Kae: `character_profiles.character_card` is his voice/personality source. `kae-chat` receives selected estate facts and conversation history; `kae-ambient` produces a brief, independent observation. `pet_state` holds comfort.
 - Treasury: `reward_shop`, `kae_inventory`, `reward_requests`; `purchase_kae_reward` performs an atomic purchase.
-- Play: `three-things` Edge Function creates optional suggestions in `three_things`. `wordle_answers` is populated by the existing 8 AM Bee verification pass. `claim_daily_game` awards two coins once per game per New York calendar day, tracked in `daily_game_claims`.
+- Play: `three-things` Edge Function creates optional suggestions in `three_things`. `wordle_answers` is populated by the existing 8 AM Bee verification pass. `claim_daily_game` awards two coins per eligible claim, with a shared limit of five claims per New York calendar day, tracked in `daily_game_claims`.
 
 Task and gift actions improve Kae's comfort; normal time passage reduces it. Comfort bands inform his circumstances but do not dictate his fictional reactions. Ordinary Three Things completions receive task rewards, not additional play-game coins.
 
