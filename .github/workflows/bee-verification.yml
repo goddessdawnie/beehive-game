@@ -12,6 +12,7 @@ on:
       - 'sw.js'
       - 'manifest.webmanifest'
       - 'icons/**'
+      - 'docs/bee-production-function-inventory.md'
       - 'AGENTS.md'
       - 'README.md'
       - 'index.html'
