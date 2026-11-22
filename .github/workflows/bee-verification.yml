@@ -6,6 +6,7 @@ on:
       - 'tests/**'
       - 'scripts/**'
       - 'js/**'
+      - 'plugins/bee/**'
       - 'css/**'
       - 'assets/**'
       - 'sw.js'

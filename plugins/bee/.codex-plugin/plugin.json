@@ -1,0 +1,27 @@
+{
+  "apps": "./.app.json",
+  "interface": {
+    "capabilities": [
+      "Interactive"
+    ],
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Find my Beehive tasks.",
+      "Set a Beehive timer.",
+      "Read my recent sleep."
+    ],
+    "developerName": "Dawn McClure",
+    "displayName": "Bee",
+    "longDescription": "Operate existing Beehive task, possibility, timer, reminder, notification, pet activity, read-only dragon conversation and imported sleep data via connected Supabase without creating a duplicate store.",
+    "shortDescription": "Manage your Beehive"
+  },
+  "name": "bee",
+  "version": "0.2.4",
+  "description": "Private Beehive task, possibility, timer, bell, dragon conversation, and read-only sleep operations for Dawn's Bees.",
+  "author": {
+    "name": "Dawn McClure",
+    "email": "goddessdawnie@gmail.com"
+  },
+  "keywords": [],
+  "skills": "./skills"
+}
