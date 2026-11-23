@@ -40,6 +40,10 @@ A read-only comparison of repository `supabase/migrations/20261116140100_three_t
 
 This verifies **one source-to-production mapping only**, not the remaining repository files or all 65 production migrations. Do not replay either migration or infer global migration-history reconciliation. The installed private plugin release remains separately unreconciled.
 
+## Schedule API migration exact-statement provenance (2026-11-23)
+
+A read-only comparison of repository `supabase/migrations/20261111230000_bee_schedule_api.sql` against production migration `20261112070428` (`bee_schedule_api`) established **exact byte-for-byte parity** between the full repository SQL and production's recorded `statements[1]`. Both are **18,035 characters** with MD5 `e451cc5331fc2b140837d4d041fdefee`. This establishes one recorded migration source-to-production mapping despite differing migration version prefixes. It does **not** establish parity with currently deployed function definitions or effective grants, prove semantic correctness, or reconcile the other migration records. The installed private plugin 0.2.4 documentation/release gap remains unresolved. Do not replay this SQL or mark milestone 2 complete.
+
 ## Maintainer reconciliation procedure
 
 1. Read the live Notion runbook and current roadmap; check exclusive lease and existing PRs.
