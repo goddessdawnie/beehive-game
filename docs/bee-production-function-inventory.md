@@ -33,6 +33,13 @@ Extracting only the PL/pgSQL bodies between their dollar-quote delimiters and no
 
 The related migrations `20261120181808` (`bee_sleep_read_route_20261120`) and `20261120182140` (`bee_sleep_explicit_window_20261120`) replace the `bee.read` wrapper, not the private sleep helper; the latter migration's recorded statement MD5 matched the deployed wrapper definition MD5 (`7ee2e2fd73791657dcba0cfad76c9db6`) in the read-only audit. The production-versus-repository migration gap (65 versus 13 at capture) and installed private plugin release parity remain **unresolved**. Do not execute stored statements or interpret this provenance note as approval for a database migration.
 
+
+## Three Things feedback-note migration mapping (2026-11-22)
+
+A read-only comparison of repository `supabase/migrations/20261116140100_three_things_feedback_note.sql` and production migration `20261116195713` (`three_things_feedback_note`) established **semantic parity for this one migration**. The production statement was 475 characters (MD5 `eb1bfdb81e259edaf861c14b2f22cb46`). Both sources perform these four operations in the same order: add nullable `public.three_things.feedback_note text` if absent; drop `three_things_feedback_note_length` if present; add that constraint checking `feedback_note IS NULL OR char_length(feedback_note) <= 500`; and apply the identical column comment. Repository comments, whitespace, and different migration timestamp explain raw-text/provenance differences; this is **not** a byte-for-byte SQL hash match.
+
+This verifies **one source-to-production mapping only**, not the remaining repository files or all 65 production migrations. Do not replay either migration or infer global migration-history reconciliation. The installed private plugin release remains separately unreconciled.
+
 ## Maintainer reconciliation procedure
 
 1. Read the live Notion runbook and current roadmap; check exclusive lease and existing PRs.
