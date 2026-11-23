@@ -58,3 +58,11 @@ A bounded **read-only** comparison established byte-for-byte parity between repo
 5. Run the Bee verification suite on the exact PR head, review the final diff and mergeability, and verify merged main before updating Completed. Document any installed-plugin deployment separately.
 
 **Boundary:** This document itself changes no SQL, access control, plugin installation, user data, or runtime behavior.
+
+## Scheduled bells migration exact-statement provenance (2026-11-23)
+
+A bounded read-only comparison established **byte-for-byte recorded-statement parity** between repository `supabase/migrations/20261110020000_scheduled_bells.sql` and production migration `20261110043455` (`scheduled_bells_workday_dings`), specifically recorded `statements[1]`. Both SQL texts are **7,712 characters** with identical MD5 `5ca0ba96caf07d6adb08b0c88dc0f879`. This proves one source-to-recorded-production-statement mapping, **not** current deployed object definitions, complete migration-history reconciliation, or installed private plugin 0.2.4 parity. Do not replay SQL.
+
+## Three Things optional feedback migration exact-statement provenance (2026-11-23)
+
+A bounded read-only comparison established **byte-for-byte recorded-statement parity** between repository `supabase/migrations/20261110030000_three_things_feedback.sql` and production migration `20261110051333` (`three_things_optional_feedback`), specifically recorded `statements[1]`. Both SQL texts are **417 characters** with identical MD5 `66bc6c9b423b39b6ca514665cd108584`. This proves one source-to-recorded-production-statement mapping, **not** current live constraints, complete migration-history reconciliation, or installed private plugin 0.2.4 parity. Do not replay SQL or mark milestone 2 complete.
