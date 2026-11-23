@@ -66,3 +66,16 @@ A bounded read-only comparison established **byte-for-byte recorded-statement pa
 ## Three Things optional feedback migration exact-statement provenance (2026-11-23)
 
 A bounded read-only comparison established **byte-for-byte recorded-statement parity** between repository `supabase/migrations/20261110030000_three_things_feedback.sql` and production migration `20261110051333` (`three_things_optional_feedback`), specifically recorded `statements[1]`. Both SQL texts are **417 characters** with identical MD5 `66bc6c9b423b39b6ca514665cd108584`. This proves one source-to-recorded-production-statement mapping, **not** current live constraints, complete migration-history reconciliation, or installed private plugin 0.2.4 parity. Do not replay SQL or mark milestone 2 complete.
+
+
+## Flexible recurrence migration exact recorded-statement parity (2026-11-23)
+
+Read-only comparison established **byte-for-byte parity** between repository `supabase/migrations/20261110010000_flexible_recurrence.sql` and production migration `20261110040418` (`flexible_recurrence_due_date_anchor`), specifically recorded `statements[1]`. Both complete SQL texts are **6,014 characters**, MD5 `170101581b422a5dbf90e76dbf8af4fe`. This is recorded migration-statement provenance only, not verification of currently deployed objects, effective grants or complete migration history. Do not replay SQL.
+
+## Shared five Play claims migration exact recorded-statement parity (2026-11-23)
+
+Read-only comparison established **byte-for-byte parity** between repository `supabase/migrations/20261110040000_play_five_shared_claims.sql` and production migration `20261110060804` (`play_five_shared_claims`), specifically recorded `statements[1]`. Both complete SQL texts are **2,616 characters**, MD5 `621aa9550ec06eb05f1e37ab496c19b2`. This does not independently verify currently deployed functions, grant semantics, or other migration records. Do not replay SQL.
+
+## Multiple concurrent timers migration normalized recorded-statement parity (2026-11-23)
+
+Read-only comparison of repository `supabase/migrations/20261112110100_multiple_concurrent_timers.sql` with production migration `20261112180207` (`multiple_concurrent_timers`), recorded `statements[1]`, found **different raw text** (repository 972 characters, MD5 `e8804e55bb790fc49d0c8f64ddcc54f9`; production 878 characters, MD5 `e6d1229e2f4f7348a96b4d97ad92ad35`). A subsequent complete comparison removing repository comment-only lines and normalizing whitespace/semicolon formatting found **matching executable statements**: both drop `public.beehive_timers_one_active_per_user` if present and define the same `public.beehive_start_timer` function, including validation, ownership and insertion logic. This is **qualified normalized recorded-statement parity, not byte-exact parity**; it does not establish current deployed-object or grants parity, and is not full migration-history reconciliation. Do not replay SQL or mark milestone 2 complete.
