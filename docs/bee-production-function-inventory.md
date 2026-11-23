@@ -44,6 +44,11 @@ This verifies **one source-to-production mapping only**, not the remaining repos
 
 A read-only comparison of repository `supabase/migrations/20261111230000_bee_schedule_api.sql` against production migration `20261112070428` (`bee_schedule_api`) established **exact byte-for-byte parity** between the full repository SQL and production's recorded `statements[1]`. Both are **18,035 characters** with MD5 `e451cc5331fc2b140837d4d041fdefee`. This establishes one recorded migration source-to-production mapping despite differing migration version prefixes. It does **not** establish parity with currently deployed function definitions or effective grants, prove semantic correctness, or reconcile the other migration records. The installed private plugin 0.2.4 documentation/release gap remains unresolved. Do not replay this SQL or mark milestone 2 complete.
 
+
+## Three Things Keep migration exact-statement provenance (2026-11-23)
+
+A bounded **read-only** comparison established byte-for-byte parity between repository `supabase/migrations/20261119214000_three_things_kae_keep.sql` and production migration `20261120133258` (`three_things_kae_keep_20261119`), specifically the recorded production `statements[1]`. Both complete SQL texts contain **2,480 characters** with identical MD5 `9bc2f960508b2e354f47ab98c37ad2e3`; `exact_match=true` and normalized compact comparison also matched. This proves one recorded source-to-production migration-statement mapping despite differing version prefixes. It does **not** independently prove the current live function body or grants match, validate all migration history, or reconcile the installed private plugin release 0.2.4. Do not replay this SQL or mark milestone 2 complete.
+
 ## Maintainer reconciliation procedure
 
 1. Read the live Notion runbook and current roadmap; check exclusive lease and existing PRs.
