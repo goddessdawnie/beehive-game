@@ -79,3 +79,16 @@ Read-only comparison established **byte-for-byte parity** between repository `su
 ## Multiple concurrent timers migration normalized recorded-statement parity (2026-11-23)
 
 Read-only comparison of repository `supabase/migrations/20261112110100_multiple_concurrent_timers.sql` with production migration `20261112180207` (`multiple_concurrent_timers`), recorded `statements[1]`, found **different raw text** (repository 972 characters, MD5 `e8804e55bb790fc49d0c8f64ddcc54f9`; production 878 characters, MD5 `e6d1229e2f4f7348a96b4d97ad92ad35`). A subsequent complete comparison removing repository comment-only lines and normalizing whitespace/semicolon formatting found **matching executable statements**: both drop `public.beehive_timers_one_active_per_user` if present and define the same `public.beehive_start_timer` function, including validation, ownership and insertion logic. This is **qualified normalized recorded-statement parity, not byte-exact parity**; it does not establish current deployed-object or grants parity, and is not full migration-history reconciliation. Do not replay SQL or mark milestone 2 complete.
+
+## Four additional exact recorded-statement mappings (2026-11-24)
+
+Read-only comparison at Git baseline `cacb019a86ef6a2cd441c6c2cb8fcc1859cf6b17` established exact equality of each complete repository migration with production's recorded `statements[1]`:
+
+| Repository migration | Production version | Characters | MD5 |
+| --- | --- | ---: | --- |
+| `20261107110000_daily_reward_game_catalog.sql` | `20261107104520` | 2,199 | `9dd34d4ed0d9a82419420165a552d678` |
+| `20261107123000_kae_history_message_order.sql` | `20261107112142` | 1,689 | `87d96870d62c95d938ee2f90600dbf77` |
+| `20261109114500_activity_catalog_both_property.sql` | `20261109115054` | 435 | `6c90fa3f5d90ef450429c1350630f9f0` |
+| `20261116170000_task_context_planned_day.sql` | `20261120133254` | 1,635 | `bcad8a02224244a8e9579fda6d1cb4f3` |
+
+These are recorded-statement mappings only, not proof of current deployed definitions, effective grants, or complete production migration history. Do not replay SQL. Installed plugin documentation parity remains a separate release blocker; independent task-context work may proceed.
