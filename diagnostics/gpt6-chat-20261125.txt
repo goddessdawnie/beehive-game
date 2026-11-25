@@ -1,0 +1,4 @@
+GPT-6 manual Chat execution diagnostic
+Date: 2026-11-25
+Purpose: verify isolated GitHub write and readback.
+Expected: no production changes, no merge or deployment.
