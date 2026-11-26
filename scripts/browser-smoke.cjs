@@ -4,7 +4,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),assert=require(
 const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.css')?'text/css':p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':p.endsWith('.svg')?'image/svg+xml':p.endsWith('.png')?'image/png':p.endsWith('.webp')?'image/webp':p.endsWith('.jpg')?'image/jpeg':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
-const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;
+const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;window.sleepRequests=[];window.sleepScenario='data';window.sleepRows=[{start_time:'2026-11-20T04:30:00Z',end_time:'2026-11-20T09:30:00Z',minutes_asleep:280,minutes_deep:70},{start_time:'2026-11-19T14:00:00Z',end_time:'2026-11-19T16:00:00Z',minutes_asleep:110,minutes_deep:30},{start_time:'2026-11-20T17:00:00Z',end_time:'2026-11-20T18:00:00Z',minutes_asleep:50,minutes_deep:10}];
 window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'},{role:'mochi',content:'*italic* **bold** ***both*** ~~strike~~ \\\\*literal\\\\* <script>bad()</script> \`code\`',created_at:'2026-11-07T08:02:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
@@ -22,7 +22,7 @@ window.catalogRows=[
 {id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
 ];
 const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='play_claims_today')return {data:window.playClaimCount,error:null};if(name==='claim_daily_game'){window.playClaimCalls++;if(window.playClaimCount>=5)return {data:false,error:null};window.playClaimCount++;return {data:true,error:null};}if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRows.find(t=>t.id===args.p_id).status='sending';window.timerRows.find(t=>t.id===args.p_id).attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='bee_sleep_recent'){window.sleepRequests.push(args.p_days);return window.sleepScenario==='error'?{data:null,error:{message:'mock sleep offline'}}:{data:window.sleepScenario==='empty'?[]:window.sleepRows,error:null};}if(name==='play_claims_today')return {data:window.playClaimCount,error:null};if(name==='claim_daily_game'){window.playClaimCalls++;if(window.playClaimCount>=5)return {data:false,error:null};window.playClaimCount++;return {data:true,error:null};}if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRows.find(t=>t.id===args.p_id).status='sending';window.timerRows.find(t=>t.id===args.p_id).attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
 if(table==='three_things'){
  let one=false,patch=null,filters=[];
  const q=new Proxy({}, {get(_,key){
@@ -90,6 +90,41 @@ await page.locator('#back-wumpus').click();
 await page.locator('#open-2048').click();
 assert.equal(await page.locator('[id="2048-claim"]').isDisabled(),true,'All game buttons obey shared five-claim budget');
 assert.equal(await page.evaluate(()=>window.playClaimCalls),5,'Exactly five RPC claims, including four on Wordle');
+await page.locator('#tab-tasks').click();
+
+// Sleep UI module: range and two sessions starting on one Eastern day, including an overnight crossing.
+await page.locator('#tab-sleep').click();
+await page.waitForFunction(()=>window.sleepRequests.length===1 && document.querySelectorAll('#sleep-days details').length===2);
+assert.deepEqual(await page.evaluate(()=>window.sleepRequests),[7],'Sleep defaults to seven days');
+assert.match(await page.locator('#sleep-status').textContent(),/2 day\(s\) · 3 session\(s\) · 7h 20m asleep/);
+const sleepSummaries=await page.locator('#sleep-days summary').allTextContents();
+assert.match(sleepSummaries[0],/^2026-11-20 · 0h 50m asleep · 0h 10m deep · 1 session\(s\)$/);
+assert.match(sleepSummaries[1],/^2026-11-19 · 6h 30m asleep · 1h 40m deep · 2 session\(s\)$/);
+assert.equal(await page.locator('#sleep-chart .sleep-bar-wrap').count(),2,'Two Eastern start-day groups, not three calendar-time rows');
+await page.locator('#sleep-days details').nth(1).locator('summary').click();
+assert.equal(await page.locator('#sleep-days details').nth(1).locator('.sleep-session').count(),2,'Overnight session and daytime nap stay separate');
+assert.match(await page.locator('#sleep-days details').nth(1).textContent(),/Nov 20, 4:30 AM/,'Overnight end may fall on next local day');
+await page.locator('#sleep-range').selectOption('14');
+await page.waitForFunction(()=>window.sleepRequests.length===2);
+await page.locator('#sleep-range').selectOption('30');
+await page.waitForFunction(()=>window.sleepRequests.length===3);
+assert.deepEqual(await page.evaluate(()=>window.sleepRequests),[7,14,30],'All supported range changes call the existing browser RPC');
+await page.evaluate(()=>window.sleepScenario='empty');
+await page.locator('#sleep-range').selectOption('7');
+await page.waitForFunction(()=>document.querySelector('#sleep-status').textContent==='No imported sleep sessions in this range.');
+assert.equal(await page.locator('#sleep-chart .sleep-bar-wrap').count(),0);
+assert.equal(await page.locator('#sleep-days details').count(),0);
+assert.equal(await page.locator('#sleep-legend').count(),0);
+await page.evaluate(()=>window.sleepScenario='error');
+await page.locator('#sleep-range').selectOption('14');
+await page.waitForFunction(()=>document.querySelector('#sleep-status').textContent.includes('mock sleep offline'));
+assert.match(await page.locator('#sleep-status').textContent(),/^Could not load sleep history:/);
+await page.evaluate(()=>window.sleepScenario='data');
+await page.locator('#tab-tasks').click();
+await page.locator('#tab-sleep').click();
+await page.waitForFunction(()=>document.querySelectorAll('#sleep-days details').length===2);
+assert.equal(await page.locator('#tab-sleep').getAttribute('aria-selected'),'true');
+assert.equal(await page.locator('#panel-sleep').isVisible(),true);
 await page.locator('#tab-tasks').click();
 
 // The existing Timer tab now exposes scheduled one-shot and repeatable dings.
