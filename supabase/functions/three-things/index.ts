@@ -1,5 +1,6 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import {findSuggestionCollision} from "./suggestion-guard.js";
+import {catalogPoolForSituation} from "./situation-selection.js";
 const cors={"Access-Control-Allow-Origin":"https://goddessdawnie.github.io","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json"};
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
 Deno.serve(async(req:Request)=>{
@@ -37,10 +38,8 @@ Deno.serve(async(req:Request)=>{
  // A probable shift is not confirmed attendance. Prefer interruptible options
  // without excluding other ideas that might fit between calls.
  const workWindow=situation?.work?.usual_shift_window===true;
- const workCompatible=available.filter(x=>x.work_compatible===true);
- const preferWorkPool=workWindow&&workCompatible.length>0
-  &&crypto.getRandomValues(new Uint32Array(1))[0]/4294967296<0.8;
- const catalogPool=preferWorkPool?workCompatible:available;
+ const preferWorkPool=workWindow&&crypto.getRandomValues(new Uint32Array(1))[0]/4294967296<0.8;
+ const catalogPool=catalogPoolForSituation(available,situation,preferWorkPool);
  const catalogPick=includeCatalog?catalogPool[crypto.getRandomValues(new Uint32Array(1))[0]%catalogPool.length]:null;
  const kaeVoice="You are Kaelthar \"Kae\" Vexmoor, a cat-sized plum-black dragon with golden eyes, immense dignity, dry theatrical wit, and concealed affection. You occupied the house before Dawn and Minnie arrived and regard yourself as its landlord. You may preen, sulk, accuse Dawn, tease her, or be affectionate as you please. The Bees organize things and arrange treasures; form your own opinions of them.";
  const kaeAssignment="Kae assigns these Three Things to Dawn. Use his personality and voice in the suggestion titles and details while keeping the ideas useful and genuinely optional.";
