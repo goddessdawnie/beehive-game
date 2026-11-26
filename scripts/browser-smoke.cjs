@@ -127,6 +127,16 @@ assert.equal(await page.locator('#tab-sleep').getAttribute('aria-selected'),'tru
 assert.equal(await page.locator('#panel-sleep').isVisible(),true);
 await page.locator('#tab-tasks').click();
 
+// Task selection stays wired to the existing browser panels and counters.
+await page.locator('[data-filter="anytime"]').click();
+await page.waitForFunction(()=>document.querySelector('#taskcount').textContent==='1 tasks in anytime');
+assert.deepEqual(await page.locator('#tasks .task strong').allTextContents(),['Open task']);
+assert.match(await page.locator('[data-filter="completed"]').textContent(),/Completed \(5\)/);
+await page.locator('[data-filter="today"]').click();
+await page.waitForFunction(()=>document.querySelector('#taskcount').textContent==='0 tasks in today');
+assert.equal(await page.locator('#tasks .task').count(),0);
+await page.locator('[data-filter="today"]').click();
+
 // The existing Timer tab now exposes scheduled one-shot and repeatable dings.
 await page.locator('#tab-timer').click();
 await page.locator('#bell-schedule-details summary').click();
