@@ -48,10 +48,10 @@ test('v0.2.5 parity guide exposes new contracts while retaining legacy fallback 
   assert.ok(guide.includes(operation)||old.includes(operation),`Missing schedule operation ${operation}`);
  }
  assert.match(guide,/not automatic use by scheduled workers/);
- assert.match(guide,/does not change the real due date/);
+ assert.match(guide,/never changes the real due date/);
  assert.match(guide,/new request UUID is a new action/);
  assert.match(guide,/unknown/);
- assert.match(guide,/worker-specific queries/);
+ assert.match(guide,/Work Synthesis's existing targeted SQL/);
  assert.match(sleep,/America\/New_York/);
  assert.match(old,/bee\.command/);
 });
