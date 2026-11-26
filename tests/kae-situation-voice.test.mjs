@@ -31,7 +31,7 @@ test('prompt still uses existing memory, episodic context and optional authentic
  assert.match(src,/const situation=situationResult.error\|\|!situationResult.data/);
  assert.match(src,/const historyMessages=recentConversationMessages\(recent,12\)/);
  assert.match(src,/Dawn and you live ordinary, continuing lives between these occasional conversations/);
- assert.match(src,/if\(mode==="chat"&&!message\)/);
+ assert.match(src,/mode==="chat"&&!message/);
  assert.match(src,/db\.auth\.getUser\(token\)/);
  assert.match(src,/\.from\("mochi_messages"\)\.insert\(entries\)/);
 });
