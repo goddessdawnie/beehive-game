@@ -5,9 +5,9 @@ import {readFileSync} from 'node:fs';
 const src=readFileSync(new URL('../supabase/functions/kae-chat/index.ts',import.meta.url),'utf8');
 const matches=src.match(/const beeGuidance="([^"]+)";/);
 test('Kae receives in-world situational latitude, not a blanket ban on characterful opinions',()=>{
- assert.ok(matches,'Kae's situational prompt must remain present');
+ assert.ok(matches,"Kae situational prompt must remain present");
  const guide=matches[1];
- assert.match(guide,/g(limpse of your shared world|enuinely feel like it)/);
+ assert.match(guide,/glimpse of your shared world/);
  assert.match(guide,/your own independent opinions/);
  assert.match(guide,/tease her for apparently dawdling/);
  assert.match(guide,/fuss that she seems haggard/);
