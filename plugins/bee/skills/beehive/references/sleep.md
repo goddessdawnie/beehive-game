@@ -18,3 +18,15 @@ The JSON includes `timezone`, start/end dates, `daily[]`, `import`, `latest_succ
 No energy scoring, sleep-debt inference, diagnosis, model, scheduling, importer, or user-interface change is part of this read. Interpret alongside Dawn's reported experience and work schedule. The user-facing BEE-SLEEP-01 display is separate and may reuse this deterministic read after designing an appropriate authenticated privacy boundary; this administrative function must not be exposed to client JavaScript.
 
 **Validation evidence (2026-11-20):** production `bee.read` read returned seven days, 8 observed sessions, and for 2026-11-20 276 minutes asleep vs 281 elapsed. Existing tasks read continued to work. A transactional fixture with two separated same-day episodes, a session starting 23:50 Eastern and crossing midnight, an overlapping record, and a user-corrected flag passed assertions. A fixture latest failed run with error code was reflected in output, and a no-record date had a null total. Transaction rolled back. Existing tables have RLS enabled and no user-facing policies, with administrative service role grants only. No owner_id column was invented.
+
+## Compact synthesis projection (milestone 5; deployed status must be checked)
+
+Use the separate private SQL helper `bee.read_sleep_compact_20261126(owner, end_date='', days=7, offset=0)` to collect a lightweight overview without all episode and source identifiers. Example:
+
+```sql
+select bee.read_sleep_compact_20261126('2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b','',7,0);
+```
+
+It delegates all owner validation, Eastern start-date attribution, overlap flags, missing-minute nulls, 1–30-day window and 0–365-day offset handling to `bee.read_sleep_20261120`; it does not reconstruct sleep time from elapsed intervals. Each date includes `local_date`, `session_count`, `actual_minutes_asleep`, `missing_asleep_count`, `overlapping_session_count`, `possible_double_count`, and `latest_wake_at`. Window fields include `observed_session_count`, `days_with_sessions`, `days_without_sessions`, `observed_minutes_asleep`, `latest_wake_at`, and explicit `data_flags`. `import` retains latest status, error, age, stale flag, latest successful import and last session import time. This is a summary of **observed sessions**, not evidence of all sleep: days without sessions remain unknown, not zero. A missing actual-asleep figure makes the window total null. Numeric totals with overlapping sessions may double-count, so inspect the overlap flag before interpreting. Sync success is never proof of coverage.
+
+For individual episodes, corrections, source details and overlap investigation, fall back to the original `bee.read(...,'sleep',...)` (or underlying `bee.read_sleep_20261120`) with the same date/window. Do not replace the detailed route, grant browser access, infer sleep debt, or change Synthesis and Kae worker routing until their independent adoption gate. Updating this repository reference does **not** update an installed @Bee plugin.
