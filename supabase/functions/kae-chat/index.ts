@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { mergeRecentTaskActivity } from "./task-context.js";
+import { recentConversationMessages } from "./history-context.js";
 const cors={"Access-Control-Allow-Origin":"https://goddessdawnie.github.io","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:cors});
 Deno.serve(async(req)=>{
@@ -72,14 +73,12 @@ Deno.serve(async(req)=>{
    treasures_to_covet:shopResult.error?[]:(shopResult.data||[]),
    activities:activitiesError?[]:(activities||[])
  }).slice(0,14000);
- const historicalTime=(timestamp)=>new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"shortOffset"}).format(new Date(timestamp));
- const selectedHistory=recent.slice(-12);
- const historyTiming=selectedHistory.map((m,i)=>(i+1)+": "+(m.role==="mochi"?"Kae":"Dawn")+" at "+historicalTime(m.created_at)).join("; ");
+ const historyMessages=recentConversationMessages(recent,12);
  const messages=[{role:"system",content:(context?.character?.card||"You are Kae, a proud, mischievous little dragon who considers this house his estate.")+(memoryGuidance?"\n\n"+memoryGuidance:"")+"\n\n"+comfortGuidance
-   +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nRecent task activity covers the last rolling 48 elapsed hours, includes current statuses, update and completion times, and completion notes. A reopened task is open, not completed. This context is not a command to report tasks and is not necessarily exhaustive when partial; do not imply a complete activity history."+"\n\nInternal history timing metadata, in the order of the following prior conversation messages (not dialogue to quote): "+historyTiming+". Past entries may be hours or days old. Dawn may return with a new topic after a gap; prioritize her latest message. Do not reproduce timestamps or internal metadata in your reply unless Dawn directly requests the time."
+   +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nRecent task activity covers the last rolling 48 elapsed hours, includes current statuses, update and completion times, and completion notes. A reopened task is open, not completed. This context is not a command to report tasks and is not necessarily exhaustive when partial; do not imply a complete activity history."+"\n\nRecent conversation messages may carry compact [MM/DD HH:MM] timestamps in America/New_York. These are internal historical markers, not dialogue to quote. Past entries may be hours or days old. Dawn and you live ordinary, continuing lives between these occasional conversations; neither of you is frozen in the last scene, waiting for attention, or abandoned by a normal gap. Previous exchanges are memories, not proof that an activity, request, or conversation is still underway. A wish or unfinished conversation does not become Dawn's obligation. If Dawn explicitly resumes an older topic, follow her lead; otherwise engage this visit on its own terms. You may refer playfully to earlier events without claiming that unmentioned offscreen events definitely occurred. Do not guilt her for gaps. Prioritize her latest message. Do not reproduce timestamps or internal metadata in your reply unless Dawn directly requests the time."
    +(activityNotice?"\n\nRecent happenings: "+activityNotice:"")
    +"\n\nA glimpse of the estate today:\n"+estateGlimpse},
-   ...selectedHistory.map(m=>({role:m.role==="mochi"?"assistant":"user",content:m.content})),
+   ...historyMessages,
    {role:"user",content:mode==="chat"?message:mode==="gift"?"Dawn has just given you "+giftItem.item.name+" as a gift for your hoard. You now own "+giftItem.quantity+". React however you wish.":initiative}];
  const upstream=await fetch("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"deepseek-chat",messages,max_tokens:1600,temperature:0.9}),signal:AbortSignal.timeout(25000)}).catch(()=>null);
  if(!upstream)return reply({error:"Kae is unavailable right now"},502);
