@@ -6,7 +6,8 @@ This is a small static GitHub Pages application, not a framework project. Keep t
 
 | Area | Primary entry points |
 | --- | --- |
-| Browser shell, tasks, Three Things UI, chat, timers, Sleep and room | `index.html` (large inline JS; extraction is incremental) |
+| Browser shell, tasks, Three Things UI, chat, timers and room | `index.html` (large inline JS; extraction is incremental) |
+| Sleep history browser UI | `js/sleep-ui.js` (native module, injected authenticated RPC and DOM access); tab activation remains in `index.html` |
 | Visual styles, theme and estate layering | `css/beehive.css`; asset URLs are relative to `css/` |
 | Play game registry | `js/game-registry.js` |
 | Scene images and generated catalog | `assets/`, `scripts/build-scene-catalog.mjs` |
