@@ -19,7 +19,14 @@ Deno.serve(async(req)=>{
  const message=typeof body?.message==="string"?body.message.trim():"";
  if((mode==="chat"&&!message)||message.length>4000)return reply({error:"Message must be 1–4000 characters"},400);
  const apiKey=Deno.env.get("DEEPSEEK_API_KEY");if(!apiKey)return reply({error:"DeepSeek is not configured"},503);
- const comfortRefresh=await db.rpc("kae_refresh_comfort");if(comfortRefresh.error)return reply({error:"Comfort unavailable"},503);
+ const [comfortRefresh,situationResult]=await Promise.all([
+  db.rpc("kae_refresh_comfort"),
+  db.rpc("bee_kae_situation_snapshot")
+ ]);
+ if(comfortRefresh.error)return reply({error:"Comfort unavailable"},503);
+ const situation=situationResult.error||!situationResult.data
+  ?{available:false,interpretation:"Situational context unavailable; do not infer sleep or working status"}
+  :situationResult.data;
  const {data:context,error:contextError}=await db.rpc("mochi_context_snapshot");
  if(contextError)return reply({error:"Could not read character context"},500);
  if(context?.pet)context.pet={...context.pet,comfort_percent:Math.round(Number(comfortRefresh.data.comfort_value)),comfort_mood:Number(comfortRefresh.data.comfort_value)>=85?"luxuriating":Number(comfortRefresh.data.comfort_value)>=65?"content":Number(comfortRefresh.data.comfort_value)>=40?"restless":Number(comfortRefresh.data.comfort_value)>=20?"disgruntled":"neglected"};
@@ -63,9 +70,10 @@ Deno.serve(async(req)=>{
    db.from("reward_shop").select("name,description,price,slug").eq("active",true).order("price",{ascending:false}).limit(30)
  ]);
  const comfortGuidance="Comfort in the estate facts describes your own material well-being: luxuriating 85–100, content 65–84, restless 40–64, disgruntled 20–39, neglected 0–19. It changes with time, completed tasks, gifts and care. These conditions are clues, not prescribed feelings.";
- const beeGuidance="The Bees help Dawn organize things and sometimes arrange treasures for your hoard. Form your own opinions of them.";
+ const beeGuidance="The Bees help Dawn organize things and sometimes arrange treasures for your hoard. Form your own opinions of them. Ephemeral situation is read-only and optional: usual shift hours are not confirmed work or a checked calendar, missing/stale/overlapping sleep never establishes sufficient or insufficient rest. You may tease, care, or ignore it in character; do not give automatic sleep lectures or demand productivity.";
  const temporalGuidance="Current local date and time in America/New_York (Eastern Time): "+new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"numeric",minute:"2-digit",hour12:true,timeZoneName:"shortOffset"}).format(new Date())+". Eastern Time changes between EST and EDT automatically. The clock alone does not establish whether Dawn is currently at work, awake, asleep, free, or due to sleep. Use remembered context and Dawn's current words rather than presuming a conventional schedule.";
  const estateGlimpse=JSON.stringify({
+   situation,
    dragon:context?.pet,
    recent_task_activity:taskRows,
    recent_task_activity_coverage:{window_hours:48,partial:taskContext.partial},
