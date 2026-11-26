@@ -69,7 +69,16 @@ export function isNearDuplicate(first,second){
  if(a.scope!==b.scope&&(a.scope!=='normal'||b.scope!=='normal'))return false;
  // Distinct actions with the same location are not the same task:
  // diagnosing a sink leak and repairing that leak can be separate steps.
- if(a.actions.size&&b.actions.size&&!sharedCount(a.actions,b.actions))return false;
+ if(a.actions.size&&b.actions.size&&!sharedCount(a.actions,b.actions)){
+  // Inspecting and fixing a leak are different stages. But "investigate this
+  // particular clump of fur" and "clean that same clump of fur" can be two
+  // theatrical titles for one tiny disposal chore.
+  const inspectAndClean=(a.actions.has('inspect')&&b.actions.has('clean'))||
+    (a.actions.has('clean')&&b.actions.has('inspect'));
+  const waste=new Set(['fur','clump','dirt','grime','crumb','trash','litter','dust']);
+  const sameWaste=[...waste].some(x=>a.content.has(x)&&b.content.has(x));
+  if(!inspectAndClean||!sameWaste||sharedCount(a.content,b.content)<3)return false;
+ }
  // Two explicitly different surfaces are distinct jobs even in one room.
  if(a.targets.size&&b.targets.size&&(a.targets.size!==b.targets.size||
     sharedCount(a.targets,b.targets)!==a.targets.size))return false;
