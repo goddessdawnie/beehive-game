@@ -4,7 +4,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),assert=require(
 const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.css')?'text/css':p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':p.endsWith('.svg')?'image/svg+xml':p.endsWith('.png')?'image/png':p.endsWith('.webp')?'image/webp':p.endsWith('.jpg')?'image/jpeg':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
-const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;window.sleepRequests=[];window.sleepScenario='data';window.sleepRows=[{start_time:'2026-11-20T04:30:00Z',end_time:'2026-11-20T09:30:00Z',minutes_asleep:280,minutes_deep:70},{start_time:'2026-11-19T14:00:00Z',end_time:'2026-11-19T16:00:00Z',minutes_asleep:110,minutes_deep:30},{start_time:'2026-11-20T17:00:00Z',end_time:'2026-11-20T18:00:00Z',minutes_asleep:50,minutes_deep:10}];
+const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;window.rpcCalls=[];window.taskSelectCalls=0;window.sleepRequests=[];window.sleepScenario='data';window.sleepRows=[{start_time:'2026-11-20T04:30:00Z',end_time:'2026-11-20T09:30:00Z',minutes_asleep:280,minutes_deep:70},{start_time:'2026-11-19T14:00:00Z',end_time:'2026-11-19T16:00:00Z',minutes_asleep:110,minutes_deep:30},{start_time:'2026-11-20T17:00:00Z',end_time:'2026-11-20T18:00:00Z',minutes_asleep:50,minutes_deep:10}];
 window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'},{role:'mochi',content:'*italic* **bold** ***both*** ~~strike~~ \\\\*literal\\\\* <script>bad()</script> \`code\`',created_at:'2026-11-07T08:02:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
@@ -12,7 +12,7 @@ window.taskRows=[
 {id:'legacy',title:'Legacy completion',status:'completed',created_at:'2026-10-30T10:00:00Z',completed_at:null,updated_at:'2026-11-07T21:00:00Z',reward_coins:5},
 {id:'cancelled',title:'Cancelled item',status:'cancelled',created_at:'2026-11-04T10:00:00Z',updated_at:'2026-11-07T22:00:00Z',reward_coins:5},
 {id:'deferred',title:'Deferred item',status:'deferred',created_at:'2026-11-03T10:00:00Z',updated_at:'2026-11-07T23:00:00Z',reward_coins:5},
-{id:'open',title:'Open task',status:'open',created_at:'2026-11-07T10:00:00Z',updated_at:'2026-11-07T10:00:00Z',reward_coins:5}
+{id:'open',title:'Open task',status:'open',created_at:'2026-11-07T10:00:00Z',updated_at:'2026-11-07T10:00:00Z',reward_coins:5,task_location:'Florence',task_category:'House',task_origin:'bee'}
 ];
 window.threeRows=[{id:'three-test-1',title:'Inspect an interesting fossil',detail:'A tiny optional exploration',category:'curiosity',difficulty:'tiny',status:'suggested',feedback:null,created_at:'2026-11-09T12:00:00Z'}];
 window.catalogRows=[
@@ -21,8 +21,8 @@ window.catalogRows=[
 {id:'williamsburg',title:'Williamsburg porch',property:'Williamsburg',category:'cleaning',active:true,locations:[]},
 {id:'unassigned',title:'Undecided chore',property:null,category:'cleaning',active:true,locations:[]}
 ];
-const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};
-window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),onAuthStateChange:()=>{}},rpc:async(name,args)=>{if(name==='bee_sleep_recent'){window.sleepRequests.push(args.p_days);return window.sleepScenario==='error'?{data:null,error:{message:'mock sleep offline'}}:{data:window.sleepScenario==='empty'?[]:window.sleepRows,error:null};}if(name==='play_claims_today')return {data:window.playClaimCount,error:null};if(name==='claim_daily_game'){window.playClaimCalls++;if(window.playClaimCount>=5)return {data:false,error:null};window.playClaimCount++;return {data:true,error:null};}if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRows.find(t=>t.id===args.p_id).status='sending';window.timerRows.find(t=>t.id===args.p_id).attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
+const user={id:'2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b'};window.authUser=user;
+window.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:window.authUser}}),getSession:async()=>({data:{session:{access_token:'test-browser-token'}}}),signOut:async()=>{window.authUser=null;return {error:null};},signInWithPassword:async()=>{window.authUser=user;return {data:{user},error:null};},onAuthStateChange:()=>{}},rpc:async(name,args)=>{window.rpcCalls.push(name);if(name==='bee_sleep_recent'){window.sleepRequests.push(args.p_days);return window.sleepScenario==='error'?{data:null,error:{message:'mock sleep offline'}}:{data:window.sleepScenario==='empty'?[]:window.sleepRows,error:null};}if(name==='play_claims_today')return {data:window.playClaimCount,error:null};if(name==='claim_daily_game'){window.playClaimCalls++;if(window.playClaimCount>=5)return {data:false,error:null};window.playClaimCount++;return {data:true,error:null};}if(name==='purchase_kae_reward')window.rewardPurchaseCalls++;if(name==='set_task_status'){const task=window.taskRows.find(t=>t.id===args.p_task_id);task.status=args.p_status;task.completed_at=args.p_status==='completed'?new Date().toISOString():null;return {data:true,error:null};}if(name==='beehive_cancel_timer'&&window.cancelDuringSend){window.timerRows.find(t=>t.id===args.p_id).status='sending';window.timerRows.find(t=>t.id===args.p_id).attempts=1;return {data:false,error:null};}return {data:null,error:null};},from(table){
 if(table==='three_things'){
  let one=false,patch=null,filters=[];
  const q=new Proxy({}, {get(_,key){
@@ -35,7 +35,7 @@ if(table==='three_things'){
  }});
  return q;
 }
-let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>resolve({data:table==='beehive_timers'?window.timerRows:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>{if(table==='tasks')window.taskSelectCalls++;resolve({data:table==='beehive_timers'?window.timerRows:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});};return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
@@ -135,6 +135,39 @@ assert.match(await page.locator('[data-filter="completed"]').textContent(),/Comp
 await page.locator('[data-filter="today"]').click();
 await page.waitForFunction(()=>document.querySelector('#taskcount').textContent==='0 tasks in today');
 assert.equal(await page.locator('#tasks .task').count(),0);
+await page.locator('[data-filter="today"]').click();
+
+// Filter-only interactions use a detached signed-in task snapshot, with no background reloads.
+await page.locator('[data-filter="anytime"]').click();
+const readsBeforeLocal=await page.evaluate(()=>({tasks:window.taskSelectCalls,comfort:window.rpcCalls.filter(x=>x==='kae_refresh_comfort').length,roll:window.rpcCalls.filter(x=>x==='roll_forward_daily_tasks').length}));
+await page.locator('#task-search').fill('OPEN');
+await page.waitForFunction(()=>document.querySelector('#tasks .task strong')?.textContent==='Open task');
+await page.locator('#task-filter-location').fill('florence');
+await page.locator('#task-filter-category').fill('house');
+await page.locator('#task-filter-origin').selectOption('bee');
+assert.deepEqual(await page.locator('#tasks .task strong').allTextContents(),['Open task']);
+await page.locator('#task-filter-origin').selectOption('kae');
+assert.equal(await page.locator('#tasks .task').count(),0,'Origin composes with local text and context filters');
+await page.locator('#task-filter-origin').selectOption('');
+await page.locator('#task-filter-category').fill('');
+await page.locator('#task-filter-location').fill('');
+await page.locator('#task-search').fill('');
+await page.locator('[data-filter="completed"]').click();
+await page.locator('[data-filter="anytime"]').click();
+const readsAfterLocal=await page.evaluate(()=>({tasks:window.taskSelectCalls,comfort:window.rpcCalls.filter(x=>x==='kae_refresh_comfort').length,roll:window.rpcCalls.filter(x=>x==='roll_forward_daily_tasks').length}));
+assert.deepEqual(readsAfterLocal,readsBeforeLocal,'Typing, origin switches and tab changes cause zero task reads, comfort or recurrence RPC calls');
+
+// Server edits are not silently visible until an explicit Refresh.
+await page.evaluate(()=>{window.taskRows.find(x=>x.id==='open').title='Updated from server';});
+await page.locator('[data-filter="today"]').click();
+await page.locator('[data-filter="anytime"]').click();
+assert.deepEqual(await page.locator('#tasks .task strong').allTextContents(),['Open task'],'Snapshot is detached from server array');
+await page.locator('#refresh').click();
+await page.waitForFunction(()=>document.querySelector('#tasks .task strong')?.textContent==='Updated from server');
+assert.ok((await page.evaluate(()=>window.taskSelectCalls))>readsAfterLocal.tasks,'Explicit Refresh performs an authenticated task read');
+await page.evaluate(()=>{window.taskRows.find(x=>x.id==='open').title='Open task';});
+await page.locator('#refresh').click();
+await page.waitForFunction(()=>document.querySelector('#tasks .task strong')?.textContent==='Open task');
 await page.locator('[data-filter="today"]').click();
 
 // The existing Timer tab now exposes scheduled one-shot and repeatable dings.
@@ -395,6 +428,7 @@ await page.locator('#tasks .task').first().getByRole('button',{name:'Undo'}).cli
 await page.waitForFunction(()=>document.querySelectorAll('#tasks .task').length===4);
 assert.deepEqual(await completedTitles(),['Earlier finished, edited later','Cancelled item','Deferred item','Legacy completion']);
 await page.evaluate(()=>{const t=window.taskRows.find(x=>x.id==='recent');t.status='completed';t.completed_at='2026-11-07T23:30:00Z';t.updated_at=t.completed_at;});
+await page.locator('#refresh').click();
 await page.locator('[data-filter="completed"]').click();
 await page.waitForFunction(()=>document.querySelectorAll('#tasks .task').length===5);
 assert.deepEqual(await completedTitles(),['Recently finished','Earlier finished, edited later','Cancelled item','Deferred item','Legacy completion']);
@@ -495,6 +529,19 @@ assert.equal(await page.locator('.chamber-gold').evaluate(n=>n.classList.contain
 assert.equal(await page.locator('.chamber-whisker').evaluate(n=>n.classList.contains('tier-art')),false);
 assert.equal(await page.locator('#coins').textContent(),originalBalance,'Visual switching never alters coin balance');
 assert.equal(await page.evaluate(()=>window.rewardPurchaseCalls),0,'Quantity display never makes purchases');
+// Auth transitions destroy cached task content and allow a fresh signed-in fetch.
+await page.locator('#tab-tasks').click();
+await page.locator('[data-filter="anytime"]').click();
+await page.waitForFunction(()=>document.querySelector('#tasks .task strong')?.textContent==='Open task');
+const tasksBeforeAuth=await page.evaluate(()=>window.taskSelectCalls);
+await page.locator('#signout').click();
+await page.waitForFunction(()=>document.querySelector('#game').classList.contains('hidden'));
+assert.equal(await page.locator('#tasks .task').count(),0,'Signed-out DOM cannot retain previously loaded task rows');
+assert.equal(await page.locator('#taskcount').textContent(),'','Signed-out task count is erased');
+await page.locator('#signin').click();
+await page.waitForFunction(()=>document.querySelector('#game:not(.hidden)')!==null && document.querySelector('#tasks .task strong')?.textContent==='Open task');
+assert.ok((await page.evaluate(()=>window.taskSelectCalls))>tasksBeforeAuth,'Sign-in fetches a fresh authenticated task snapshot');
+
 assert.deepEqual(errors,[]);
 console.log('PASS mocked browser viewport '+viewport.width+'x'+viewport.height+': disable/enable, active panel, refresh error, timer cancellation race, completed ordering/undo/recompletion, Kae reply copy and multiline composer, no JS errors');await ctx.close();
 }
