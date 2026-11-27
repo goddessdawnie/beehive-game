@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { mergeRecentTaskActivity } from "./task-context.js";
 import { recentConversationMessages } from "./history-context.js";
 const cors={"Access-Control-Allow-Origin":"https://goddessdawnie.github.io","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:cors});
@@ -46,16 +45,10 @@ Deno.serve(async(req)=>{
    giftItem=owned;
  }
  const activityCutoffMs=Date.now()-48*60*60*1000;
- const cutoffIso=new Date(activityCutoffMs).toISOString();
- const taskColumns="id,title,status,due_at,created_at,updated_at,completed_at,completion_notes,task_origin,recurrence_series_id";
- // Query each timeline before limiting. A recently completed old task must
- // not disappear behind newer edits, nor vice versa.
- const [taskUpdates,taskCompletions]=await Promise.all([
-   db.from("tasks").select(taskColumns).eq("owner_id",user.id).gte("updated_at",cutoffIso).order("updated_at",{ascending:false}).limit(41),
-   db.from("tasks").select(taskColumns).eq("owner_id",user.id).gte("completed_at",cutoffIso).order("completed_at",{ascending:false}).limit(41)
- ]);
- if(taskUpdates.error||taskCompletions.error)return reply({error:"Recent activity unavailable"},503);
- const taskContext=mergeRecentTaskActivity(taskUpdates.data,taskCompletions.data,activityCutoffMs);
+ // The owner-scoped read combines update and completion timelines in SQL.
+ // One sorted bounded packet avoids duplicate HTTP reads and client deduping.
+ const {data:taskContext,error:taskContextError}=await db.rpc("kae_recent_task_activity");
+ if(taskContextError||!taskContext||!Array.isArray(taskContext.tasks))return reply({error:"Recent activity unavailable"},503);
  const taskRows=taskContext.tasks;
  const lastMessageTime=recent.reduce((latest,m)=>Math.max(latest,Date.parse(m.created_at)||0),0);
  const recentlyFinished=taskRows.filter(t=>Date.parse(t.last_completed_at||t.completed_at||"")>Math.max(lastMessageTime,activityCutoffMs)).slice(0,3);
