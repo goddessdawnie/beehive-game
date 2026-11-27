@@ -682,8 +682,9 @@ const gameTabs=[...document.querySelectorAll('[data-game-tab]')];
 function selectGameTab(name,focus=false){if(name==='play'&&gameRegistryOwner)void refreshGameRegistry(gameRegistryOwner);if(name==='play')void refreshPlayClaims();if(name==='timer')void refreshBellSchedules();if(name==='sleep')void loadSleep();for(const tab of gameTabs){const selected=tab.dataset.gameTab===name;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;el('panel-'+tab.dataset.gameTab).classList.toggle('hidden',!selected);if(selected&&focus)tab.focus();if(selected&&name==='estate')requestAnimationFrame(()=>{const log=el('chatlog');log.scrollTop=log.scrollHeight})}}
 gameTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>selectGameTab(tab.dataset.gameTab));tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?gameTabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+gameTabs.length)%gameTabs.length;selectGameTab(gameTabs[next].dataset.gameTab,true)})});
 selectGameTab('tasks');
-// Non-reward task edits update only the authenticated task snapshot. They must
-// not re-query the ledger, treasury or companion state, nor run daily rollovers.
+// Non-reward task edits update only the authenticated task snapshot.
+// Preserve daily recurrence rollovers, but skip unrelated ledger, treasury,
+// comfort, pet and catalogue reads.
 async function loadTaskSnapshot(){
  const generation=taskRefresh.generation;
  const {data:{user},error:authError}=await db.auth.getUser();
@@ -693,6 +694,11 @@ async function loadTaskSnapshot(){
   await loadInner();
   return;
  }
+ // Due/recurring task edits must retain the same roll-forward semantics
+ // as the original full refresh even when all other estate reads are skipped.
+ const rolled=await db.rpc('roll_forward_daily_tasks');
+ if(generation!==taskRefresh.generation)return;
+ if(rolled.error){notice(rolled.error.message);return}
  const tasks=await db.from('tasks').select('*').order('created_at',{ascending:false});
  if(generation!==taskRefresh.generation)return;
  if(tasks.error){notice(tasks.error.message);return}

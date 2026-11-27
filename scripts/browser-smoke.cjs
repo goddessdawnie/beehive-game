@@ -165,8 +165,8 @@ assert.deepEqual(readsAfterLocal,readsBeforeLocal,'Typing, origin switches and t
  assert.equal(afterTaskEdit.tables.tasks,beforeTaskEdit.tables.tasks+1,'Task edit performs one task SELECT');
  for(const name of ['reward_ledger','pet_state','activity_catalog','reward_shop','kae_inventory','reward_requests'])
   assert.equal(afterTaskEdit.tables[name]||0,beforeTaskEdit.tables[name]||0,'Unrelated table not refetched: '+name);
- for(const rpc of ['kae_refresh_comfort','roll_forward_daily_tasks'])
-  assert.equal(afterTaskEdit.rpc.filter(x=>x===rpc).length,beforeTaskEdit.rpc.filter(x=>x===rpc).length,'Task-only change avoids '+rpc);
+ assert.equal(afterTaskEdit.rpc.filter(x=>x==='kae_refresh_comfort').length,beforeTaskEdit.rpc.filter(x=>x==='kae_refresh_comfort').length,'Task-only change skips comfort');
+ assert.equal(afterTaskEdit.rpc.filter(x=>x==='roll_forward_daily_tasks').length,beforeTaskEdit.rpc.filter(x=>x==='roll_forward_daily_tasks').length+1,'Task-only change preserves recurrence roll-forward');
  await page.locator('[data-filter="today"]').click();
  assert.deepEqual(await page.locator('#tasks .task strong').allTextContents(),['Open task'],'Choosing today changes membership after scoped read');
  await page.locator('#tasks .task').first().getByRole('button',{name:'Remove from today'}).click();

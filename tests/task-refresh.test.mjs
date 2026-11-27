@@ -131,6 +131,6 @@ test('non-reward task mutations use scoped refresh, while reward/status and expl
   "db.rpc('kae_refresh_comfort')",
   "await load()"
  ])assert.ok(html.includes(assertion),assertion);
- assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?const tasks=await db\.from\('tasks'\)\.select\('\*'\)\.order\('created_at'/);
+ assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?db\.rpc\('roll_forward_daily_tasks'\)[\s\S]*?const tasks=await db\.from\('tasks'\)\.select\('\*'\)\.order\('created_at'/);
  assert.match(html,/async function loadInner\(\)[\s\S]*?db\.from\('reward_ledger'\)/);
 });
