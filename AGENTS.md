@@ -6,7 +6,8 @@ This is a small static GitHub Pages application, not a framework project. Keep t
 
 | Area | Primary entry points |
 | --- | --- |
-| Browser shell, Three Things UI, chat, timers and room | `index.html` (large inline JS; extraction is incremental) |
+| Browser shell, timers, room and top-level controllers | `index.html` (large inline JS; extraction is incremental) |
+| Three Things generation, reaction and task-action UI | `js/three-things-ui.js` (native browser controller; authenticated client injected) |
 | Task tab membership, counts, search/context filters, and ordering | `js/task-selection.js` (pure native module); `index.html` retains fetch, rendering, and refresh wiring |
 | Sleep history browser UI | `js/sleep-ui.js` (native module, injected authenticated RPC and DOM access); tab activation remains in `index.html` |
 | Visual styles, theme and estate layering | `css/beehive.css`; asset URLs are relative to `css/` |
