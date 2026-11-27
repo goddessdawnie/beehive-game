@@ -415,7 +415,8 @@ await page.locator('#kaetap').click();
 await page.waitForFunction(()=>window.chatRequests.length===3);
 assert.equal(await page.evaluate(()=>window.chatRequests[2].mode),'tap','Kae tap still uses the existing chat endpoint');
 await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===6);
-assert.equal(await page.locator('#chatlog .chat-line').last().innerText(),'Kae: ⧉ Copy You have summoned His Lordship.','Kae tap appends one saved reply');
+assert.match(await page.locator('#chatlog .chat-line').last().innerText(),/You have summoned His Lordship\./,'Kae tap appends one saved reply');
+assert.equal(await page.locator('#chatlog .chat-line').last().locator('strong').textContent(),'Kae: ','Tap-generated message retains Kae authorship');
 
 await page.locator('#tab-tasks').click();
 await page.locator('[data-filter="completed"]').click();
