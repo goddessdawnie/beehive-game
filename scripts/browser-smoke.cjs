@@ -4,7 +4,7 @@ const http=require('http'),fs=require('fs'),path=require('path'),assert=require(
 const root=process.cwd();const server=http.createServer((req,res)=>{const p=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);try{res.setHeader('Content-Type',p.endsWith('.css')?'text/css':p.endsWith('.js')?'application/javascript':p.endsWith('.html')?'text/html':p.endsWith('.svg')?'image/svg+xml':p.endsWith('.png')?'image/png':p.endsWith('.webp')?'image/webp':p.endsWith('.jpg')?'image/jpeg':'application/octet-stream');res.end(fs.readFileSync(p));}catch{res.statusCode=404;res.end();}}).listen(0,'127.0.0.1');
 await new Promise(r=>server.once('listening',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.BEE_BROWSER_EXECUTABLE?{executablePath:process.env.BEE_BROWSER_EXECUTABLE}:{})});
-const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;window.rpcCalls=[];window.taskSelectCalls=0;window.sleepRequests=[];window.sleepScenario='data';window.sleepRows=[{start_time:'2026-11-20T04:30:00Z',end_time:'2026-11-20T09:30:00Z',minutes_asleep:280,minutes_deep:70},{start_time:'2026-11-19T14:00:00Z',end_time:'2026-11-19T16:00:00Z',minutes_asleep:110,minutes_deep:30},{start_time:'2026-11-20T17:00:00Z',end_time:'2026-11-20T18:00:00Z',minutes_asleep:50,minutes_deep:10}];
+const mock=`window.registryRows=[{game_key:'sudoku',enabled:false}];window.inventoryRows=[];window.registryError=false;window.timerRows=[];window.playClaimCount=0;window.playClaimCalls=0;window.cancelDuringSend=false;window.rewardPurchaseCalls=0;window.rpcCalls=[];window.taskSelectCalls=0;window.tableReads={};window.sleepRequests=[];window.sleepScenario='data';window.sleepRows=[{start_time:'2026-11-20T04:30:00Z',end_time:'2026-11-20T09:30:00Z',minutes_asleep:280,minutes_deep:70},{start_time:'2026-11-19T14:00:00Z',end_time:'2026-11-19T16:00:00Z',minutes_asleep:110,minutes_deep:30},{start_time:'2026-11-20T17:00:00Z',end_time:'2026-11-20T18:00:00Z',minutes_asleep:50,minutes_deep:10}];
 window.chatRows=[{role:'user',content:'Can you read this?',created_at:'2026-11-07T08:00:00Z'},{role:'mochi',content:'Dragon decree:\\nNo more paperwork. 🐉 *I insist.*',created_at:'2026-11-07T08:01:00Z'},{role:'mochi',content:'*italic* **bold** ***both*** ~~strike~~ \\\\*literal\\\\* <script>bad()</script> \`code\`',created_at:'2026-11-07T08:02:00Z'}];
 window.taskRows=[
 {id:'earlier',title:'Earlier finished, edited later',status:'completed',created_at:'2026-10-01T10:00:00Z',completed_at:'2026-11-05T09:00:00Z',updated_at:'2026-11-07T20:00:00Z',reward_coins:5,completion_notes:'Edited after completion'},
@@ -35,7 +35,7 @@ if(table==='three_things'){
  }});
  return q;
 }
-let single=false;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>{if(table==='tasks')window.taskSelectCalls++;resolve({data:table==='beehive_timers'?window.timerRows:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});};return (...args)=>{if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
+let single=false,patch=null,matchId=null;const chain=new Proxy({}, {get(_,key){if(key==='then')return (resolve)=>{if(table==='tasks'){window.taskSelectCalls++;if(patch&&matchId)Object.assign(window.taskRows.find(t=>t.id===matchId)||{},patch)}resolve({data:table==='beehive_timers'?window.timerRows:table==='beehive_games'?window.registryRows:table==='tasks'?window.taskRows:table==='activity_catalog'?window.catalogRows:table==='kae_inventory'?window.inventoryRows:table==='mochi_messages'?window.chatRows:table==='pet_state'?{name:'Kae',comfort_value:100}:single?null:[],error:table==='beehive_games'&&window.registryError?{message:'offline'}:null});};return (...args)=>{if(key==='select')window.tableReads[table]=(window.tableReads[table]||0)+1;if(key==='update')patch=args[0];if(key==='eq'&&args[0]==='id')matchId=args[1];if(key==='maybeSingle'||key==='single')single=true;return chain;}}});return chain;}})};`;
 for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
@@ -156,6 +156,24 @@ await page.locator('[data-filter="completed"]').click();
 await page.locator('[data-filter="anytime"]').click();
 const readsAfterLocal=await page.evaluate(()=>({tasks:window.taskSelectCalls,comfort:window.rpcCalls.filter(x=>x==='kae_refresh_comfort').length,roll:window.rpcCalls.filter(x=>x==='roll_forward_daily_tasks').length}));
 assert.deepEqual(readsAfterLocal,readsBeforeLocal,'Typing, origin switches and tab changes cause zero task reads, comfort or recurrence RPC calls');
+ // Non-reward task planning only refetches tasks, never the whole estate.
+ const beforeTaskEdit=await page.evaluate(()=>({tables:{...window.tableReads},rpc:window.rpcCalls.slice(),taskReads:window.taskSelectCalls}));
+ await page.locator('#tasks .task').filter({hasText:'Open task'}).getByRole('button',{name:'Choose for today'}).click();
+ await page.waitForFunction(()=>document.querySelector('#taskcount')?.textContent==='0 tasks in anytime');
+ const afterTaskEdit=await page.evaluate(()=>({tables:{...window.tableReads},rpc:window.rpcCalls.slice(),taskReads:window.taskSelectCalls}));
+ assert.equal(afterTaskEdit.taskReads,beforeTaskEdit.taskReads+2,'Plan write plus one fresh task SELECT');
+ assert.equal(afterTaskEdit.tables.tasks,beforeTaskEdit.tables.tasks+1,'Task edit performs one task SELECT');
+ for(const name of ['reward_ledger','pet_state','activity_catalog','reward_shop','kae_inventory','reward_requests'])
+  assert.equal(afterTaskEdit.tables[name]||0,beforeTaskEdit.tables[name]||0,'Unrelated table not refetched: '+name);
+ assert.equal(afterTaskEdit.rpc.filter(x=>x==='kae_refresh_comfort').length,beforeTaskEdit.rpc.filter(x=>x==='kae_refresh_comfort').length,'Task-only change skips comfort');
+ assert.equal(afterTaskEdit.rpc.filter(x=>x==='roll_forward_daily_tasks').length,beforeTaskEdit.rpc.filter(x=>x==='roll_forward_daily_tasks').length+1,'Task-only change preserves recurrence roll-forward');
+ await page.locator('[data-filter="today"]').click();
+ assert.deepEqual(await page.locator('#tasks .task strong').allTextContents(),['Open task'],'Choosing today changes membership after scoped read');
+ await page.locator('#tasks .task').first().getByRole('button',{name:'Remove from today'}).click();
+ await page.waitForFunction(()=>document.querySelector('#taskcount')?.textContent==='0 tasks in today');
+ await page.locator('[data-filter="anytime"]').click();
+ assert.deepEqual(await page.locator('#tasks .task strong').allTextContents(),['Open task']);
+
 
 // Server edits are not silently visible until an explicit Refresh.
 await page.evaluate(()=>{window.taskRows.find(x=>x.id==='open').title='Updated from server';});
