@@ -17,7 +17,7 @@ This is a small static GitHub Pages application, not a framework project. Keep t
 | PWA, offline cache, install | `sw.js`, `manifest.webmanifest`, `icons/` |
 | Database schema, RPCs, rewards and recurrence | `supabase/migrations/`; review deployed schema before applying |
 | Kae and Three Things generation | `supabase/functions/kae-chat/`, `supabase/functions/three-things/` and related functions |
-| Private @Bee integration | `plugins/bee/`; reconcile installed release before changing |
+| Private @Bee integration | `plugins/bee/`; see [source/release parity](docs/bee-plugin/RELEASE-PARITY.md) before package edits; source commits do not install the plugin |
 | Browser smoke and test server | `scripts/browser-smoke.cjs` |
 | Source and database regressions | `tests/*.test.mjs`, `scripts/test-postgres.mjs` |
 | PR CI and Pages publishing | `.github/workflows/bee-verification.yml` and Pages workflow |
