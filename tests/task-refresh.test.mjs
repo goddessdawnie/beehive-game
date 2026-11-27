@@ -141,3 +141,10 @@ test('DOM refresh click arguments safely perform a full refresh',async()=>{
  await manager.load({type:'click'});
  assert.deepEqual(seen,['full']);
 });
+
+test('session loss is routed to the existing full auth-clear path before an error can strand stale tasks',()=>{
+ const scoped=html.slice(html.indexOf('async function loadTaskSnapshot()'),html.indexOf('async function loadInner()'));
+ assert.ok(scoped.indexOf('if(!user||')>=0);
+ assert.ok(scoped.indexOf('if(!user||')<scoped.indexOf('if(authError)'));
+ assert.match(scoped,/await loadInner\(\)/);
+});

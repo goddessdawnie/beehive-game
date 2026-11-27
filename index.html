@@ -689,11 +689,12 @@ async function loadTaskSnapshot(){
  const generation=taskRefresh.generation;
  const {data:{user},error:authError}=await db.auth.getUser();
  if(generation!==taskRefresh.generation)return;
- if(authError){notice(authError.message);return}
  if(!user||taskRefresh.owner!==user.id||taskRefresh.snapshot===null){
+  // The full auth path must hide and discard an expired or switched session.
   await loadInner();
   return;
  }
+ if(authError){notice(authError.message);return}
  // Due/recurring task edits must retain the same roll-forward semantics
  // as the original full refresh even when all other estate reads are skipped.
  const rolled=await db.rpc('roll_forward_daily_tasks');
