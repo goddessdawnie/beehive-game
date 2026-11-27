@@ -134,3 +134,10 @@ test('non-reward task mutations use scoped refresh, while reward/status and expl
  assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?db\.rpc\('roll_forward_daily_tasks'\)[\s\S]*?const tasks=await db\.from\('tasks'\)\.select\('\*'\)\.order\('created_at'/);
  assert.match(html,/async function loadInner\(\)[\s\S]*?db\.from\('reward_ledger'\)/);
 });
+
+test('DOM refresh click arguments safely perform a full refresh',async()=>{
+ const seen=[];
+ const manager=createTaskRefresh({run:async scope=>{seen.push(scope)},onDiscard:()=>{}});
+ await manager.load({type:'click'});
+ assert.deepEqual(seen,['full']);
+});

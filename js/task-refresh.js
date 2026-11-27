@@ -4,13 +4,16 @@
 export function createTaskRefresh({run,onDiscard}){
  let loading=false,pendingScope=null,snapshot=null,owner=null,generation=0;
  async function load(scope='full'){
-  if(scope!=='full'&&scope!=='tasks')throw Error('Unsupported refresh scope');
+  // DOM onclick=load supplies a click event, not a refresh scope.
+  // Treat non-string call arguments as the normal full refresh.
+  const requested=typeof scope==='string'?scope:'full';
+  if(requested!=='full'&&requested!=='tasks')throw Error('Unsupported refresh scope');
   if(loading){
-   pendingScope=scope==='full'||pendingScope==='full'?'full':'tasks';
+   pendingScope=requested==='full'||pendingScope==='full'?'full':'tasks';
    return;
   }
   loading=true;
-  try{await run(scope);}
+  try{await run(requested);}
   finally{
    loading=false;
    if(pendingScope){
