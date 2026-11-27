@@ -359,7 +359,7 @@ assert.equal(await bothRow.locator('form select').first().inputValue(),'Both');
 await bothRow.getByRole('button',{name:'Close'}).click();
 await page.locator('#tab-estate').click();
 await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===3);
-await page.evaluate(()=>{window.chatRequests=[];const oldFetch=window.fetch;window.fetch=async(url,opts)=>{if(String(url).includes('/functions/v1/kae-chat')){const request=JSON.parse(opts.body);window.chatRequests.push(request);window.chatRows.push({role:'user',content:request.message,created_at:'2026-11-07T08:02:00Z'});return {ok:true,json:async()=>({})}}return oldFetch(url,opts)}});
+await page.evaluate(()=>{window.chatRequests=[];const oldFetch=window.fetch;window.fetch=async(url,opts)=>{if(String(url).includes('/functions/v1/kae-chat')){const request=JSON.parse(opts.body);window.chatRequests.push(request);window.chatRows.push({role:request.mode?'mochi':'user',content:request.mode?'You have summoned His Lordship.':request.message,created_at:'2026-11-07T08:02:00Z'});return {ok:true,json:async()=>({})}}return oldFetch(url,opts)}});
 const composer=page.locator('#chattext');
 assert.equal(await composer.evaluate(el=>el.tagName),'TEXTAREA');
 assert.equal(await composer.getAttribute('maxlength'),'4000');
@@ -410,6 +410,13 @@ assert.equal(await markdownLine.locator('code').count(),1);
 const markdownText=await markdownLine.innerText();
 assert.ok(markdownText.includes('*literal*'),'Escaped stars remain literal');
 assert.ok(markdownText.includes('<script>bad()</script>'),'Angle brackets stay text');
+
+await page.locator('#kaetap').click();
+await page.waitForFunction(()=>window.chatRequests.length===3);
+assert.equal(await page.evaluate(()=>window.chatRequests[2].mode),'tap','Kae tap still uses the existing chat endpoint');
+await page.waitForFunction(()=>document.querySelectorAll('#chatlog .chat-line').length===6);
+assert.match(await page.locator('#chatlog .chat-line').last().innerText(),/You have summoned His Lordship\./,'Kae tap appends one saved reply');
+assert.equal(await page.locator('#chatlog .chat-line').last().locator('strong').textContent(),'Kae: ','Tap-generated message retains Kae authorship');
 
 await page.locator('#tab-tasks').click();
 await page.locator('[data-filter="completed"]').click();
