@@ -18,6 +18,7 @@ This is a small static GitHub Pages application, not a framework project. Keep t
 | Database schema, RPCs, rewards and recurrence | `supabase/migrations/`; review deployed schema before applying |
 | Kae and Three Things generation | `supabase/functions/kae-chat/`, `supabase/functions/three-things/`; Kae recent tasks use the owner-authenticated `public.kae_recent_task_activity()` RPC |
 | Private @Bee integration | `plugins/bee/`; see [source/release parity](docs/bee-plugin/RELEASE-PARITY.md) before package edits; source commits do not install the plugin |
+| Incremental task discovery for Bees | `bee.read_task_workset_20261127` in migrations; [piloting and cursor contract](docs/bee-task-workset-incremental.md), not a scheduled-worker routing change |
 | Browser smoke and test server | `scripts/browser-smoke.cjs` |
 | Source and database regressions | `tests/*.test.mjs`, `scripts/test-postgres.mjs` |
 | PR CI and Pages publishing | `.github/workflows/bee-verification.yml` and Pages workflow |
