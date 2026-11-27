@@ -65,7 +65,7 @@ function renderThree(){
     try{
      if(action==='replace'){
       const cleared=await db.rpc('three_things_act',{p_id:item.id,p_action:'clear'});if(cleared.error)throw cleared.error;
-      threeItems=threeItems.filter(x=>x.id!==item.id);renderThree();await generateThree(1);return;
+      threeItems=threeItems.filter(x=>x.id!==item.id);renderThree();await generateThree(1,item.title);return;
      }
      const result=await db.rpc('three_things_act',{p_id:item.id,p_action:action,p_notes:action==='complete'?savedNotes:''});
      if(result.error)throw result.error;
@@ -79,12 +79,12 @@ function renderThree(){
   card.append(heading,detail,meta,reactions,feedbackNotePanel,notes,actions);host.append(card);
  }
 }
-async function generateThree(count=3){
+async function generateThree(count=3,replacedTitle=''){
  if(threeBusy&&count===3)return;
  threeBusy=true;threeFeedback('Finding possibilities…');renderThree();
  try{
   const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Sign in first');
-  const response=await fetch('https://kyfyzrtsksybnrrlnhmj.supabase.co/functions/v1/three-things',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':'sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk'},body:JSON.stringify({count,avoid:threeItems.map(x=>x.title)})});
+  const response=await fetch('https://kyfyzrtsksybnrrlnhmj.supabase.co/functions/v1/three-things',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':'sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk'},body:JSON.stringify({count,avoid:threeItems.map(x=>x.title),replaced_title:replacedTitle.slice(0,250)})});
   const result=await response.json();if(!response.ok)throw Error(result.error||'Could not generate suggestions');
   threeItems.push(...result.suggestions);threeFeedback('Choose whatever appeals to you.');
  }catch(err){threeFeedback(err.message||'Generation failed. Please retry.')}

@@ -168,7 +168,8 @@ test('both Edge callers use the same snapshot without rerouting workers or editi
  assert.match(chat,/Dawn and you live ordinary, continuing lives/);
  assert.match(chat,/const estateGlimpse=JSON.stringify\(\{\s*situation,/);
  assert.match(three,/const context=\{situation,/);
- assert.match(three,/catalogPoolForSituation\(available,situation,preferWorkPool\)/);
+ assert.match(three,/const freshCatalog=available\.filter/);
+ assert.match(three,/catalogPoolForSituation\(freshCatalog,situation,preferWorkPool\)/);
  assert.match(three,/findSuggestionCollision\(item,openTasks.data\|\|\[\],recentTitlesToAvoid,accepted\)/);
  assert.match(migration,/public\.bee_kae_situation_snapshot/);
  assert.match(migration,/auth\.uid\(\)/);
