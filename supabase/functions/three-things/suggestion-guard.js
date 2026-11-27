@@ -101,3 +101,38 @@ export function findSuggestionCollision(candidate,openTasks=[],recentSuggestions
  }
  return null;
 }
+
+// Distinct tasks may still overfocus on one physical area. This is a rolling
+// diversity guard, NOT a permanent forbidden-topic list. Restrict to concrete
+// surfaces/places so generic words like "clean" or "creative" cannot become bans.
+const concreteTopics=new Set([
+ 'stair','sink','floor','shelf','counter','cabinet','window','mirror','rug',
+ 'toilet','freezer','fridge','desk','porch','roof','bathroom','bedroom'
+]);
+export function suggestionTopics(record){
+ const title=typeof record==='string'?record:record?.title||'';
+ const detail=typeof record==='string'?'':record?.detail||'';
+ return new Set(words(title+' '+detail)
+  // "Take three steps" is not necessarily staircase work.
+  .filter(token=>token!=='step'&&token!=='steps')
+  .map(canonical).filter(token=>concreteTopics.has(token)));
+}
+export function saturatedSuggestionTopics(history=[],now=new Date()){
+ const counts=new Map(),cutoff=now.getTime()-14*86400000;
+ // This small window naturally expires old topics after new suggestions or time.
+ for(const record of (history||[]).slice(0,12)){
+  const when=Date.parse(record?.created_at||'');
+  if(!Number.isFinite(when)||when<cutoff||when>now.getTime()+600000)continue;
+  for(const topic of suggestionTopics(record))counts.set(topic,(counts.get(topic)||0)+1);
+ }
+ return new Set([...counts].filter(([,count])=>count>=2).map(([topic])=>topic));
+}
+export function findTopicFatigue(candidate,history=[],replacedTitle='',accepted=[],now=new Date()){
+ const replaced=suggestionTopics(replacedTitle),cooled=saturatedSuggestionTopics(history,now);
+ for(const topic of suggestionTopics(candidate)){
+  if(replaced.has(topic))return {kind:'replaced topic',topic};
+  if(cooled.has(topic))return {kind:'recently overused topic',topic};
+  if((accepted||[]).some(x=>suggestionTopics(x).has(topic)))return {kind:'same batch topic',topic};
+ }
+ return null;
+}
