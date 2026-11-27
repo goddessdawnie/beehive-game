@@ -1,0 +1,13 @@
+# Incremental Bee task read: pilot contract, November 27 2026
+
+The optional private function bee.read_task_workset_20261127(owner, since, through, after_updated, after_id, open_offset, open_limit, change_limit) is a bounded discovery read, NOT an adopted worker route. Installed Bee v0.2.5 still references the older deployed helper, which must remain available until a guarded plugin release.
+
+**Checkpoint:** On the first call give a known since timestamp (or NULL for the prior 24 hours), through=NULL, cursor fields NULL and offset 0. Record returned through. For each closed_changes.has_more=true, call again with the *same* since and through, and both next_cursor.updated_at and next_cursor.id. Only after completing every page may a consumer persist through as the next checkpoint. Retrying an interrupted window is safe to read again. Closed pages order ASC by updated_at and ID; they are disjoint from the open section.
+
+**Open work:** Every call includes current open tasks (even if last edited years earlier), sorted by due, planned day, updated time and ID. When open.truncated=true, page with open.next_offset until done. Open pages are not transactionally frozen during edits: restart at offset 0 if their membership changes.
+
+**History and exceptions:** Closed changes only include latest non-open rows updated after since and not after through. Hard deletion has no tombstone here. Periodically use existing owner-scoped full history if deletion detection is required; this is NOT a durable append-only event log. A modified row that moves after through becomes eligible at the next polling checkpoint. Any missing/full instructions or completion notes must be read by exact ID through the existing bee.read interface. Preview limit 120 chars with truncation indicators. Empty result is not evidence that a failed read succeeded.
+
+**Security:** invoker with bee.check_owner; private bee schema; deny public, anon and authenticated, allow service_role. No client-facing RPC, task write, new service, worker-routing or reward change.
+
+**Benchmark:** Compare one complete equivalent since-window plus all open pages against the actual targeted worker query, noting changed field projections, row counts, JSON payload bytes, call counts, completeness and any full-detail fallbacks. Work Synthesis already had a 28,097-byte last-pass read and a 45,664-byte seven-day targeted read in November 26 pilot; do not adopt this helper by default or claim token/cost savings from bytes alone. Keep old task read and plugin reference until consumer migration, rollback and installer parity have been checked.
