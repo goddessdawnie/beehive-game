@@ -26,6 +26,7 @@ try{if(localStorage.getItem('beehive-theme')==='dark')document.documentElement.d
 import {installedGames,enabledGames,renderGameRegistry} from './js/game-registry.js';
 import {createSleepUI} from './js/sleep-ui.js';
 import {selectTaskView} from './js/task-selection.js';
+import {createTaskRefresh} from './js/task-refresh.js';
 import {createKaeChatUI} from './js/kae-chat.js';
 import {createThreeThingsUI} from './js/three-things-ui.js';
 const db=supabase.createClient('https://kyfyzrtsksybnrrlnhmj.supabase.co','sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk');
@@ -336,14 +337,17 @@ el('layout-copy').onclick=async()=>{
  catch{el('layout-feedback').textContent='Could not copy automatically: '+css;}
 };
 const difficultyCoins={tiny:2,medium:5,large:9,ugh:12};const difficultyNames={tiny:'Tiny',medium:'Medium',large:'Large',ugh:'Ugh'};const rewardFor=d=>difficultyCoins[d]??5;const difficultySelect=(value='')=>{const s=document.createElement('select');for(const [v,t] of [['','Unrated'],...Object.entries(difficultyNames)])s.add(new Option(t,v));s.value=value||'';return s};let pet=null;
-let loading=false, reloadRequested=false,taskFilter='today',chatLoaded=false,activities=[];
-let taskSnapshot=null,taskSnapshotOwner=null,taskSnapshotGeneration=0;
-function discardTaskSnapshot(){
- taskSnapshot=null;taskSnapshotOwner=null;taskSnapshotGeneration++;activities=[];
- el('tasks').replaceChildren();el('taskcount').textContent='';
- el('poss-list').replaceChildren();el('poss-count').textContent='';
-}
-function rerenderLocalTasks(){if(taskSnapshot!==null)renderTaskSnapshot()}
+let taskFilter='today',chatLoaded=false,activities=[];
+const taskRefresh=createTaskRefresh({
+ run:()=>loadInner(),
+ onDiscard:()=>{
+  activities=[];
+  el('tasks').replaceChildren();el('taskcount').textContent='';
+  el('poss-list').replaceChildren();el('poss-count').textContent='';
+ }
+});
+const load=taskRefresh.load;
+function rerenderLocalTasks(){if(taskRefresh.snapshot!==null)renderTaskSnapshot()}
 let treasuryBusy=false;
 let timerItems=[];
 let timerCancelWarning=null;
@@ -677,18 +681,17 @@ const gameTabs=[...document.querySelectorAll('[data-game-tab]')];
 function selectGameTab(name,focus=false){if(name==='play'&&gameRegistryOwner)void refreshGameRegistry(gameRegistryOwner);if(name==='play')void refreshPlayClaims();if(name==='timer')void refreshBellSchedules();if(name==='sleep')void loadSleep();for(const tab of gameTabs){const selected=tab.dataset.gameTab===name;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;el('panel-'+tab.dataset.gameTab).classList.toggle('hidden',!selected);if(selected&&focus)tab.focus();if(selected&&name==='estate')requestAnimationFrame(()=>{const log=el('chatlog');log.scrollTop=log.scrollHeight})}}
 gameTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>selectGameTab(tab.dataset.gameTab));tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?gameTabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+gameTabs.length)%gameTabs.length;selectGameTab(gameTabs[next].dataset.gameTab,true)})});
 selectGameTab('tasks');
-async function load(){if(loading){reloadRequested=true;return;}loading=true;try{await loadInner();}finally{loading=false;if(reloadRequested){reloadRequested=false;void load();}}}
-async function loadInner(){const requestedGeneration=taskSnapshotGeneration;const {data:{user}}=await db.auth.getUser();if(requestedGeneration!==taskSnapshotGeneration)return;el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);initRoomLayouts(user?.id||null);if(!user)closeMaintenance();void refreshGameRegistry(user?.id||null);if(!user){discardTaskSnapshot();ambientRequested=false;el('kae-ambient').textContent='';threeUI.clearLocal();return;}if(taskSnapshotOwner!==null&&taskSnapshotOwner!==user.id)discardTaskSnapshot();const loadGeneration=taskSnapshotGeneration;void threeUI.restoreThree();const refreshed=await db.rpc('kae_refresh_comfort');if(loadGeneration!==taskSnapshotGeneration)return;if(refreshed.error){notice(refreshed.error.message);return;}void loadAmbientOnce();
-const rolled=await db.rpc('roll_forward_daily_tasks');if(loadGeneration!==taskSnapshotGeneration)return;if(rolled.error){notice(rolled.error.message);return}const [tasks,rewards,pets,catalog,shop,inventory,requests]=await Promise.all([db.from('tasks').select('*').order('created_at',{ascending:false}),db.from('reward_ledger').select('coins_delta'),db.from('pet_state').select('*').maybeSingle(),db.from('activity_catalog').select('*').eq('active',true).order('title'),db.from('reward_shop').select('*').eq('active',true).order('price'),db.from('kae_inventory').select('item_id,quantity,last_acquired_at,item:reward_shop(name,slug)').order('last_acquired_at',{ascending:false}),db.from('reward_requests').select('id,requested_item,details,status,bee_notes,created_at,shop_item_id').order('created_at',{ascending:false})]);
-if(loadGeneration!==taskSnapshotGeneration)return;for(const r of [tasks,rewards,pets,catalog])if(r.error){notice(r.error.message);return}activities=catalog.data||[];
+async function loadInner(){const requestedGeneration=taskRefresh.generation;const {data:{user}}=await db.auth.getUser();if(requestedGeneration!==taskRefresh.generation)return;el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);initRoomLayouts(user?.id||null);if(!user)closeMaintenance();void refreshGameRegistry(user?.id||null);if(!user){taskRefresh.discard();ambientRequested=false;el('kae-ambient').textContent='';threeUI.clearLocal();return;}if(taskRefresh.owner!==null&&taskRefresh.owner!==user.id)taskRefresh.discard();const loadGeneration=taskRefresh.generation;void threeUI.restoreThree();const refreshed=await db.rpc('kae_refresh_comfort');if(loadGeneration!==taskRefresh.generation)return;if(refreshed.error){notice(refreshed.error.message);return;}void loadAmbientOnce();
+const rolled=await db.rpc('roll_forward_daily_tasks');if(loadGeneration!==taskRefresh.generation)return;if(rolled.error){notice(rolled.error.message);return}const [tasks,rewards,pets,catalog,shop,inventory,requests]=await Promise.all([db.from('tasks').select('*').order('created_at',{ascending:false}),db.from('reward_ledger').select('coins_delta'),db.from('pet_state').select('*').maybeSingle(),db.from('activity_catalog').select('*').eq('active',true).order('title'),db.from('reward_shop').select('*').eq('active',true).order('price'),db.from('kae_inventory').select('item_id,quantity,last_acquired_at,item:reward_shop(name,slug)').order('last_acquired_at',{ascending:false}),db.from('reward_requests').select('id,requested_item,details,status,bee_notes,created_at,shop_item_id').order('created_at',{ascending:false})]);
+if(loadGeneration!==taskRefresh.generation)return;for(const r of [tasks,rewards,pets,catalog])if(r.error){notice(r.error.message);return}activities=catalog.data||[];
 pet=pets.data;if(!pet){const r=await db.from('pet_state').insert({name:'Kae'}).select().single();if(r.error){if(r.error.code==='23505'){const existing=await db.from('pet_state').select('*').maybeSingle();if(existing.error||!existing.data){notice(existing.error?.message||'Unable to load existing companion');return}pet=existing.data;}else{notice(r.error.message);return}}else pet=r.data}
 el('petname').textContent=pet.name;const earned=(rewards.data||[]).reduce((n,r)=>n+Math.max(0,r.coins_delta),0);const shopSpent=(rewards.data||[]).reduce((n,r)=>n+Math.max(0,-r.coins_delta),0);const spent=shopSpent+(pet.care_points||0)*5;el('coins').textContent=Math.max(0,earned-spent);el('coinledger').textContent=earned+' earned · '+spent+' spent';const comfort=Math.max(0,Math.min(100,Math.round(Number(pet.comfort_value??100))));el('mood').textContent=comfort>=85?'Luxuriating · His Lordship is splendidly comfortable.':comfort>=65?'Content · Kae is comfortable, though never satisfied.':comfort>=40?'Restless · Kae senses that something is lacking.':comfort>=20?'Disgruntled · Kae has grievances to air.':'Neglected · Kae finds the state of his estate unacceptable.';el('carefill').style.width=comfort+'%';const available=earned-spent;el('care').disabled=available<5;el('care').textContent='Offer tribute · 5 coins ('+Math.max(0,available)+' available)';renderTreasury(shop,inventory,requests,available);if(!chatLoaded){chatLoaded=true;void loadChat()}
-if(loadGeneration!==taskSnapshotGeneration)return;
-taskSnapshotOwner=user.id;taskSnapshot=(tasks.data||[]).map(t=>({...t}));
+if(loadGeneration!==taskRefresh.generation)return;
+taskRefresh.commit(user.id,tasks.data||[]);
 renderTaskSnapshot();
 }
 function renderTaskSnapshot(){
- if(taskSnapshot===null)return;
+ const taskSnapshot=taskRefresh.snapshot;if(taskSnapshot===null)return;
 const {counts,visible,searching,plannedDay,todayStart}=selectTaskView({tasks:taskSnapshot,possibilityCount:activities.length,taskFilter,search:el('task-search').value,locationFilter:el('task-filter-location').value,categoryFilter:el('task-filter-category').value,originFilter:el('task-filter-origin').value});
 document.querySelectorAll('[data-filter]').forEach(b=>{const tab=b.dataset.filter;b.textContent=({today:'Today',anytime:'Anytime',completed:'Completed',future:'Future',possibilities:'Possibilities'})[tab]+' ('+counts[tab]+')'});
 el('possibilities').classList.toggle('hidden',!searching&&taskFilter!=='possibilities');el('tasks').classList.toggle('hidden',!searching&&taskFilter==='possibilities');if(searching||taskFilter==='possibilities')renderPossibilities();if(!searching&&taskFilter==='possibilities'){el('taskcount').textContent='';return}
@@ -858,10 +861,10 @@ async function stopSeries(id){if(!confirm('Stop this recurring task? Future occu
 async function setStatus(id,value){const r=await db.rpc('set_task_status',{p_task_id:id,p_status:value});notice(r.error?.message||'');await load()}
 el('signin').onclick=async()=>{const r=await db.auth.signInWithPassword({email:el('email').value,password:el('password').value});notice(r.error?.message||'Signed in');await load()};
 el('signup').onclick=async()=>{const r=await db.auth.signUp({email:el('email').value,password:el('password').value,options:{emailRedirectTo:location.origin+location.pathname}});notice(r.error?.message||'Check your email to confirm your account.');await load()};
-el('signout').onclick=async()=>{await db.auth.signOut();discardTaskSnapshot();chatLoaded=false;el('chatlog').replaceChildren();await load()};
+el('signout').onclick=async()=>{await db.auth.signOut();taskRefresh.discard();chatLoaded=false;el('chatlog').replaceChildren();await load()};
 el('task-difficulty').onchange=()=>el('task-reward').value=rewardFor(el('task-difficulty').value);el('add').onsubmit=async e=>{e.preventDefault();const due=el('due').value;let repeat;try{repeat=recurrenceRule(el('repeat'),el('repeat-interval'),el('repeat-unit'),due)}catch(err){notice(err.message);return}const r=await db.from('tasks').insert({title:el('title').value.trim(),due_at:due?new Date(due).toISOString():null,recurrence_rule:repeat||null,recurrence_series_id:repeat?crypto.randomUUID():null,instructions:el('instructions').value.trim()||null,difficulty:el('task-difficulty').value||null,reward_coins:Number(el('task-reward').value),task_location:el('task-location').value.trim()||null,task_category:el('task-category').value.trim()||null,task_origin:'user'});notice(r.error?.message||'');if(!r.error){el('add').reset();el('task-reward').value='5';recurrenceControls(el('repeat'),el('repeat-interval'),el('repeat-unit'),'');showRecurrenceInterval(el('repeat'),el('repeat-interval-label'))}await load()};
 
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{taskFilter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));rerenderLocalTasks()});
-el('refresh').onclick=load;db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'||event==='SIGNED_IN')discardTaskSnapshot();setTimeout(()=>{load();void refreshTimer();void refreshPushState()},0)});load();void refreshTimer();void refreshPushState();
+el('refresh').onclick=load;db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'||event==='SIGNED_IN')taskRefresh.discard();setTimeout(()=>{load();void refreshTimer();void refreshPushState()},0)});load();void refreshTimer();void refreshPushState();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(err=>console.warn("Beehive service worker registration failed",err))})}
 </script></body></html>
