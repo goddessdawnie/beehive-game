@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-const ui=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const ui=readFileSync(new URL('../js/three-things-ui.js',import.meta.url),'utf8');
 const migration=readFileSync(new URL('../supabase/migrations/20261119214000_three_things_kae_keep.sql',import.meta.url),'utf8');
 test('Three Things offers a distinct Keep for later action',()=>{
  assert.match(ui,/\['Keep for later','keep'\]/);

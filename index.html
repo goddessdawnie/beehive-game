@@ -27,6 +27,7 @@ import {installedGames,enabledGames,renderGameRegistry} from './js/game-registry
 import {createSleepUI} from './js/sleep-ui.js';
 import {selectTaskView} from './js/task-selection.js';
 import {createKaeChatUI} from './js/kae-chat.js';
+import {createThreeThingsUI} from './js/three-things-ui.js';
 const db=supabase.createClient('https://kyfyzrtsksybnrrlnhmj.supabase.co','sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk');
 const el=id=>document.getElementById(id),notice=s=>el('notice').textContent=s;
 // Room geometry is separate from equipment and ownership. Only real scene nodes are adjusted.
@@ -428,99 +429,7 @@ async function loadWordle(){
 }
 el('wordle-claim').onclick=()=>claimPlayCoins('wordle');
 
-let threeItems=[],threeBusy=false;
-const threeFeedbackSaving=new Set();
-const threeFeedback=msg=>el('three-feedback').textContent=msg;
-function renderThree(){
- const host=el('three-list');host.replaceChildren();el('three-clear').classList.toggle('hidden',threeItems.length===0);
- for(const item of threeItems){
-  const card=document.createElement('section');card.className='three-card';
-  const heading=document.createElement('h3');heading.textContent=item.title;
-  const detail=document.createElement('p');detail.textContent=item.detail||'';
-  const meta=document.createElement('p');meta.className='muted';meta.textContent=item.category.replace('_',' ')+' · '+(difficultyNames[item.difficulty]||'Tiny');
-  const reactions=document.createElement('div');reactions.className='three-reactions';
-  reactions.setAttribute('role','group');reactions.setAttribute('aria-label','Your reaction to '+item.title);
-  const reactionButtons=[];
-  for(const [emoji,value,label] of [['👍','positive','Positive'],['😐','neutral','Neutral'],['👎','negative','Negative']]){
-   const button=document.createElement('button');button.type='button';button.textContent=emoji;button.title=label;
-   button.setAttribute('aria-label',label+' reaction for '+item.title);
-   button.setAttribute('aria-pressed',String(item.feedback===value));button.disabled=threeBusy;
-   button.onclick=async()=>{
-    if(threeBusy||threeFeedbackSaving.has(item.id))return;
-    threeFeedbackSaving.add(item.id);
-    for(const b of [...reactionButtons,...actions.querySelectorAll('button')])b.disabled=true;
-    try{
-     const {data,error}=await db.from('three_things').update({feedback:value})
-      .eq('id',item.id).eq('status','suggested').select('id,feedback').maybeSingle();
-     if(error)throw error;
-     if(!data||data.id!==item.id)throw Error('Suggestion is no longer active; refresh Three Things.');
-     item.feedback=data.feedback;
-     feedbackNotePanel.hidden=false;
-     reactionButtons.forEach((b,i)=>b.setAttribute('aria-pressed',String(item.feedback===['positive','neutral','negative'][i])));
-     threeFeedback('Reaction saved.');
-    }catch(err){threeFeedback('Could not save reaction: '+(err.message||err))}
-    finally{
-     threeFeedbackSaving.delete(item.id);
-     for(const b of [...reactionButtons,...actions.querySelectorAll('button')])b.disabled=threeBusy;
-    }
-   };
-   reactionButtons.push(button);reactions.append(button);
-  }
-  const feedbackNotePanel=document.createElement('div');feedbackNotePanel.hidden=!item.feedback;
-  const feedbackNoteInput=document.createElement('textarea');feedbackNoteInput.placeholder='Why this reaction? (optional)';feedbackNoteInput.maxLength=500;
-  feedbackNoteInput.value=item.feedback_note||'';feedbackNoteInput.setAttribute('aria-label','Optional feedback for '+item.title);
-  const saveFeedbackNote=document.createElement('button');saveFeedbackNote.type='button';saveFeedbackNote.textContent='Save feedback note';
-  saveFeedbackNote.onclick=async()=>{
-   if(threeBusy||threeFeedbackSaving.has(item.id))return;
-   threeFeedbackSaving.add(item.id);saveFeedbackNote.disabled=true;
-   try{
-    const note=feedbackNoteInput.value.trim();
-    const {data,error}=await db.from('three_things').update({feedback_note:note||null})
-     .eq('id',item.id).eq('status','suggested').select('id,feedback_note').maybeSingle();
-    if(error)throw error;
-    if(!data)throw Error('Suggestion is no longer active; refresh Three Things.');
-    item.feedback_note=data.feedback_note;threeFeedback('Feedback note saved for future suggestions.');
-   }catch(err){threeFeedback('Could not save feedback note: '+(err.message||err))}
-   finally{threeFeedbackSaving.delete(item.id);saveFeedbackNote.disabled=threeBusy;}
-  };
-  feedbackNotePanel.append(feedbackNoteInput,saveFeedbackNote);
-  const notes=document.createElement('textarea');notes.placeholder='Completion notes (optional, for the Bees to notice)';notes.maxLength=3000;notes.setAttribute('aria-label','Completion notes for '+item.title);
-  const actions=document.createElement('div');actions.style.display='flex';actions.style.flexWrap='wrap';actions.style.gap='8px';
-  for(const [label,action] of [['Complete','complete'],['Add to today','add'],['Keep for later','keep'],['Replace','replace']]){
-   const button=document.createElement('button');button.type='button';button.textContent=label;button.disabled=threeBusy;
-   button.onclick=async()=>{if(threeBusy||threeFeedbackSaving.has(item.id))return;const savedNotes=notes.value;threeBusy=true;threeFeedback('Working…');
-    try{
-     if(action==='replace'){
-      const cleared=await db.rpc('three_things_act',{p_id:item.id,p_action:'clear'});if(cleared.error)throw cleared.error;
-      threeItems=threeItems.filter(x=>x.id!==item.id);renderThree();await generateThree(1);return;
-     }
-     const result=await db.rpc('three_things_act',{p_id:item.id,p_action:action,p_notes:action==='complete'?savedNotes:''});
-     if(result.error)throw result.error;
-     threeItems=threeItems.filter(x=>x.id!==item.id);
-     threeFeedback(action==='complete'?'Completed and recorded for the Bees.':action==='keep'?'Kept as an undated Kae task. Find it with the Kae origin filter.':'Added to today’s working list without a deadline.');
-     await load();
-    }catch(err){threeFeedback(err.message||'Something went wrong.')}
-    finally{threeBusy=false;renderThree();}
-   };actions.append(button);
-  }
-  card.append(heading,detail,meta,reactions,feedbackNotePanel,notes,actions);host.append(card);
- }
-}
-async function generateThree(count=3){
- if(threeBusy&&count===3)return;
- threeBusy=true;threeFeedback('Finding possibilities…');renderThree();
- try{
-  const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Sign in first');
-  const response=await fetch('https://kyfyzrtsksybnrrlnhmj.supabase.co/functions/v1/three-things',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':'sb_publishable_ER9TbRzYW05miP8TkHcdaQ_zjr6NuGk'},body:JSON.stringify({count,avoid:threeItems.map(x=>x.title)})});
-  const result=await response.json();if(!response.ok)throw Error(result.error||'Could not generate suggestions');
-  threeItems.push(...result.suggestions);threeFeedback('Choose whatever appeals to you.');
- }catch(err){threeFeedback(err.message||'Generation failed. Please retry.')}
- finally{threeBusy=false;renderThree();}
-}
-el('three-generate').onclick=()=>{if(!threeBusy&&threeItems.length===0)void generateThree(3);else if(threeItems.length)threeFeedback('Clear and regenerate to start a new set.');};
-el('three-clear').onclick=async()=>{if(threeBusy)return;threeBusy=true;threeFeedback('Clearing suggestions…');try{for(const item of threeItems){const r=await db.rpc('three_things_act',{p_id:item.id,p_action:'clear'});if(r.error)throw r.error;}threeItems=[];threeBusy=false;renderThree();await generateThree(3);}catch(e){threeFeedback(e.message||'Could not clear all');threeBusy=false;renderThree();}};
-async function restoreThree(){const r=await db.from('three_things').select('id,title,detail,category,difficulty,status,feedback,feedback_note').eq('status','suggested').order('created_at',{ascending:false}).limit(3);if(!r.error){threeItems=(r.data||[]).reverse();renderThree();}}
-
+const threeUI=createThreeThingsUI({db,el,difficultyNames,load});
 
 const beehiveVapidPublicKey='BNZoSYQs84y_lTR7xrdsPXGP1CxQwXGrVqZi7DwHpDmVTpAzqIWvN_9hg1xYThhNh62xjYY5Hf9-83Cw-RJW7tc';
 const timerPushStatus=message=>el('timer-push-status').textContent=message;
@@ -769,7 +678,7 @@ function selectGameTab(name,focus=false){if(name==='play'&&gameRegistryOwner)voi
 gameTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>selectGameTab(tab.dataset.gameTab));tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?gameTabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+gameTabs.length)%gameTabs.length;selectGameTab(gameTabs[next].dataset.gameTab,true)})});
 selectGameTab('tasks');
 async function load(){if(loading){reloadRequested=true;return;}loading=true;try{await loadInner();}finally{loading=false;if(reloadRequested){reloadRequested=false;void load();}}}
-async function loadInner(){const requestedGeneration=taskSnapshotGeneration;const {data:{user}}=await db.auth.getUser();if(requestedGeneration!==taskSnapshotGeneration)return;el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);initRoomLayouts(user?.id||null);if(!user)closeMaintenance();void refreshGameRegistry(user?.id||null);if(!user){discardTaskSnapshot();ambientRequested=false;el('kae-ambient').textContent='';threeItems=[];renderThree();return;}if(taskSnapshotOwner!==null&&taskSnapshotOwner!==user.id)discardTaskSnapshot();const loadGeneration=taskSnapshotGeneration;if(!threeItems.length)void restoreThree();const refreshed=await db.rpc('kae_refresh_comfort');if(loadGeneration!==taskSnapshotGeneration)return;if(refreshed.error){notice(refreshed.error.message);return;}void loadAmbientOnce();
+async function loadInner(){const requestedGeneration=taskSnapshotGeneration;const {data:{user}}=await db.auth.getUser();if(requestedGeneration!==taskSnapshotGeneration)return;el('auth').classList.toggle('hidden',!!user);el('game').classList.toggle('hidden',!user);el('signout').classList.toggle('hidden',!user);initRoomLayouts(user?.id||null);if(!user)closeMaintenance();void refreshGameRegistry(user?.id||null);if(!user){discardTaskSnapshot();ambientRequested=false;el('kae-ambient').textContent='';threeUI.clearLocal();return;}if(taskSnapshotOwner!==null&&taskSnapshotOwner!==user.id)discardTaskSnapshot();const loadGeneration=taskSnapshotGeneration;void threeUI.restoreThree();const refreshed=await db.rpc('kae_refresh_comfort');if(loadGeneration!==taskSnapshotGeneration)return;if(refreshed.error){notice(refreshed.error.message);return;}void loadAmbientOnce();
 const rolled=await db.rpc('roll_forward_daily_tasks');if(loadGeneration!==taskSnapshotGeneration)return;if(rolled.error){notice(rolled.error.message);return}const [tasks,rewards,pets,catalog,shop,inventory,requests]=await Promise.all([db.from('tasks').select('*').order('created_at',{ascending:false}),db.from('reward_ledger').select('coins_delta'),db.from('pet_state').select('*').maybeSingle(),db.from('activity_catalog').select('*').eq('active',true).order('title'),db.from('reward_shop').select('*').eq('active',true).order('price'),db.from('kae_inventory').select('item_id,quantity,last_acquired_at,item:reward_shop(name,slug)').order('last_acquired_at',{ascending:false}),db.from('reward_requests').select('id,requested_item,details,status,bee_notes,created_at,shop_item_id').order('created_at',{ascending:false})]);
 if(loadGeneration!==taskSnapshotGeneration)return;for(const r of [tasks,rewards,pets,catalog])if(r.error){notice(r.error.message);return}activities=catalog.data||[];
 pet=pets.data;if(!pet){const r=await db.from('pet_state').insert({name:'Kae'}).select().single();if(r.error){if(r.error.code==='23505'){const existing=await db.from('pet_state').select('*').maybeSingle();if(existing.error||!existing.data){notice(existing.error?.message||'Unable to load existing companion');return}pet=existing.data;}else{notice(r.error.message);return}}else pet=r.data}
