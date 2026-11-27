@@ -50,7 +50,7 @@ test('guard checks full owner-scoped open tasks, recent suggestions, and current
 
 test('no duplicate or auth bypass is inserted by the Edge Function when collisions persist',()=>{
  const source=readFileSync(new URL('../supabase/functions/three-things/index.ts',import.meta.url),'utf8');
- assert.match(source,/import \{findSuggestionCollision\} from "\.\/suggestion-guard\.js";/);
+ assert.match(source,/import \{findSuggestionCollision,findTopicFatigue,saturatedSuggestionTopics,suggestionTopics\} from "\.\/suggestion-guard\.js";/);
  assert.match(source,/\.eq\("owner_id",user\.id\)\.eq\("status","open"\)/);
  assert.match(source,/\.eq\("owner_id",user\.id\)\.order\("created_at"/);
  assert.match(source,/\.select\("title,task_location,task_category,due_at",\{count:"exact"\}\)/);
