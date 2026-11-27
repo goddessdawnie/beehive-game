@@ -77,3 +77,60 @@ test('invalidation clears detached data and generation guards stale user reads',
  assert.equal(manager.snapshot,null);
  assert.deepEqual(clears,['cleared','cleared']);
 });
+
+test('queued scoped task mutations coalesce, but full estate refresh wins over a task-only refresh',async()=>{
+ const seen=[];
+ let releaseFirst,secondDone;
+ const hold=new Promise(resolve=>{releaseFirst=resolve});
+ const finished=new Promise(resolve=>{secondDone=resolve});
+ const manager=createTaskRefresh({onDiscard:()=>{},run:async scope=>{
+  seen.push(scope);
+  if(seen.length===1)await hold;
+  else secondDone();
+ }});
+ const first=manager.load('tasks');
+ await manager.load('tasks');
+ await manager.load('full');
+ await manager.load('tasks');
+ releaseFirst();
+ await first;
+ await finished;
+ assert.deepEqual(seen,['tasks','full'],'Full refresh is never downgraded by later task edits');
+});
+test('task-only scope remains task-only when no full reload is waiting',async()=>{
+ const seen=[];
+ let releaseFirst,secondDone;
+ const hold=new Promise(resolve=>{releaseFirst=resolve});
+ const finished=new Promise(resolve=>{secondDone=resolve});
+ const manager=createTaskRefresh({onDiscard:()=>{},run:async scope=>{
+  seen.push(scope);
+  if(seen.length===1)await hold;
+  else secondDone();
+ }});
+ const first=manager.load('tasks');
+ await manager.load('tasks');
+ await manager.load('tasks');
+ releaseFirst();
+ await first;
+ await finished;
+ assert.deepEqual(seen,['tasks','tasks']);
+ await assert.rejects(()=>manager.load('impossible'),/Unsupported refresh scope/);
+});
+test('non-reward task mutations use scoped refresh, while reward/status and explicit refresh remain full',()=>{
+ for(const assertion of [
+  "run:scope=>scope==='tasks'?loadTaskSnapshot():loadInner()",
+  "const refreshTasks=()=>load('tasks')",
+  "if(!user||taskRefresh.owner!==user.id||taskRefresh.snapshot===null)",
+  "if(generation!==taskRefresh.generation)return",
+  "notice(error?.message||'Today selection updated');if(!error)await refreshTasks()",
+  "notice(r.error?.message||'Task updated');if(!r.error)await refreshTasks()",
+  "notice(r.error?.message||'Added to Anytime');if(!r.error)",
+  "await refreshTasks()",
+  "el('refresh').onclick=load",
+  "db.rpc('roll_forward_daily_tasks')",
+  "db.rpc('kae_refresh_comfort')",
+  "await load()"
+ ])assert.ok(html.includes(assertion),assertion);
+ assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?const tasks=await db\.from\('tasks'\)\.select\('\*'\)\.order\('created_at'/);
+ assert.match(html,/async function loadInner\(\)[\s\S]*?db\.from\('reward_ledger'\)/);
+});

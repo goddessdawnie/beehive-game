@@ -1,15 +1,23 @@
-// Auth-scoped task snapshot and serialized application refresh coordinator.
-// UI, RPCs and reward mutations remain with the caller; this module does not
-// fetch or persist records. A generation invalidates in-flight load results.
+// Auth-scoped task snapshot and serialized refresh coordinator.
+// Full estate refreshes outrank task-only reads when concurrent mutations queue
+// another pass; both still share one generation and one detached owner snapshot.
 export function createTaskRefresh({run,onDiscard}){
- let loading=false,reloadRequested=false,snapshot=null,owner=null,generation=0;
- async function load(){
-  if(loading){reloadRequested=true;return;}
+ let loading=false,pendingScope=null,snapshot=null,owner=null,generation=0;
+ async function load(scope='full'){
+  if(scope!=='full'&&scope!=='tasks')throw Error('Unsupported refresh scope');
+  if(loading){
+   pendingScope=scope==='full'||pendingScope==='full'?'full':'tasks';
+   return;
+  }
   loading=true;
-  try{await run();}
+  try{await run(scope);}
   finally{
    loading=false;
-   if(reloadRequested){reloadRequested=false;void load();}
+   if(pendingScope){
+    const queued=pendingScope;
+    pendingScope=null;
+    void load(queued);
+   }
   }
  }
  function discard(){
