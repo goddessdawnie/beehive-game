@@ -18,7 +18,7 @@ test('mutable life orientation comes from curated memory',async()=>{
   assert.match(chat,/memoryGuidance/);
   assert.match(chat,/db\.rpc\("kae_recent_task_activity"\)/);
   assert.doesNotMatch(chat,/recurrence_series_id/,'Kae no longer reads unrelated recurrence identifiers');
-  assert.match(chat,/last_completed_at/);
+  assert.match(chat,/compactRecentTaskActivity\(taskContext\.tasks\)/);
   assert.match(ambient,/from\("mochi_memories"\)/);
   assert.match(ambient,/eq\("kind","kae_curated"\)/);
 });

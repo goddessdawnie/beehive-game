@@ -76,6 +76,9 @@ test('DB compact snapshot omits unused 15-task block, sends 12 owned messages an
  const db=new PGlite(),other=randomUUID();
  try{
   await initializeFixture(db,owner,other);
+  // The synthetic fixture's extra chat tables predate the live grants; mirror
+  // authenticated SELECT permissions in this isolated test database only.
+  await db.exec('grant select on public.character_profiles,public.mochi_messages,public.mochi_memories,public.pet_state to authenticated');
   await db.query("insert into public.mochi_memories(owner_id,kind,memory_text) values($1,'kae_curated',$2)",[owner,'A valuable long-term friendship']);
   await db.query("insert into public.character_profiles(owner_id,character_name,character_card) values($1,$2,$3)",[owner,'Kae','Cat-sized dragon landlord']);
   for(let i=0;i<19;i++)await db.query("insert into public.mochi_messages(owner_id,role,content,created_at) values($1,$2,$3,$4)",[owner,i%2?'mochi':'user','Message '+i,new Date(at-(19-i)*60000)]);
