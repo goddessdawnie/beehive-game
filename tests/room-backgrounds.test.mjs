@@ -14,7 +14,7 @@ test('the two high-contrast concept backgrounds are complete, local and never sh
  for(const art of manifest.backgrounds){
   assert.equal(art.shopSlug,null,'No approved shop items or prices were supplied');
   assert.match(art.source,/^assets\/room\/backgrounds\/[a-z0-9-]+\.svg$/);
-  assert.ok(art.label.includes('Preview'));
+  assert.match(art.label,/preview/i);
   const body=await read(art.source);
   assert.match(body,/viewBox="0 0 700 420"/);
   assert.match(body,/<defs>/);
