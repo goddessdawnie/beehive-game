@@ -132,7 +132,8 @@ test('non-reward task mutations use scoped refresh, while reward/status and expl
   "await load()"
  ])assert.ok(html.includes(assertion),assertion);
  assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?db\.rpc\('roll_forward_daily_tasks'\)[\s\S]*?const tasks=await db\.from\('tasks'\)\.select\('\*'\)\.order\('created_at'/);
- assert.match(html,/async function loadInner\(\)[\s\S]*?db\.from\('reward_ledger'\)/);
+ assert.match(html,/async function loadInner\(\)[\s\S]*?db\.rpc\('reward_ledger_totals'\)/);
+ assert.doesNotMatch(html,/db\.from\('reward_ledger'\)/,'Full estate refresh must not download ledger history');
 });
 
 test('DOM refresh click arguments safely perform a full refresh',async()=>{
