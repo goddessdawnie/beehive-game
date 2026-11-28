@@ -49,3 +49,6 @@ body{font:16px system-ui,sans-serif;background:#fff8eb;color:#392c23;max-width:7
 :root[data-theme="dark"] .overdue{color:#ffb4a0!important}
 :root[data-theme="dark"] .care-meter{background:#51435c}
 .sleep-chart{display:flex;align-items:flex-end;gap:5px;min-height:130px;overflow-x:auto;padding:8px 0 4px}.sleep-bar-wrap{flex:1 0 26px;min-width:26px;max-width:60px;text-align:center;font-size:.7rem}.sleep-bar{height:110px;display:flex;flex-direction:column;justify-content:flex-end}.sleep-bar-total{background:#b9a0d4;border-radius:5px 5px 0 0;position:relative;min-height:2px}.sleep-bar-deep{position:absolute;bottom:0;left:0;right:0;background:#65518b;border-radius:0 0 2px 2px}.sleep-day{border-top:1px solid #e7d9bd;padding:10px 0}.sleep-day summary{cursor:pointer}.sleep-session{font-size:.9rem;margin:5px 0 0 15px}.sleep-legend{font-size:.8rem;color:#74695b;margin:8px 0}
+
+/* Art-backed dynamic inventory keeps its existing independently saved room slot. */
+.chamber-generic-treasure.illustrated{padding:0;border:0;box-shadow:none;color:transparent;font-size:0;background-color:transparent;background-position:center;background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 3px #1c123399)}
