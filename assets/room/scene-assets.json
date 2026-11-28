@@ -33,6 +33,36 @@
       "fit": "contain"
     },
     {
+      "id": "kae_smug",
+      "label": "Kae · smugly amused",
+      "slots": [
+        "kae"
+      ],
+      "renderer": "image",
+      "source": "assets/kae-expressions/kae-smug.svg",
+      "fit": "contain"
+    },
+    {
+      "id": "kae_skeptical",
+      "label": "Kae · skeptical",
+      "slots": [
+        "kae"
+      ],
+      "renderer": "image",
+      "source": "assets/kae-expressions/kae-skeptical.svg",
+      "fit": "contain"
+    },
+    {
+      "id": "kae_intrigued",
+      "label": "Kae · intrigued",
+      "slots": [
+        "kae"
+      ],
+      "renderer": "image",
+      "source": "assets/kae-expressions/kae-intrigued.svg",
+      "fit": "contain"
+    },
+    {
       "id": "throne_svg",
       "label": "Imperial throne back · carved wood and plum velvet",
       "slots": [
