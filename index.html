@@ -132,7 +132,7 @@ const kaePortraitStorageKey=owner=>'beehive:kae-portrait:v1:'+owner;
 // positive-quantity reward_shop inventory item is actually owned.
 let roomBackgrounds=new Map(),selectedRoomBackgroundId='',previewRoomBackgroundId='',roomBackgroundOwnedSlugs=new Set();
 const roomBackgroundStorageKey=owner=>'beehive:room-background:v1:'+owner;
-const validRoomArt=src=>typeof src==='string'&&/^assets\\/[a-z0-9_./-]+\\.(svg|webp|jpg|jpeg|png)$/.test(src)&&!src.includes('..');
+const validRoomArt=src=>typeof src==='string'&&/^assets\/[a-z0-9_./-]+\.(svg|webp|jpg|jpeg|png)$/.test(src)&&!src.includes('..');
 async function loadRoomBackgrounds(){
  try{
   const response=await fetch('./assets/room/backgrounds/manifest.json',{cache:'no-cache'});
