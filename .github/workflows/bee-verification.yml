@@ -61,3 +61,12 @@ jobs:
           name: scene-browser-previews
           path: test-results/scene
           if-no-files-found: ignore
+      - name: Upload complete private Bee plugin release archive
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bee-plugin-release
+          path: plugins/bee/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1

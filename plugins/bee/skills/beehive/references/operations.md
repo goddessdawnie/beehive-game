@@ -63,4 +63,31 @@ select bee.command(
 
 Use `planned_on:null` to remove the task from its chosen day. An omitted `planned_on` is **invalid**; it does not mean clear. The date uses `America/New_York` calendar days, not a timestamp or a changed `due_at`. Read the record by ID, pass its current `updated_at` for optimistic concurrency, and on retry reuse the **same** request UUID and entire payload to retrieve the original receipt rather than writing twice. Stale versions and foreign-owner IDs fail. Existing `task.complete`, `task.status`, reward ledger, recurrence series and timer/reminder/schedule branches still use the original logic. Keep using `bee.read` for verification.
 
+## Request fulfillment: receipt, state, delivery
+
+A Bee instruction is not itself an executed action. Use the stable private `bee.command` for mutations. Keep one new UUID per <b>intentional</b> operation, and reuse the identical UUID, operation and complete payload whenever an outcome is uncertain. Never issue a fresh UUID to "retry" the same intent: that can duplicate tasks, reminders, rewards or bells. A conflicting payload for an existing UUID must fail. A thrown error is not a success receipt; reconcile before continuing.
+
+Check the exact owner-scoped receipt, not just a general list:
+
+```sql
+select bee.read('<OWNER_UUID>'::uuid,'request','', '<REQUEST_UUID>'::uuid,1,0);
+```
+
+A found receipt supplies `request_id`, `operation`, `result` and `created_at`; it <b>does not echo the payload</b>. If there is no receipt, repeat the original `bee.command` with its original UUID and identical full input before treating the request as unexecuted. Do not guess new payload fields from a title or an older response. When a receipt exists, use its resource ID to verify current state by exact-ID read. A later user edit can legitimately change state after the recorded action; distinguish historical execution from present state and do not blindly reapply.
+
+| Operation | Verification after a receipt |
+| --- | --- |
+| `task.create`, `task.edit`, `task.plan`, `task.status`, `task.complete` | `bee.read(...,'tasks','',id,1,0)`; compare title/status/planned date or completion notes as applicable. For reward or recurrence claims, verify ledger/successor when material. |
+| `task.delete` | Receipt of the deliberate delete plus exact-ID task absence; absence alone does not establish which action happened. |
+| `possibility.create`, `possibility.edit`, `possibility.delete` | `bee.read(...,'possibilities','',id,1,0)`; match active state or confirmed absence as appropriate. |
+| `possibility.activate` | Read the newly created task by its receipt ID and confirm its `activity_id`; the reusable possibility stays authoritative. |
+| `timer.create`, `timer.adjust`, `timer.cancel` | Exact-ID `timers` read; compare status/due time. A pending timer is not proof that the phone alerted. |
+| `reminder.create`, `reminder.edit`, `reminder.cancel` | Exact-ID `reminders` read; distinguish pending, attempted, sent and handset-delivered (not observable here). |
+| `schedule.create`, `schedule.edit`, `schedule.cancel` | Exact-ID `schedules` read; compare recurrence fields and active state; schedule configuration is not proof a future bell fired. |
+| `game.set` | Read `games` and confirm the named game key's enabled preference. |
+| `notification.send` | Receipt proves queue acceptance, not push service acceptance or handset receipt. Read the associated outbox/reminder when an ID is available; ask for device confirmation before claiming it dinged. |
+| `memory.replace` | Read the matching `memories` record by ID/kind and compare version/content when material. |
+
+Report the highest verified level: **requested → accepted with durable receipt → observed current state → external delivery independently confirmed**. If an external delivery cannot be observed, say so. When no ID or verification route is exposed, report "accepted but final state unverified" with source/request ID instead of announcing completion. Read only the affected record and directly relevant side effects; do not run a full database sweep after every command. Existing owner checks, optimistic versions, atomic ledger and recurrence semantics remain unchanged.
+
 The installed private Bee release was independently read as v0.2.5 on November 27, 2026. Its packaged `operations.md` and `sleep.md` do **not** yet match the longer GitHub source references. Edits to this repository do not update the installed plugin; treat archive transport and release reconciliation as separate work. Do not claim worker adoption without independent validation.
