@@ -252,12 +252,12 @@ assert.deepEqual(await page.locator('#room-background option').evaluateAll(nodes
 const skinKey='beehive:room-background:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b';
 const originalRoom=await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage);
 await page.locator('#room-background').selectOption('moonlit_observatory');
-assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage),/moonlit-observatory\\.svg/);
+assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage),/moonlit-observatory\.svg/);
 assert.equal(await page.evaluate(key=>localStorage.getItem(key),skinKey),null,'Preview never saves unowned background');
 await page.locator('#room-background').selectOption('mosslight_grotto');
-assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage),/mosslight-grotto\\.svg/);
+assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage),/mosslight-grotto\.svg/);
 assert.equal(await page.evaluate(key=>localStorage.getItem(key),skinKey),null);
-assert.match(await page.locator('#chamber-kae').count().then(()=>page.locator('.chamber-kae').getAttribute('src')),/kae_cutout\\.webp/,'Background must not alter portrait');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae_cutout\.webp/,'Background must not alter portrait');
 await page.locator('#layout-close').click();
 assert.equal(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage),originalRoom,'Closing preview restores original illustrated room');
 assert.equal(await page.locator('#room-background').inputValue(),'');
