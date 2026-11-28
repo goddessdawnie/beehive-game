@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#112c2a"/><stop offset=".52" stop-color="#194b44"/><stop offset="1" stop-color="#12332f"/></linearGradient>
+ <linearGradient id="ground" x2="0" y2="1"><stop stop-color="#3f6253"/><stop offset="1" stop-color="#132c2b"/></linearGradient>
+ <radialGradient id="opening"><stop stop-color="#62c9b7"/><stop offset=".65" stop-color="#21554d"/><stop offset="1" stop-color="#0c262a"/></radialGradient>
+ <radialGradient id="fungus"><stop stop-color="#eaffbb"/><stop offset=".6" stop-color="#a7f6d3"/><stop offset="1" stop-color="#77f5cc" stop-opacity="0"/></radialGradient>
+ <linearGradient id="water" x2="1" y2="1"><stop stop-color="#cbfbff" stop-opacity=".76"/><stop offset=".5" stop-color="#70d7d6" stop-opacity=".44"/><stop offset="1" stop-color="#d7fce3" stop-opacity=".1"/></linearGradient>
+ <pattern id="moss" width="70" height="34" patternUnits="userSpaceOnUse"><path d="M0 21Q18 12 36 19T70 12" stroke="#80b28a" stroke-opacity=".13" stroke-width="6" fill="none"/></pattern>
+</defs>
+<rect width="700" height="420" fill="url(#wall)"/>
+<rect width="700" height="275" fill="url(#moss)"/>
+<!-- Deep opening glows around a still, miniature waterfall behind the room. -->
+<path d="M226 276V112Q226 42 342 39Q476 49 475 117V276Z" fill="#071f23" stroke="#577c64" stroke-width="19"/>
+<path d="M242 275V110Q250 63 351 61Q454 66 460 114V275Z" fill="url(#opening)"/>
+<path d="M337 80Q352 139 338 187T335 281H391Q371 225 386 176T378 82Z" fill="url(#water)" opacity=".7"/>
+<g stroke="#d9ffff" stroke-opacity=".43" stroke-width="3" fill="none"><path d="M351 79Q361 122 350 164T354 260"/><path d="M373 83Q368 135 378 184T376 255"/></g>
+<path d="M249 248Q291 223 330 247T414 248T460 245V273H249Z" fill="#173f3b"/>
+<path d="M231 269Q299 247 352 272T473 265V294H231Z" fill="#164036"/>
+<!-- Massive curving stone formations, deliberately behind owned furnishings. -->
+<g fill="#163d35" stroke="#4e7d61" stroke-opacity=".58" stroke-width="7">
+ <path d="M0 0H112Q132 33 117 67Q95 120 126 176Q146 218 106 285H0Z"/>
+ <path d="M700 0H585Q556 33 580 74Q609 125 579 176Q554 216 602 284H700Z"/>
+</g>
+<g fill="#274c3a" stroke="#99c28e" stroke-opacity=".31" stroke-width="3">
+ <path d="M0 16H90L64 49L81 97L44 153L71 192L34 260H0Z"/>
+ <path d="M700 16H609L636 49L619 97L655 153L629 192L666 260H700Z"/>
+</g>
+<!-- Vines trace the archway. -->
+<g stroke="#659c70" stroke-width="6" fill="none" stroke-linecap="round"><path d="M206 0Q196 55 213 105T207 210"/><path d="M498 0Q514 63 490 133T504 223"/></g>
+<g fill="#8ccf83" stroke="#254b39" stroke-width="1.5"><ellipse cx="196" cy="58" rx="7" ry="19" transform="rotate(-39 196 58)"/><ellipse cx="222" cy="93" rx="8" ry="21" transform="rotate(35 222 93)"/><ellipse cx="194" cy="150" rx="7" ry="18" transform="rotate(-42 194 150)"/><ellipse cx="511" cy="53" rx="8" ry="19" transform="rotate(38 511 53)"/><ellipse cx="484" cy="114" rx="8" ry="19" transform="rotate(-45 484 114)"/><ellipse cx="512" cy="176" rx="7" ry="17" transform="rotate(47 512 176)"/></g>
+<!-- Luminous mushrooms are environmental illustrations, not shop objects. -->
+<g fill="url(#fungus)" opacity=".57"><circle cx="115" cy="230" r="67"/><circle cx="587" cy="221" r="72"/><circle cx="162" cy="258" r="45"/><circle cx="535" cy="260" r="46"/></g>
+<g stroke="#9fe7b9" stroke-width="7" stroke-linecap="round"><path d="M102 261V223M132 267V243M583 260V212M612 265V244M168 282V261M537 284V265"/></g>
+<g fill="#caffb9" stroke="#6accaf" stroke-width="4"><path d="M77 226Q104 181 129 222Q107 241 77 226Z"/><path d="M116 244Q139 208 158 243Q140 255 116 244Z"/><path d="M553 214Q580 167 609 213Q580 232 553 214Z"/><path d="M596 244Q615 206 636 242Q615 255 596 244Z"/><path d="M150 263Q168 232 189 262Q169 275 150 263Z"/><path d="M518 263Q539 232 556 263Q535 273 518 263Z"/></g>
+<g fill="#e9ffd1" opacity=".85"><circle cx="185" cy="119" r="2"/><circle cx="153" cy="157" r="3"/><circle cx="545" cy="125" r="2.5"/><circle cx="517" cy="84" r="2"/><circle cx="319" cy="112" r="1.4"/><circle cx="417" cy="166" r="1.5"/></g>
+<!-- Clear floor supports unmodified room geometry. -->
+<path d="M0 278H700V420H0Z" fill="url(#ground)"/>
+<path d="M0 281Q100 270 179 285T365 282T539 283T700 280" fill="none" stroke="#82b193" stroke-opacity=".36" stroke-width="9"/>
+<path d="M0 316Q160 303 290 319T700 309M0 371Q185 348 365 371T700 366" stroke="#8dbb9d" stroke-opacity=".19" fill="none" stroke-width="3"/>
+<ellipse cx="352" cy="382" rx="230" ry="26" fill="#7dc5a6" opacity=".12"/>
+<g fill="#abcfa2" opacity=".4"><circle cx="76" cy="361" r="4"/><circle cx="101" cy="378" r="3"/><circle cx="622" cy="356" r="3"/><circle cx="606" cy="382" r="4"/></g>
+</svg>
