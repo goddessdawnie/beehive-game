@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 420" preserveAspectRatio="none">
+<!-- Decorative atmospheric light only: no furnishings, treasure, or alternate room layout. -->
+<defs>
+ <radialGradient id="amber-haze"><stop stop-color="#f7c879" stop-opacity=".32"/><stop offset=".55" stop-color="#e7a75b" stop-opacity=".10"/><stop offset="1" stop-color="#bc7c69" stop-opacity="0"/></radialGradient>
+ <radialGradient id="violet-haze"><stop stop-color="#d3abed" stop-opacity=".18"/><stop offset="1" stop-color="#d3abed" stop-opacity="0"/></radialGradient>
+ <linearGradient id="filigree" x2="1" y2="1"><stop stop-color="#f5d79f" stop-opacity=".36"/><stop offset="1" stop-color="#bc8e63" stop-opacity=".06"/></linearGradient>
+</defs>
+<ellipse cx="104" cy="100" rx="196" ry="156" fill="url(#amber-haze)"/>
+<ellipse cx="600" cy="116" rx="180" ry="158" fill="url(#violet-haze)"/>
+<g fill="none" stroke="url(#filigree)" stroke-width="2" stroke-linecap="round">
+ <path d="M17 93V31Q17 17 31 17H148M683 93V31Q683 17 669 17H552"/>
+ <path d="M29 109V39Q29 29 39 29H151M671 109V39Q671 29 661 29H549"/>
+ <path d="M17 93q16-9 18-28q17-1 25-17M683 93q-16-9-18-28q-17-1-25-17"/>
+ <path d="M147 17q-14 15-34 15M553 17q14 15 34 15"/>
+</g>
+<g fill="#ffe4aa">
+ <circle cx="82" cy="96" r="2.3" opacity=".38"/><circle cx="146" cy="67" r="1.6" opacity=".35"/>
+ <circle cx="116" cy="157" r="1.5" opacity=".28"/><circle cx="64" cy="178" r="1.1" opacity=".24"/>
+ <circle cx="570" cy="84" r="2.3" opacity=".3"/><circle cx="619" cy="169" r="1.5" opacity=".3"/>
+ <circle cx="544" cy="145" r="1.3" opacity=".25"/><circle cx="654" cy="119" r="1.3" opacity=".28"/>
+</g>
+<g stroke="#f7cc87" stroke-width="1" stroke-linecap="round" opacity=".28">
+ <path d="M80 87v15m-7-7h14M574 71v13m-6-7h12"/>
+ <path d="M148 58v11m-5-5h10M614 159v10m-5-5h10"/>
+</g>
+</svg>

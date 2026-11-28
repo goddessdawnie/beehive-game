@@ -52,3 +52,6 @@ body{font:16px system-ui,sans-serif;background:#fff8eb;color:#392c23;max-width:7
 
 /* Art-backed dynamic inventory keeps its existing independently saved room slot. */
 .chamber-generic-treasure.illustrated{padding:0;border:0;box-shadow:none;color:transparent;font-size:0;background-color:transparent;background-position:center;background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 3px #1c123399)}
+
+/* Decorative vault light sits over the existing background, below all movable objects. */
+#kae-chamber::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url('../assets/room/ambient/amber-vault-glow.svg') center/100% 100% no-repeat}
