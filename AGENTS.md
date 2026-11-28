@@ -9,7 +9,7 @@ This is a small static GitHub Pages application, not a framework project. Keep t
 | Browser shell, timers, room and top-level controllers | `index.html` (large inline JS; extraction is incremental) |
 | Three Things generation, reaction and task-action UI | `js/three-things-ui.js` (native browser controller; authenticated client injected) |
 | Task tab membership, counts, search/context filters, and ordering | `js/task-selection.js` (pure native module); `index.html` retains DOM rendering |
-| Auth-safe task/estate refresh queue and detached task snapshot | `js/task-refresh.js` coordinates task-only vs full refresh with full priority; `index.html` keeps auth and network calls. Non-reward task edits refetch only tasks; reward, catalogue and explicit refreshes retain full estate load |
+| Auth-safe task/estate refresh and complete browser task history | `js/task-refresh.js` coordinates scoped/full requests and owns one projected 18-field, exact-count keyset-paged task reader; both `index.html` paths reuse it. Complete local history/search survives beyond 1,000 records. Reward/catalog/explicit refreshes remain full |
 | Sleep history browser UI | `js/sleep-ui.js` (native module, injected authenticated RPC and DOM access); tab activation remains in `index.html` |
 | Visual styles, theme and estate layering | `css/beehive.css`; asset URLs are relative to `css/` |
 | Play game registry | `js/game-registry.js` |
