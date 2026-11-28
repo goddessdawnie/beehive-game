@@ -522,7 +522,7 @@ await page.evaluate(()=>window.inventoryRows=[
 ]);
 await page.locator('#refresh').click();
 await page.locator('#treasure-item-fixture-owned-id.illustrated').waitFor();
-assert.match(await page.locator('#treasure-item-fixture-owned-id').evaluate(n=>getComputedStyle(n).backgroundImage),/scale-oil-vial\\.svg/);
+assert.match(await page.locator('#treasure-item-fixture-owned-id').evaluate(n=>getComputedStyle(n).backgroundImage),/scale-oil-vial\.svg/);
 assert.equal(await page.locator('#treasure-item-fixture-owned-id').getAttribute('aria-label'),'Fixture Vial quantity 2');
 assert.equal(await page.locator('#layout-slot option[value="item:fixture-owned-id"]').count(),1,'Fixture has an independent movable slot');
 assert.equal(await page.locator('#coins').textContent(),originalBalance,'Rendering does not spend or award coins');
@@ -533,7 +533,7 @@ for(const [qty,tier] of [[1,'single'],[5,'pile'],[13,'mound'],[26,'chest']]){
  ],qty);
  await page.locator('#refresh').click();
  await page.waitForFunction(q=>document.querySelector('#treasure-item-fixture-repeat-id')?.dataset.quantity===String(q),qty);
- assert.match(await page.locator('#treasure-item-fixture-repeat-id').evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp('coin-'+tier+'\\\\.svg'));
+ assert.match(await page.locator('#treasure-item-fixture-repeat-id').evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp('coin-'+tier+'\\.svg'));
 }
 await page.evaluate(()=>window.inventoryRows=[]);
 await page.locator('#refresh').click();
