@@ -85,6 +85,6 @@ test('source schedules, deployed labels and packaged Markdown links are internal
  assert.doesNotMatch(old,/SOURCE ONLY until explicitly deployed|source contract, rollout-gated/i);
  assert.match(old,/do \*\*not\*\* yet match the longer GitHub source references/);
  const handoff=readFileSync(new URL('../docs/bee-plugin/RELEASE-PARITY.md',import.meta.url),'utf8');
- for(const evidence of ['7 of 9','v0.2.5','operations.md','sleep.md','installed plugin is unchanged','Do not replay'])
+ for(const evidence of ['9 of 9','v0.2.6','operations.md','sleep.md','installed plugin is verified','Do not replay'])
   assert.ok(handoff.toLowerCase().includes(evidence.toLowerCase()),'Missing handoff boundary: '+evidence);
 });
