@@ -40,7 +40,22 @@ for(const viewport of [{width:393,height:851},{width:1280,height:900}]){
 const ctx=await browser.newContext({viewport,serviceWorkers:'block'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 // Pre-existing one-slot Android calibration must migrate without touching actual inventory.
 await page.addInitScript(()=>localStorage.setItem('beehive:cushion-layout:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b',JSON.stringify({left:29,bottom:11,width:47,height:15})));
-await page.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.request().url().includes('supabase.min.js')?route.fulfill({contentType:'application/javascript',body:mock}):route.abort());
+// Browser-only art fixtures exercise future approved registration without adding a shop item or purchase.
+await page.route('**/*',route=>{
+ const url=route.request().url();
+ if(url===origin+'/assets/scene-catalog.json'){
+  const catalog=JSON.parse(fs.readFileSync(path.join(root,'assets/scene-catalog.json'),'utf8'));
+  catalog.assets.push({id:'fixture_vial',label:'Fixture vial',slots:['inventory_item'],renderer:'inventory_image',
+   treasure:'fixture_vial',source:'assets/room/shelf/scale-oil-vial.svg',fit:'contain'});
+  return route.fulfill({contentType:'application/json',body:JSON.stringify(catalog)});
+ }
+ if(url===origin+'/assets/treasure-quantity/manifest.json'){
+  const manifest=JSON.parse(fs.readFileSync(path.join(root,'assets/treasure-quantity/manifest.json'),'utf8'));
+  manifest.items.fixture_repeatable={label:'Fixture repeatable',shopSlug:'fixture_repeatable',variants:manifest.items.coin.variants};
+  return route.fulfill({contentType:'application/json',body:JSON.stringify(manifest)});
+ }
+ return url.startsWith(origin)?route.continue():url.includes('supabase.min.js')?route.fulfill({contentType:'application/javascript',body:mock}):route.abort();
+});
 page.on('pageerror',err=>console.error('PAGE SCRIPT ERROR:',err.message));
 await page.goto(origin);
 await page.locator('#game:not(.hidden)').waitFor();
@@ -500,6 +515,33 @@ for(const [qty,tier] of countsToCheck){
   assert.match(await page.locator(selector).evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp(stem+'-'+tier+'\\.svg'));
  }
 }
+// New approved art uses catalog-only inventory registration and an existing movable keyed slot.
+// It cannot create an owned item: the mock returns an explicit inventory row first.
+await page.evaluate(()=>window.inventoryRows=[
+ {item_id:'fixture-owned-id',quantity:2,item:{name:'Fixture Vial',slug:'fixture_vial'}}
+]);
+await page.locator('#refresh').click();
+await page.locator('#treasure-item-fixture-owned-id.illustrated').waitFor();
+assert.match(await page.locator('#treasure-item-fixture-owned-id').evaluate(n=>getComputedStyle(n).backgroundImage),/scale-oil-vial\\.svg/);
+assert.equal(await page.locator('#treasure-item-fixture-owned-id').getAttribute('aria-label'),'Fixture Vial quantity 2');
+assert.equal(await page.locator('#layout-slot option[value="item:fixture-owned-id"]').count(),1,'Fixture has an independent movable slot');
+assert.equal(await page.locator('#coins').textContent(),originalBalance,'Rendering does not spend or award coins');
+// Quantity artwork manifests also work for new non-static collectible slugs without JS changes.
+for(const [qty,tier] of [[1,'single'],[5,'pile'],[13,'mound'],[26,'chest']]){
+ await page.evaluate(quantity=>window.inventoryRows=[
+  {item_id:'fixture-repeat-id',quantity,item:{name:'Fixture Repeatable',slug:'fixture_repeatable'}}
+ ],qty);
+ await page.locator('#refresh').click();
+ await page.waitForFunction(q=>document.querySelector('#treasure-item-fixture-repeat-id')?.dataset.quantity===String(q),qty);
+ assert.match(await page.locator('#treasure-item-fixture-repeat-id').evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp('coin-'+tier+'\\\\.svg'));
+}
+await page.evaluate(()=>window.inventoryRows=[]);
+await page.locator('#refresh').click();
+assert.equal(await page.locator('#treasure-item-fixture-owned-id').count(),0,'Unowned artwork is not left in the room');
+assert.equal(await page.locator('#treasure-item-fixture-repeat-id').count(),0,'Unowned tiers do not linger');
+assert.equal(await page.locator('#layout-slot option[value="item:fixture-owned-id"]').count(),0,'Removed inventory drops only its dynamic slot');
+assert.equal(await page.locator('#coins').textContent(),originalBalance,'No purchased item, coins or reward accounting changed');
+
 // Crown stays distinct from collar, appears only with ownership (or explicit preview),
 // and uses the existing placement/visibility persistence beneath display-case glass.
 assert.equal(await page.locator('.chamber-crown').isVisible(),false);
