@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "backgrounds": [
+    {
+      "id": "moonlit_observatory",
+      "label": "Moonlit Observatory · concept preview",
+      "source": "assets/room/backgrounds/moonlit-observatory.svg",
+      "shopSlug": null
+    },
+    {
+      "id": "mosslight_grotto",
+      "label": "Mosslight Grotto · concept preview",
+      "source": "assets/room/backgrounds/mosslight-grotto.svg",
+      "shopSlug": null
+    }
+  ]
+}
