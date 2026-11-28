@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createTaskRefresh} from '../js/task-refresh.js';
+import {createTaskRefresh,readTaskSnapshot,TASK_SNAPSHOT_FIELDS} from '../js/task-refresh.js';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 
@@ -21,7 +21,7 @@ test('task refresh controller is the sole owner of snapshot and queue lifecycle'
  }
  assert.ok(html.includes("db.rpc('roll_forward_daily_tasks')"));
  assert.ok(html.includes("db.rpc('kae_refresh_comfort')"));
- assert.ok(html.includes("db.from('tasks').select('*').order('created_at',{ascending:false})"));
+ assert.ok(html.includes("readTaskSnapshot(db)"));
  assert.ok(html.includes("el('refresh').onclick=load"));
 });
 
@@ -148,4 +148,101 @@ test('session loss is routed to the existing full auth-clear path before an erro
  assert.ok(scoped.indexOf('if(!user||')>=0);
  assert.ok(scoped.indexOf('if(!user||')<scoped.indexOf('if(authError)'));
  assert.match(scoped,/await loadInner\(\)/);
+});
+
+
+// Fake Data API supports the exact query chain, owner-visible count and
+// descending timestamp+UUID keyset. It does not write any production records.
+function fakeDb(records,{cap=1000,failPage=0,omitCount=false}={}){
+ const calls=[];
+ const ordered=[...records].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)||b.id.localeCompare(a.id));
+ return {calls,from(table){
+  assert.equal(table,'tasks');
+  const q={
+   fields:null,options:{},sort:[],max:null,cursor:null,
+   select(fields,options={}){this.fields=fields;this.options=options;return this},
+   order(field,options){this.sort.push([field,options.ascending]);return this},
+   limit(n){this.max=n;return this},
+   or(filter){this.cursor=filter;return this},
+   then(resolve,reject){
+    calls.push({fields:this.fields,options:this.options,sort:this.sort,limit:this.max,filter:this.cursor});
+    if(calls.length===failPage)return Promise.resolve({data:null,error:new Error('offline')}).then(resolve,reject);
+    assert.deepEqual(this.sort,[['created_at',false],['id',false]]);
+    let subset=ordered;
+    if(this.cursor){
+     const match=/^created_at\.lt\.(.+),and\(created_at\.eq\.(.+),id\.lt\.([^)]+)\)$/.exec(this.cursor);
+     assert.ok(match,'invalid cursor: '+this.cursor);
+     assert.equal(match[1],match[2]);
+     subset=subset.filter(row=>Date.parse(row.created_at)<Date.parse(match[1])||(row.created_at===match[1]&&row.id<match[3]));
+    }
+    const data=subset.slice(0,Math.min(this.max,cap)).map(row=>Object.fromEntries(this.fields.split(',').map(field=>[field,row[field]??null])));
+    const count=this.options.count==='exact'&&!omitCount?ordered.length:null;
+    return Promise.resolve({data,error:null,count}).then(resolve,reject);
+   }
+  };
+  return q;
+ }};
+}
+
+test('one 18-field task reader replaces BOTH browser queries, retaining historical search and recurrence fields',()=>{
+ const fields=TASK_SNAPSHOT_FIELDS.split(',');
+ assert.equal(fields.length,18);
+ assert.ok(!fields.includes('owner_id'));
+ assert.ok(!fields.includes('updated_at'));
+ for(const name of ['title','status','created_at','completed_at','due_at','planned_on','recurrence_series_id','restarted_at','instructions','completion_notes','task_origin','activity_id','task_location','task_category'])assert.ok(fields.includes(name),name);
+ assert.equal(html.split('readTaskSnapshot(db)').length-1,2);
+ assert.doesNotMatch(html,/db\.from\('tasks'\)\.select\('\*'\)/);
+});
+
+test('current 256-sized history needs one request, returns full text but not unused fields',async()=>{
+ const row={id:'00000000-0000-0000-0000-000000000001',created_at:'2026-11-25T11:15:02.123456+00:00',
+  title:'Searchable history',status:'completed',instructions:'all instructions',completion_notes:'full notes',
+  recurrence_series_id:'series',owner_id:'not-projected',updated_at:'not-projected'};
+ const db=fakeDb([row]);
+ const res=await readTaskSnapshot(db);
+ assert.equal(res.error,null);
+ assert.equal(res.data.length,1);
+ assert.equal(res.data[0].completion_notes,'full notes');
+ assert.equal(res.data[0].instructions,'all instructions');
+ assert.equal(res.data[0].recurrence_series_id,'series');
+ assert.ok(!('owner_id' in res.data[0]));
+ assert.ok(!('updated_at' in res.data[0]));
+ assert.equal(db.calls.length,1);
+ assert.equal(db.calls[0].options.count,'exact');
+ assert.equal(db.calls[0].limit,500);
+});
+
+test('keyset paging returns all 1,205 task IDs and tied microsecond timestamp records',async()=>{
+ const stamp='2026-11-25T11:15:02.123456+00:00';
+ const rows=Array.from({length:1205},(_,i)=>({
+  id:'00000000-0000-0000-0000-'+String(i).padStart(12,'0'),
+  created_at:i%3===0?stamp:'2026-11-'+(26+i%2)+'T11:15:02.123456+00:00',
+  status:i<900?'completed':'open',title:'Task '+i,
+  instructions:'Instructions '+i,completion_notes:'Note '+i
+ }));
+ const db=fakeDb(rows);
+ const result=await readTaskSnapshot(db);
+ assert.equal(result.error,null);
+ assert.equal(result.data.length,1205);
+ assert.deepEqual(new Set(result.data.map(t=>t.id)),new Set(rows.map(t=>t.id)));
+ assert.equal(result.data.filter(x=>x.status==='completed').length,900);
+ assert.equal(result.data.find(x=>x.id===rows[1204].id).completion_notes,'Note 1204');
+ assert.equal(db.calls.length,3);
+ assert.deepEqual(db.calls.map(x=>x.options.count),['exact',undefined,undefined]);
+ assert.ok(db.calls.slice(1).some(x=>x.filter.includes(stamp)),'exact timestamp preserved, no millisecond rounding');
+});
+
+test('failed pages, lower server caps and missing exact counts fail closed without partial history',async()=>{
+ const rows=Array.from({length:601},(_,i)=>({id:'00000000-0000-0000-0000-'+String(i).padStart(12,'0'),created_at:'2026-11-27T00:00:00.123456+00:00',status:'completed',title:'Task '+i}));
+ const partial=await readTaskSnapshot(fakeDb(rows,{failPage:2}));
+ assert.equal(partial.data,null);
+ assert.match(partial.error.message,/offline/);
+ const capped=await readTaskSnapshot(fakeDb(rows,{cap:250}));
+ assert.equal(capped.data,null);
+ assert.match(capped.error.message,/incomplete/);
+ const missing=await readTaskSnapshot(fakeDb(rows,{omitCount:true}));
+ assert.equal(missing.data,null);
+ assert.match(missing.error.message,/incomplete/);
+ await assert.rejects(()=>readTaskSnapshot(fakeDb([]),{pageSize:501}),/Invalid task snapshot page size/);
+ assert.deepEqual((await readTaskSnapshot(fakeDb([]))).data,[]);
 });
