@@ -15,7 +15,7 @@ This is a small static GitHub Pages application, not a framework project. Keep t
 | Play game registry | `js/game-registry.js` |
 | Scene images and generated catalog | `assets/`, `scripts/build-scene-catalog.mjs` |
 | PWA, offline cache, install | `sw.js`, `manifest.webmanifest`, `icons/` |
-| Database schema, RPCs, rewards and recurrence | `supabase/migrations/`; review deployed schema before applying |
+| Database schema, RPCs, rewards and recurrence | `supabase/migrations/`; owner-authenticated `public.reward_ledger_totals()` replaces browser ledger-row transfer (no stored balance); purchase/care still validate against the raw ledger |
 | Kae and Three Things generation | `supabase/functions/kae-chat/`, `supabase/functions/three-things/`; Kae recent tasks use the owner-authenticated `public.kae_recent_task_activity()` RPC |
 | Private @Bee integration | `plugins/bee/`; see [source/release parity](docs/bee-plugin/RELEASE-PARITY.md) before package edits; source commits do not install the plugin |
 | Incremental task discovery for Bees | `bee.read_task_workset_20261127` in migrations; [piloting and cursor contract](docs/bee-task-workset-incremental.md), not a scheduled-worker routing change |
