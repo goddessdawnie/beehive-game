@@ -14,7 +14,7 @@ test('Kae uses one owner-authenticated task RPC, not two overlapping reads or a 
  assert.doesNotMatch(source,/mergeRecentTaskActivity|taskUpdates|taskCompletions|\.from\("tasks"\)/);
  assert.equal(existsSync(new URL('../supabase/functions/kae-chat/task-context.js',import.meta.url)),false);
  assert.match(source,/if\(taskContextError\|\|!taskContext\|\|!Array\.isArray\(taskContext\.tasks\)\)/);
- assert.match(source,/const recentlyFinished=taskRows\.filter/);
+ assert.match(source,/const taskRows=compactRecentTaskActivity\(taskContext\.tasks\)/);
  assert.match(source,/recent_task_activity_coverage:\{window_hours:48,partial:taskContext\.partial\}/);
 });
 

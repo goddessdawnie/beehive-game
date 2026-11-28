@@ -29,7 +29,7 @@ test('prompt still uses existing memory, episodic context and optional authentic
  assert.match(src,/const memoryGuidance=curatedMemory/);
  assert.match(src,/db\.rpc\("bee_kae_situation_snapshot"\)/);
  assert.match(src,/const situation=situationResult.error\|\|!situationResult.data/);
- assert.match(src,/const historyMessages=recentConversationMessages\(recent,12\)/);
+ assert.match(src,/const historyMessages=recentConversationMessages\(recent,12,\{/);
  assert.match(src,/Dawn and you live ordinary, continuing lives between these occasional conversations/);
  assert.match(src,/mode==="chat"&&!message/);
  assert.match(src,/db\.auth\.getUser\(token\)/);
