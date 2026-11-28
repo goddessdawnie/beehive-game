@@ -1,31 +1,27 @@
-# Bee: Git source versus installed private release (read-only checkpoint)
+# Bee private release: source parity and update procedure
 
-**Checked November 27, 2026.** Git baseline: [Beehive `main` commit](https://github.com/goddessdawnie/beehive-game/commit/15e14a5729fa62a38a81732507212e22cf158308). Installed private Bee plugin: **v0.2.5**, current release `pluginrel_6b085cd2ed8881918a786fd054565fb1` (read-only owned-plugin file list and selected file reads); scope **USER**, discoverability **PRIVATE**. This document is not a plugin release, SQL deployment, migration or permissions change.
+## Current verified state — November 28, 2026
 
-## November 28 — guarded release candidate (PR #95)
+The installed private <a href="https://chatgpt.com/plugins/plugins_6aee2379756881918d3fd643ea4fb5dc">Bee plugin</a> is **v0.2.6**, release `pluginrel_6b0a6ea2e5208191873bc55d67de695f`, scope `USER`, discoverability `PRIVATE`. It was updated after guarded merge of [PR #95](https://github.com/goddessdawnie/beehive-game/pull/95), main commit `9d5ddafb65f1b697d6fc24afe414b6f432f35773`. Exact-head [CI #46114631233](https://github.com/goddessdawnie/beehive-game/actions/runs/46114631233) succeeded (Node, disposable PostgreSQL and mocked browser).
 
-The source package version becomes **v0.2.6** when PR #95 merges. It adds a verified request-fulfillment evidence matrix to the source skill/reference, and restores the longer operations/sleep references already in GitHub. Installed private Bee is still **v0.2.5** until a separate guarded plugin update succeeds and is read back. The existing Bee verification workflow will upload a complete ZIP with hidden `.app.json` and `.codex-plugin/` files under the short-lived `bee-plugin-release` artifact name. Download through the GitHub connector's reusable file reference, then pass its exact file ID to the plugin updater with the observed expected release ID. A malformed-package probe already reached plugin validation, proving transport of a host-uploaded file ID. Check the ZIP contains the expected manifest/root files before publication, and verify the new installed release's full file list, version, App binding and crucial contracts afterwards. This source-only PR itself does not update the installed plugin or its privileges.
+**9 of 9** installed plugin files were fetched again and compared byte-for-byte with the exact merged GitHub source. All matched: both manifests, the hidden Supabase App binding, the top-level skill, and five references. `operations.md` now includes current task, schedule and receipt-verification contracts; `sleep.md` includes compact and detailed sleep attribution. The installed plugin is verified for source/release parity. This does not establish real Android/handset receipt or adoption by independently scheduled workers.
 
-## Source comparison
+## Transport blocker removed
 
-The installed package contains nine text files. **7 of 9** match the exact GitHub `plugins/bee/` file contents at this checkpoint: `.app.json`, `.codex-plugin/plugin.json`, `plugin.json`, `skills/beehive/SKILL.md`, and `references/conversations.md`, `references/database-contract.md`, `references/deployed-parity.md`.
+The former v0.2.5 release had an older `operations.md` (5,441 bytes) and `sleep.md` (4,136 bytes). Git source had the fuller references, but the plugin updater requires a **host-uploaded ZIP or tar.gz archive** rather than a Git commit or local path. A locally generated manifest-less ZIP was accepted as a file upload and rejected for its *contents*, proving file-ID transport worked. PR #95 added a supported package artifact to the existing CI; a GitHub connector download produced a file reference, and the Plugin Creator accepted it with an expected-current-release guard. The full release was read back after publication.
 
-| Reference under `skills/beehive/references/` | Installed bytes | Git baseline bytes | Comparison |
-| --- | ---: | ---: | --- |
-| `operations.md` | 5,441 | 10,412 | **Different** |
-| `sleep.md` | 4,136 | 5,978 | **Different** |
+For future releases, use this sequence; never assume committing source automatically installs it:
 
-The installed `operations.md` lacks the detailed `schedule.create`, `schedule.edit`, `schedule.cancel`, `schedules` read and `task.plan` sections found in Git source. The installed `deployed-parity.md` **does** summarize deployed schedule/task operations but directs readers to the older operations reference for exact optional fields. This is a documented **packaged-reference gap**, not evidence of a production SQL defect. Installed `sleep.md` is also shorter; this file comparison does not establish a Sleep behavior bug. Matching manifests and the installed parity summary do not mean the complete installed reference package matches GitHub.
+1. Update both plugin manifests to the new semantic version, preserve `.app.json` Supabase App identity and private scope, and pass `tests/bee-plugin-package.test.mjs`. Include any changed skill/reference files in GitHub.
+2. Run exact-PR-head CI. The existing workflow uploads a short-lived `bee-plugin-release` artifact from `plugins/bee/` with hidden files included. Inspect the ZIP root for `plugin.json`, `.app.json`, `.codex-plugin/plugin.json` and the complete `skills/beehive/` subtree.
+3. Guarded merge to main, confirming the tested head. Download the same successful CI's artifact through the GitHub connector; take its host `file_uri.file_id`.
+4. Refresh current installed plugin metadata. Use Plugin Creator `update_plugin` with that file ID and the *observed* `expected_release_id`; do not skip the version guard.
+5. Fetch the installed plugin's full file list and content. Compare to the merged commit, check both manifest versions, the App binding, `USER/PRIVATE` audience and expected commands. Only then call the release completed.
 
-## Current source, production and release boundaries
+## Runtime boundary
 
-- [Git source operations](../../plugins/bee/skills/beehive/references/operations.md) includes the extended schedule payload table. This source change corrects older `SOURCE ONLY` and `rollout-gated` labels for private task-context and compact-Sleep helpers already deployed and checked November 26. **The installed plugin is unchanged.**
-- [Deployed parity reference](../../plugins/bee/skills/beehive/references/deployed-parity.md) matched the installed v0.2.5 file at this checkpoint and remains the starting point for owner scope, receipt retries, planned-day write rules, compact Sleep limitations and optional schedule operations. Its existence does not mean scheduled workers adopted the new reads.
-- [Historical deployed SQL inventory and migration mappings](../bee-production-function-inventory.md) record selected deployed function provenance. The [repository schedule API migration](../../supabase/migrations/20261111230000_bee_schedule_api.sql) already has a November 23 recorded-statement mapping. Later deployments and the read-only Work task-context pilot appear in the [live Notion roadmap](https://app.notion.com/p/40edfa4a1fd081f3a906dfff4c6ae223). This slice did **not** rerun any production SQL or compare live grants/signatures.
-- Production availability, packaged plugin documentation and scheduled-worker routing are **separate states**. Continue using the stable private `bee.read` / `bee.command` wrappers and their existing owner/version safeguards. Do not call versioned write cores directly.
+The `bee.read` and `bee.command` SQL wrappers remain private, owner-scoped and stable; packaged documentation is not evidence of a database migration. A request receipt proves a committed Bee command, not that current state still matches it after later edits. A queued bell is not handset delivery. Preserve existing scheduled-worker routing and plugin permissions unless separately approved and verified. **Do not replay** production migrations to test a plugin documentation upgrade. No tasks, user rewards, schedules, messages, notifications or SQL/Edge functions were changed by v0.2.6 publication.
 
-## Remaining release work, separately gated
+## Historical evidence
 
-The installed plugin is unchanged by a GitHub source/docs PR. Updating its two divergent files requires a **separately verified, host-uploaded plugin archive**; that transport has not been established in prior attempts and is not attempted here. Recheck the latest installed release ID before any future guarded update, reconcile changed files, preserve the Supabase App binding/private scope, and verify contents after publication. Do not replay migrations, broaden privileges, change workers' routes, create bell schedules, or mutate tasks to test this documentation.
-
-**Next bounded step:** resolve the supported archive transport for a guarded installed-plugin reference update. Meanwhile, use installed `deployed-parity.md` and confirmed production/source contracts when an unfamiliar scheduled-bell payload matters; do not invent missing parameters.
+[Previous v0.2.5 source-gap review](https://github.com/goddessdawnie/beehive-game/blob/2c3b6ee9aad452ea48ec3888ef4ef13f93b025fb/docs/bee-plugin/RELEASE-PARITY.md) remains retrievable from Git history. The current release procedure above supersedes its old “transport unestablished” and “installed unchanged” statements.
