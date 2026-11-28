@@ -261,6 +261,8 @@ assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae_cutout\
 await page.locator('#layout-close').click();
 assert.equal(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n).backgroundImage),originalRoom,'Closing preview restores original illustrated room');
 assert.equal(await page.locator('#room-background').inputValue(),'');
+// The main maintenance panel was hidden when the editor originally opened.
+await page.locator('#hive-settings').click();
 await page.locator('#open-layout').click();
 // Ambient decoration cannot intercept taps and sits below the independent room objects.
 assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n,'::before').backgroundImage),/amber-vault-glow\.svg/);
