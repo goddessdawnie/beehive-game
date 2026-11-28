@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#172641"/><stop offset=".58" stop-color="#34405c"/><stop offset="1" stop-color="#1b233d"/></linearGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#56627a"/><stop offset="1" stop-color="#1c2638"/></linearGradient>
+ <radialGradient id="night"><stop stop-color="#5678a9"/><stop offset=".65" stop-color="#17294d"/><stop offset="1" stop-color="#081225"/></radialGradient>
+ <radialGradient id="moon"><stop stop-color="#fffadc"/><stop offset="1" stop-color="#c2e2fa"/></radialGradient>
+ <radialGradient id="pool"><stop stop-color="#d8c38a" stop-opacity=".26"/><stop offset="1" stop-color="#d8c38a" stop-opacity="0"/></radialGradient>
+ <pattern id="marble" width="90" height="45" patternUnits="userSpaceOnUse" patternTransform="skewX(-20)"><rect width="90" height="45" fill="#26344b"/><path d="M0 0H90V45H0Z" fill="none" stroke="#8391a5" stroke-opacity=".17"/><path d="M0 0L90 45M90 0L0 45" fill="none" stroke="#8595ad" stroke-opacity=".09"/></pattern>
+ <linearGradient id="brass" x2="1" y2="1"><stop stop-color="#f4df98"/><stop offset=".5" stop-color="#927047"/><stop offset="1" stop-color="#d6bc7f"/></linearGradient>
+ <clipPath id="arch"><path d="M243 224V83Q243 24 350 12Q457 24 457 83V224Z"/></clipPath>
+</defs>
+<rect width="700" height="420" fill="url(#stone)"/>
+<!-- Full illustrated window sky sits behind the dragon. -->
+<path d="M238 234V83Q238 18 350 5Q462 18 462 83V234Z" fill="#0b1228" stroke="#8b7890" stroke-width="19"/>
+<g clip-path="url(#arch)">
+ <rect x="240" y="10" width="220" height="216" fill="url(#night)"/>
+ <circle cx="389" cy="66" r="29" fill="url(#moon)" opacity=".94"/>
+ <circle cx="392" cy="64" r="37" fill="none" stroke="#d4e7e8" stroke-opacity=".13" stroke-width="9"/>
+ <g fill="#e4e8e8" opacity=".94"><circle cx="272" cy="42" r="2"/><circle cx="302" cy="83" r="1.6"/><circle cx="339" cy="44" r="1.2"/><circle cx="434" cy="42" r="2"/><circle cx="426" cy="106" r="1.3"/><circle cx="258" cy="113" r="1.6"/><circle cx="354" cy="108" r="1.7"/><circle cx="320" cy="158" r="1.4"/><circle cx="402" cy="174" r="1.2"/><circle cx="282" cy="192" r="2"/></g>
+ <path d="M235 193Q285 172 320 192T404 185T465 196V232H235" fill="#111e35"/>
+ <path d="M235 213Q278 190 326 212T407 207T466 205V234H235" fill="#172b44"/>
+</g>
+<path d="M350 19V226M245 128H455" fill="none" stroke="url(#brass)" stroke-width="7" opacity=".9"/>
+<path d="M350 26V222M249 128H452" stroke="#382f40" stroke-width="2" opacity=".8"/>
+<path d="M230 232H471" stroke="url(#brass)" stroke-width="10"/>
+<!-- Architectural pilasters and golden capitals. -->
+<g stroke="#8190a7" stroke-opacity=".28" fill="#202d48"><path d="M25 0H74V286H25Z"/><path d="M627 0H676V286H627Z"/></g>
+<g fill="url(#brass)" opacity=".72"><path d="M14 21H86V33H14Z"/><path d="M615 21H687V33H615Z"/><path d="M14 262H86V278H14Z"/><path d="M615 262H687V278H615Z"/></g>
+<g stroke="#b1a5aa" stroke-opacity=".18" stroke-width="3"><path d="M0 74H227M473 74H700M0 145H227M473 145H700M0 219H227M473 219H700"/><path d="M90 35V275M157 35V275M543 35V275M611 35V275"/></g>
+<!-- Alcove star charts: architectural accents, not treasures. -->
+<g fill="#101a32" stroke="url(#brass)" stroke-width="5"><path d="M95 74H203V196H95Z"/><path d="M497 74H605V196H497Z"/></g>
+<g stroke="#b6c4de" stroke-opacity=".48" fill="none" stroke-width="1.7">
+ <circle cx="149" cy="135" r="32"/><ellipse cx="149" cy="135" rx="15" ry="34" transform="rotate(23 149 135)"/>
+ <path d="M119 146L149 103L180 151L135 171L119 146"/>
+ <circle cx="551" cy="136" r="36"/><path d="M523 117L575 154L545 101L531 164L577 119"/>
+</g>
+<g fill="#f7dfa2"><circle cx="149" cy="103" r="2.8"/><circle cx="180" cy="151" r="3"/><circle cx="119" cy="146" r="2"/><circle cx="551" cy="99" r="3"/><circle cx="577" cy="119" r="2.5"/></g>
+<!-- Floor plane keeps Kae and every saved position unobstructed. -->
+<path d="M0 280H700V420H0Z" fill="url(#floor)"/>
+<path d="M0 280H700V420H0Z" fill="url(#marble)" opacity=".58"/>
+<path d="M0 280H700" stroke="url(#brass)" stroke-width="11"/>
+<path d="M0 299H700" stroke="#0c172c" stroke-opacity=".5" stroke-width="4"/>
+<ellipse cx="350" cy="378" rx="310" ry="54" fill="url(#pool)"/>
+<g fill="none" stroke="#d3c68e" stroke-opacity=".25"><ellipse cx="350" cy="378" rx="225" ry="43" stroke-width="3"/><ellipse cx="350" cy="378" rx="174" ry="32" stroke-width="1.5"/></g>
+</svg>
