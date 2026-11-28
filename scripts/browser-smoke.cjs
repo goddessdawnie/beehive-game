@@ -246,7 +246,7 @@ assert.equal(await page.locator('#layout-tools').isVisible(),true);
 assert.equal(await page.locator('#layout-guide').isVisible(),true);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),true);
 // Ambient decoration cannot intercept taps and sits below the independent room objects.
-assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n,'::before').backgroundImage),/amber-vault-glow\\.svg/);
+assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n,'::before').backgroundImage),/amber-vault-glow\.svg/);
 assert.equal(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n,'::before').pointerEvents),'none');
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
  'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar','Platinum crown','Scale Oil · Apothecary vial'
@@ -362,19 +362,19 @@ await page.locator('#kae-portrait option[value="kae_smug"]').waitFor({state:'att
 assert.deepEqual(await page.locator('#kae-portrait option').evaluateAll(nodes=>nodes.map(n=>n.value)),
  ['','kae_svg','kae_smug','kae_skeptical','kae_intrigued']);
 await page.locator('#kae-portrait').selectOption('kae_smug');
-assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\\.svg/);
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\.svg/);
 assert.equal(await page.evaluate(()=>localStorage.getItem('beehive:kae-portrait:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b')),'kae_smug');
 await page.locator('#layout-slot').selectOption('kae');
 await page.locator('#layout-artwork').selectOption('kae_intrigued');
-assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-intrigued\\.svg/,'Temporary preview takes precedence');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-intrigued\.svg/,'Temporary preview takes precedence');
 await page.locator('#layout-slot').selectOption('cushion');
-assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\\.svg/,'Leaving preview restores saved chosen portrait');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\.svg/,'Leaving preview restores saved chosen portrait');
 await page.reload();
 await page.locator('#game:not(.hidden)').waitFor();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'48%');
 assert.equal(await page.locator('.chamber-pillow').isVisible(),false,'Refresh removes temporary unowned art');
 await page.waitForFunction(()=>document.querySelector('.chamber-kae')?.getAttribute('src')?.includes('kae-smug.svg'));
-assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\\.svg/,'Owner-selected portrait survives reload');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\.svg/,'Owner-selected portrait survives reload');
 assert.equal(await page.locator('#kae-portrait').inputValue(),'kae_smug');
 assert.equal(await page.locator('.chamber-kae').evaluate(el=>el.style.left),'35%');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.left),'75%');
@@ -383,7 +383,7 @@ assert.equal(await page.locator('#chamber-jewel-preview').evaluate(el=>el.style.
 await page.locator('#hive-settings').click();
 await page.locator('#open-layout').click();
 await page.locator('#kae-portrait').selectOption('');
-assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae_cutout\\.webp/,'Restore original illustration without touching room layout');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae_cutout\.webp/,'Restore original illustration without touching room layout');
 assert.equal(await page.evaluate(()=>localStorage.getItem('beehive:kae-portrait:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b')),'');
 await page.locator('#layout-reset').click();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'','Restoring removes the override and uses CSS defaults');
@@ -534,7 +534,7 @@ for(const [qty,tier] of countsToCheck){
  for(const [selector,stem] of [['.chamber-gold','coin'],['.chamber-whisker','whisker']]){
   assert.equal(await page.locator(selector).isVisible(),true,'Owned '+stem+' must be displayed');
   assert.equal(await page.locator(selector).evaluate(n=>n.classList.contains('tier-art')),true);
-  assert.match(await page.locator(selector).evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp(stem+'-'+tier+'\\.svg'));
+  assert.match(await page.locator(selector).evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp(stem+'-'+tier+'\.svg'));
  }
 }
 // New approved art uses catalog-only inventory registration and an existing movable keyed slot.
@@ -555,7 +555,7 @@ for(const [qty,tier] of [[1,'single'],[5,'pile'],[13,'mound'],[26,'chest']]){
  ],qty);
  await page.locator('#refresh').click();
  await page.waitForFunction(q=>document.querySelector('#treasure-item-fixture-repeat-id')?.dataset.quantity===String(q),qty);
- assert.match(await page.locator('#treasure-item-fixture-repeat-id').evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp('coin-'+tier+'\\.svg'));
+ assert.match(await page.locator('#treasure-item-fixture-repeat-id').evaluate(n=>getComputedStyle(n).backgroundImage),new RegExp('coin-'+tier+'\.svg'));
 }
 await page.evaluate(()=>window.inventoryRows=[]);
 await page.locator('#refresh').click();
