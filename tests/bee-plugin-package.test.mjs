@@ -7,12 +7,12 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../plugins/bee');
 const load=path=>readFileSync(resolve(root,path),'utf8');
 
-test('Bee plugin manifests match installed v0.2.5 and retain connected app',()=>{
+test('Bee plugin manifests match source v0.2.6 and retain connected app',()=>{
  const manifest=JSON.parse(load('plugin.json'));
  const legacy=JSON.parse(load('.codex-plugin/plugin.json'));
  const app=JSON.parse(load('.app.json'));
  assert.equal(manifest.name,'bee');
- assert.equal(manifest.version,'0.2.5');
+ assert.equal(manifest.version,'0.2.6');
  assert.equal(legacy.version,manifest.version);
  assert.equal(manifest.skills,'./skills');
  assert.equal(legacy.apps,'./.app.json');
