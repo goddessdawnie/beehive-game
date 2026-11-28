@@ -2,6 +2,10 @@
 
 **Checked November 27, 2026.** Git baseline: [Beehive `main` commit](https://github.com/goddessdawnie/beehive-game/commit/15e14a5729fa62a38a81732507212e22cf158308). Installed private Bee plugin: **v0.2.5**, current release `pluginrel_6b085cd2ed8881918a786fd054565fb1` (read-only owned-plugin file list and selected file reads); scope **USER**, discoverability **PRIVATE**. This document is not a plugin release, SQL deployment, migration or permissions change.
 
+## November 28 — guarded release candidate (PR #95)
+
+The source package version becomes **v0.2.6** when PR #95 merges. It adds a verified request-fulfillment evidence matrix to the source skill/reference, and restores the longer operations/sleep references already in GitHub. Installed private Bee is still **v0.2.5** until a separate guarded plugin update succeeds and is read back. The existing Bee verification workflow will upload a complete ZIP with hidden `.app.json` and `.codex-plugin/` files under the short-lived `bee-plugin-release` artifact name. Download through the GitHub connector's reusable file reference, then pass its exact file ID to the plugin updater with the observed expected release ID. A malformed-package probe already reached plugin validation, proving transport of a host-uploaded file ID. Check the ZIP contains the expected manifest/root files before publication, and verify the new installed release's full file list, version, App binding and crucial contracts afterwards. This source-only PR itself does not update the installed plugin or its privileges.
+
 ## Source comparison
 
 The installed package contains nine text files. **7 of 9** match the exact GitHub `plugins/bee/` file contents at this checkpoint: `.app.json`, `.codex-plugin/plugin.json`, `plugin.json`, `skills/beehive/SKILL.md`, and `references/conversations.md`, `references/database-contract.md`, `references/deployed-parity.md`.
