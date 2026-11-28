@@ -7,7 +7,7 @@ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 
 test('task refresh controller is the sole owner of snapshot and queue lifecycle',()=>{
  for(const phrase of [
-  "import {createTaskRefresh} from './js/task-refresh.js';",
+  "import {createTaskRefresh,readTaskSnapshot} from './js/task-refresh.js';",
   'const taskRefresh=createTaskRefresh({',
   'const load=taskRefresh.load;',
   'taskRefresh.commit(user.id,tasks.data||[]);',
@@ -131,7 +131,7 @@ test('non-reward task mutations use scoped refresh, while reward/status and expl
   "db.rpc('kae_refresh_comfort')",
   "await load()"
  ])assert.ok(html.includes(assertion),assertion);
- assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?db\.rpc\('roll_forward_daily_tasks'\)[\s\S]*?const tasks=await db\.from\('tasks'\)\.select\('\*'\)\.order\('created_at'/);
+ assert.match(html,/async function loadTaskSnapshot\(\)[\s\S]*?db\.rpc\('roll_forward_daily_tasks'\)[\s\S]*?const tasks=await readTaskSnapshot\(db\)/);
  assert.match(html,/async function loadInner\(\)[\s\S]*?db\.rpc\('reward_ledger_totals'\)/);
  assert.doesNotMatch(html,/db\.from\('reward_ledger'\)/,'Full estate refresh must not download ledger history');
 });
