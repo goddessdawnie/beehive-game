@@ -51,22 +51,29 @@ const layoutSlots=[
 // Curated from assets already shipped in GitHub. Future generated manifests can replace this list.
 // A CSS-rendered treasure is still a valid appearance option; preview never changes ownership.
 // Generated manifest lives in assets/scene-catalog.json; no artwork list is maintained in the UI.
-let layoutArtwork={};
+let layoutArtwork={},inventorySceneArtwork=new Map();
 async function loadSceneArtwork(){
  try{
   const response=await fetch('./assets/scene-catalog.json',{cache:'no-cache'});
   if(!response.ok)throw Error('HTTP '+response.status);
   const manifest=await response.json();
   if(manifest.schemaVersion!==1||!Array.isArray(manifest.assets))throw Error('Unknown catalog version');
-  const next={};
+  const next={},inventoryImages=new Map();
   for(const asset of manifest.assets){
-   if(!asset||!Array.isArray(asset.slots)||!['existing','image','legacy_case','legacy_throne','preview_image'].includes(asset.renderer))continue;
-   if(asset.source&&!/^assets\/[a-z0-9_./-]+\.(svg|png|webp|jpg|jpeg)$/.test(asset.source))continue;
+   if(!asset||!Array.isArray(asset.slots)||!['existing','image','legacy_case','legacy_throne','preview_image','inventory_image'].includes(asset.renderer))continue;
+   if(asset.source&&(!/^assets\/[a-z0-9_./-]+\.(svg|png|webp|jpg|jpeg)$/.test(asset.source)||asset.source.includes('..')))continue;
+   if(asset.renderer==='inventory_image'){
+    if(asset.slots.length===1&&asset.slots[0]==='inventory_item'&&/^[a-z][a-z0-9_]*$/.test(asset.treasure||'')&&asset.source&&!inventoryImages.has(asset.treasure))
+     inventoryImages.set(asset.treasure,asset.source);
+    continue; // Inventory art does not invent a layout slot or imply ownership.
+   }
    for(const slotId of asset.slots)if(layoutSlotById.has(slotId)){
     (next[slotId]??=[]).push({...asset,src:asset.renderer==='image'?asset.source:null});
    }
   }
   layoutArtwork=next;
+  inventorySceneArtwork=inventoryImages;
+  refreshDynamicTreasureArtwork();
   syncSlotControls();
  }catch(error){console.warn('Scene artwork catalog unavailable; slot geometry editor remains usable',error);}
 }
@@ -83,7 +90,7 @@ function quantityArtworkSource(slug,qty,allowedPrefix='assets/treasure-quantity/
  const source=tier&&item?.variants?.[tier.id]?.source;
  if(typeof source!=='string'||!source.startsWith(allowedPrefix))return null;
  const filename=source.slice('assets/treasure-quantity/'.length);
- return /^[a-z-]+\.svg$/.test(filename)?source:null;
+ return /^[a-z0-9_-]+\.svg$/.test(filename)?source:null;
 }
 function renderQuantityArtwork(){
  for(const [slug,node] of Object.entries(quantityVisualNodes)){
@@ -112,6 +119,7 @@ async function loadQuantityArtwork(){
   quantityArtwork={tiers:data.tiers,items:bySlug,rawJewel:data.items.jewel};
   renderQuantityArtwork();
   updateOwnedJewelArtwork();
+  refreshDynamicTreasureArtwork();
  }catch(error){console.warn('Treasure tier artwork unavailable; existing markers retained',error);}
 }
 void loadQuantityArtwork();
@@ -138,6 +146,17 @@ const layoutSlotById=new Map(layoutSlots.map(slot=>[slot.id,slot]));
 // Every inventory object has its own room slot. Static illustrated objects use
 // their existing nodes; unillustrated objects receive a keyed node and slot.
 const dynamicTreasureSlots=new Map();
+function dynamicTreasureArtworkSource(slug,quantity){
+ // A registered tier takes precedence; otherwise use a single approved catalog illustration.
+ return quantityArtworkSource(slug,quantity)||inventorySceneArtwork.get(slug)||null;
+}
+function refreshDynamicTreasureArtwork(){
+ for(const node of document.querySelectorAll('.chamber-generic-treasure[data-treasure-slug]')){
+  const source=dynamicTreasureArtworkSource(node.dataset.treasureSlug,Number(node.dataset.quantity));
+  node.classList.toggle('illustrated',Boolean(source));
+  node.style.backgroundImage=source?'url('+JSON.stringify(source)+')':'';
+ }
+}
 function syncDynamicTreasureSlots(items){
  const room=el('kae-chamber'),keep=new Set(items.map(item=>String(item.id)));
  for(const [id,slot] of dynamicTreasureSlots){
@@ -162,7 +181,15 @@ function syncDynamicTreasureSlots(items){
   }
   const node=document.getElementById('treasure-item-'+id);
   node.textContent=item.name;
+  node.dataset.treasureSlug=item.slug;
+  node.dataset.quantity=String(item.quantity);
+  node.setAttribute('role','img');
+  node.setAttribute('aria-label',item.name+' quantity '+item.quantity);
   applySlotGeometry(slot);
+  // Reuse the keyed, independently movable room slot; no per-gift HTML or CSS.
+  const source=dynamicTreasureArtworkSource(item.slug,Number(item.quantity));
+  node.classList.toggle('illustrated',Boolean(source));
+  node.style.backgroundImage=source?'url('+JSON.stringify(source)+')':'';
  });
  if(!layoutSlotById.has(selectedLayoutSlot))changeLayoutSlot('cushion');
 }

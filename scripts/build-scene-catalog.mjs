@@ -3,20 +3,32 @@ import {resolve,dirname,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const source=JSON.parse(await readFile(resolve(root,'assets/room/scene-assets.json'),'utf8'));
-const slots=new Set(['cushion','kae','behind','left_lower','right','shelf_jewel','crown','scale_oil']);
-const renderers=new Set(['image','existing','legacy_case','legacy_throne','preview_image']);
-const seen=new Set();
+const slots=new Set(['cushion','kae','behind','left_lower','right','shelf_jewel','crown','scale_oil','inventory_item']);
+const renderers=new Set(['image','existing','legacy_case','legacy_throne','preview_image','inventory_image']);
+const seen=new Set(),inventoryImageSlugs=new Set();
 if(source.schemaVersion!==1||!Array.isArray(source.assets))throw Error('Invalid scene source catalog');
 for(const asset of source.assets){
  if(!/^[a-z][a-z0-9_]*$/.test(asset.id)||seen.has(asset.id))throw Error('Duplicate/invalid asset id: '+asset.id);
  seen.add(asset.id);
  if(!asset.label||!Array.isArray(asset.slots)||!asset.slots.length||!asset.slots.every(s=>slots.has(s)))throw Error('Invalid asset slots: '+asset.id);
  if(!renderers.has(asset.renderer))throw Error('Unsupported renderer: '+asset.id);
- if(['image','preview_image'].includes(asset.renderer)&&!asset.source)throw Error('Image source required: '+asset.id);
+ if(['image','preview_image','inventory_image'].includes(asset.renderer)&&!asset.source)throw Error('Image source required: '+asset.id);
+ if(asset.renderer==='inventory_image'){
+  if(asset.slots.length!==1||asset.slots[0]!=='inventory_item')throw Error('Inventory image must use only inventory_item slot: '+asset.id);
+  if(!/^[a-z][a-z0-9_]*$/.test(asset.treasure||''))throw Error('Inventory image requires valid shop slug: '+asset.id);
+  if(inventoryImageSlugs.has(asset.treasure))throw Error('Duplicate inventory artwork slug: '+asset.treasure);
+  inventoryImageSlugs.add(asset.treasure);
+  if(asset.fit&&asset.fit!=='contain')throw Error('Inventory image must fit contain: '+asset.id);
+ }else if(asset.slots.includes('inventory_item'))throw Error('inventory_item is reserved for inventory_image: '+asset.id);
  if(asset.source){
   if(!/^assets\/[a-z0-9_./-]+\.(svg|webp|jpg|jpeg|png)$/.test(asset.source)||asset.source.includes('..'))throw Error('Unsafe source path: '+asset.id);
   const assetFile=resolve(root,asset.source);
-  if(!(await stat(assetFile)).isFile())throw Error('Missing asset: '+asset.source);
+  let assetStat;
+  try{assetStat=await stat(assetFile)}catch(error){
+   if(error.code==='ENOENT')throw Error('Missing asset: '+asset.source);
+   throw error;
+  }
+  if(!assetStat.isFile())throw Error('Missing asset: '+asset.source);
   if(extname(assetFile)==='.svg'){
    const xml=await readFile(assetFile,'utf8');
    if(!xml.includes('<svg')||/<script\b|<image\b[^>]*href=["']https?:/i.test(xml))throw Error('Unsafe SVG content: '+asset.source);
