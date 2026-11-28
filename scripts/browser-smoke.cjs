@@ -245,6 +245,9 @@ await page.locator('#open-layout').click();
 assert.equal(await page.locator('#layout-tools').isVisible(),true);
 assert.equal(await page.locator('#layout-guide').isVisible(),true);
 assert.equal(await page.locator('#kaetap').evaluate(el=>el.classList.contains('layout-preview-sticky')),true);
+// Ambient decoration cannot intercept taps and sits below the independent room objects.
+assert.match(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n,'::before').backgroundImage),/amber-vault-glow\\.svg/);
+assert.equal(await page.locator('#kae-chamber').evaluate(n=>getComputedStyle(n,'::before').pointerEvents),'none');
 assert.deepEqual(await page.locator('#layout-slot option').allTextContents(),[
  'Cushion · Under Kae','Kae · Dragon','Behind · Throne','Left Lower · Table','Right · Display Case','Jewel · Owned treasure','Wall shelf','Display case · Interior shelf','Treasure chest','Gold coins','Minnie whiskers','Jeweled collar','Platinum crown','Scale Oil · Apothecary vial'
 ]);
@@ -353,16 +356,35 @@ await page.locator('#layout-artwork').selectOption('plum_cushion');
 assert.equal(await page.locator('.chamber-pillow').isVisible(),true,'Unowned pillow previews safely');
 assert.equal(await page.evaluate(()=>window.rewardPurchaseCalls),0,'Preview does not buy inventory');
 assert.equal(await page.locator('#layout-width').inputValue(),'48','Switching slots preserves other geometry');
+// Optional portrait choices come from the same verified art catalog, while the illustrated original stays default.
+assert.equal(await page.locator('#kae-portrait').inputValue(),'');
+await page.locator('#kae-portrait option[value="kae_smug"]').waitFor({state:'attached'});
+assert.deepEqual(await page.locator('#kae-portrait option').evaluateAll(nodes=>nodes.map(n=>n.value)),
+ ['','kae_svg','kae_smug','kae_skeptical','kae_intrigued']);
+await page.locator('#kae-portrait').selectOption('kae_smug');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\\.svg/);
+assert.equal(await page.evaluate(()=>localStorage.getItem('beehive:kae-portrait:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b')),'kae_smug');
+await page.locator('#layout-slot').selectOption('kae');
+await page.locator('#layout-artwork').selectOption('kae_intrigued');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-intrigued\\.svg/,'Temporary preview takes precedence');
+await page.locator('#layout-slot').selectOption('cushion');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\\.svg/,'Leaving preview restores saved chosen portrait');
 await page.reload();
 await page.locator('#game:not(.hidden)').waitFor();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'48%');
 assert.equal(await page.locator('.chamber-pillow').isVisible(),false,'Refresh removes temporary unowned art');
+await page.waitForFunction(()=>document.querySelector('.chamber-kae')?.getAttribute('src')?.includes('kae-smug.svg'));
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae-smug\\.svg/,'Owner-selected portrait survives reload');
+assert.equal(await page.locator('#kae-portrait').inputValue(),'kae_smug');
 assert.equal(await page.locator('.chamber-kae').evaluate(el=>el.style.left),'35%');
 assert.equal(await page.locator('.chamber-case').evaluate(el=>el.style.left),'75%');
 assert.equal(await page.locator('#chamber-jewel-preview').isVisible(),false,'Reload discards temporary jewel');
 assert.equal(await page.locator('#chamber-jewel-preview').evaluate(el=>el.style.width),'12%','Jewel geometry persists independently');
 await page.locator('#hive-settings').click();
 await page.locator('#open-layout').click();
+await page.locator('#kae-portrait').selectOption('');
+assert.match(await page.locator('.chamber-kae').getAttribute('src'),/kae_cutout\\.webp/,'Restore original illustration without touching room layout');
+assert.equal(await page.evaluate(()=>localStorage.getItem('beehive:kae-portrait:v1:2ba0f2a9-8af0-41a1-9bc6-b7448bd0bc9b')),'');
 await page.locator('#layout-reset').click();
 assert.equal(await page.locator('.chamber-pillow').evaluate(el=>el.style.width),'','Restoring removes the override and uses CSS defaults');
 assert.equal(await page.locator('#layout-width-value').textContent(),'36%');
