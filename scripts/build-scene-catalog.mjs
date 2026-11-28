@@ -23,7 +23,12 @@ for(const asset of source.assets){
  if(asset.source){
   if(!/^assets\/[a-z0-9_./-]+\.(svg|webp|jpg|jpeg|png)$/.test(asset.source)||asset.source.includes('..'))throw Error('Unsafe source path: '+asset.id);
   const assetFile=resolve(root,asset.source);
-  if(!(await stat(assetFile)).isFile())throw Error('Missing asset: '+asset.source);
+  let assetStat;
+  try{assetStat=await stat(assetFile)}catch(error){
+   if(error.code==='ENOENT')throw Error('Missing asset: '+asset.source);
+   throw error;
+  }
+  if(!assetStat.isFile())throw Error('Missing asset: '+asset.source);
   if(extname(assetFile)==='.svg'){
    const xml=await readFile(assetFile,'utf8');
    if(!xml.includes('<svg')||/<script\b|<image\b[^>]*href=["']https?:/i.test(xml))throw Error('Unsafe SVG content: '+asset.source);
