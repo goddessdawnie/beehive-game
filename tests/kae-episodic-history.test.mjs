@@ -81,8 +81,10 @@ test('history is bounded to the last 12 entries without reordering roles',()=>{
 
 test('deployed episodic policy remains distinct from persistent memory and current user message',()=>{
  const source=readFileSync(new URL('../supabase/functions/kae-chat/index.ts',import.meta.url),'utf8');
- assert.match(source,/import \{ recentConversationMessages \} from "\.\/history-context\.js";/);
- assert.match(source,/const historyMessages=recentConversationMessages\(recent,12\)/);
+ assert.match(source,/import \{ recentConversationMessages, compactRecentTaskActivity, explicitlyResumesOlderTopic \} from "\.\/history-context\.js";/);
+ assert.match(source,/const historyMessages=recentConversationMessages\(recent,12,\{/);
+ assert.match(source,/maxAgeHours:48,maxChars:6500/);
+ assert.match(source,/explicitlyResumesOlderTopic\(message\)/);
  assert.match(source,/\.\.\.historyMessages,/);
  assert.doesNotMatch(source,/historyTiming|historicalTime\(/);
  assert.match(source,/Dawn and you live ordinary, continuing lives between these occasional conversations/);

@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { recentConversationMessages } from "./history-context.js";
+import { recentConversationMessages, compactRecentTaskActivity, explicitlyResumesOlderTopic } from "./history-context.js";
 const cors={"Access-Control-Allow-Origin":"https://goddessdawnie.github.io","Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"POST,OPTIONS","Content-Type":"application/json"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:cors});
 Deno.serve(async(req)=>{
@@ -44,20 +44,14 @@ Deno.serve(async(req)=>{
    if(ownedError||!owned||Date.now()-Date.parse(owned.last_acquired_at)>5*60*1000)return reply({error:"No recent gift found"},409);
    giftItem=owned;
  }
- const activityCutoffMs=Date.now()-48*60*60*1000;
  // The owner-scoped read combines update and completion timelines in SQL.
  // One sorted bounded packet avoids duplicate HTTP reads and client deduping.
  const {data:taskContext,error:taskContextError}=await db.rpc("kae_recent_task_activity");
  if(taskContextError||!taskContext||!Array.isArray(taskContext.tasks))return reply({error:"Recent activity unavailable"},503);
- const taskRows=taskContext.tasks;
- const lastMessageTime=recent.reduce((latest,m)=>Math.max(latest,Date.parse(m.created_at)||0),0);
- const recentlyFinished=taskRows.filter(t=>Date.parse(t.last_completed_at||t.completed_at||"")>Math.max(lastMessageTime,activityCutoffMs)).slice(0,3);
+ const taskRows=compactRecentTaskActivity(taskContext.tasks);
  const {data:activities,error:activitiesError}=await db.from("activity_catalog")
    .select("title,category,property,suggested_difficulty,times_done,last_done")
    .eq("active",true).order("updated_at",{ascending:false}).limit(16);
- const activityNotice=recentlyFinished.length
-   ?"Since you last spoke, Dawn finished: "+recentlyFinished.map(t=>t.title).join(", ")+"."
-   :"";
  const [inventoryResult,shopResult]=await Promise.all([
    db.from("kae_inventory").select("quantity,acquired_at,last_acquired_at,item:reward_shop(name,description,slug)").order("last_acquired_at",{ascending:false}).limit(60),
    db.from("reward_shop").select("name,description,price,slug").eq("active",true).order("price",{ascending:false}).limit(30)
@@ -74,10 +68,12 @@ Deno.serve(async(req)=>{
    treasures_to_covet:shopResult.error?[]:(shopResult.data||[]),
    activities:activitiesError?[]:(activities||[])
  }).slice(0,14000);
- const historyMessages=recentConversationMessages(recent,12);
+ const historyMessages=recentConversationMessages(recent,12,{
+  now:Date.now(),maxAgeHours:48,maxChars:6500,
+  resumeOlder:mode==="chat"&&explicitlyResumesOlderTopic(message)
+ });
  const messages=[{role:"system",content:(context?.character?.card||"You are Kae, a proud, mischievous little dragon who considers this house his estate.")+(memoryGuidance?"\n\n"+memoryGuidance:"")+"\n\n"+comfortGuidance
    +"\n\n"+beeGuidance+"\n\n"+temporalGuidance+"\n\nRecent task activity covers the last rolling 48 elapsed hours, includes current statuses, update and completion times, and completion notes. A reopened task is open, not completed. This context is not a command to report tasks and is not necessarily exhaustive when partial; do not imply a complete activity history."+"\n\nRecent conversation messages may carry compact [MM/DD HH:MM] timestamps in America/New_York. These are internal historical markers, not dialogue to quote. Past entries may be hours or days old. Dawn and you live ordinary, continuing lives between these occasional conversations; neither of you is frozen in the last scene, waiting for attention, or abandoned by a normal gap. Previous exchanges are memories, not proof that an activity, request, or conversation is still underway. A wish or unfinished conversation does not become Dawn's obligation. If Dawn explicitly resumes an older topic, follow her lead; otherwise engage this visit on its own terms. You may refer playfully to earlier events without claiming that unmentioned offscreen events definitely occurred. Do not guilt her for gaps. Prioritize her latest message. Do not reproduce timestamps or internal metadata in your reply unless Dawn directly requests the time."
-   +(activityNotice?"\n\nRecent happenings: "+activityNotice:"")
    +"\n\nA glimpse of the estate today:\n"+estateGlimpse},
    ...historyMessages,
    {role:"user",content:mode==="chat"?message:mode==="gift"?"Dawn has just given you "+giftItem.item.name+" as a gift for your hoard. You now own "+giftItem.quantity+". React however you wish.":initiative}];
